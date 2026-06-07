@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import logoAsset from "@/assets/rawa-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
@@ -52,8 +51,8 @@ function Index() {
             <a href="#about" className="hover:text-primary transition">عن رواء</a>
           </nav>
           <div className="flex items-center gap-2">
-            <Link to="/" className="text-sm px-4 py-2 rounded-full text-primary hover:bg-muted transition">تسجيل الدخول</Link>
-            <Link to="/" className="text-sm px-5 py-2 rounded-full bg-gradient-royal text-primary-foreground shadow-glow hover:opacity-95 transition">
+            <Link to="/auth" className="text-sm px-4 py-2 rounded-full text-primary hover:bg-muted transition">تسجيل الدخول</Link>
+            <Link to="/auth" className="text-sm px-5 py-2 rounded-full bg-gradient-royal text-primary-foreground shadow-glow hover:opacity-95 transition">
               ابدأ التسجيل
             </Link>
           </div>
@@ -77,7 +76,7 @@ function Index() {
               منصة رواء للحلقات القرآنية الإلكترونية والتصحيح المباشر للتلاوة، بإشراف نخبة من المعلمين والمعلمات.
             </p>
             <div className="flex flex-wrap gap-4 justify-center md:justify-start pt-2">
-              <Link to="/" className="px-7 py-3.5 rounded-full bg-gradient-royal text-primary-foreground font-semibold shadow-glow hover:scale-[1.02] transition">
+              <Link to="/auth" className="px-7 py-3.5 rounded-full bg-gradient-royal text-primary-foreground font-semibold shadow-glow hover:scale-[1.02] transition">
                 ابدأ التسجيل
               </Link>
               <a href="#halaqas" className="px-7 py-3.5 rounded-full border border-primary/30 text-primary font-semibold hover:bg-primary/5 transition">
@@ -177,7 +176,7 @@ function Index() {
               سجّل اليوم وابدأ مع نخبة من المعلمين في حلقات قرآنية حيّة ومنظمة.
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
-              <Link to="/" className="px-8 py-3.5 rounded-full bg-gold text-gold-foreground font-bold shadow-gold hover:scale-[1.03] transition">
+              <Link to="/auth" className="px-8 py-3.5 rounded-full bg-gold text-gold-foreground font-bold shadow-gold hover:scale-[1.03] transition">
                 إنشاء حساب طالب
               </Link>
               <a href="#about" className="px-8 py-3.5 rounded-full border border-primary-foreground/40 text-primary-foreground font-semibold hover:bg-primary-foreground/10 transition">
