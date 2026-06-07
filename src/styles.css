@@ -59,42 +59,63 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
+  --color-dark: var(--dark);
+  --font-arabic: "Cairo", "Aref Ruqaa", system-ui, sans-serif;
+  --font-display-ar: "Aref Ruqaa", "Cairo", serif;
+  --font-sans: "Poppins", system-ui, sans-serif;
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
+  /* Rawa — رواء design tokens
+     Primary #5E4B7B, Secondary #8B79A8, Gold #C7A35C,
+     Background #F8F6F3, Text #1F1F29, Muted #7B7B88, Dark #2D1E1A */
+  --radius: 0.875rem;
+  --background: oklch(0.972 0.005 80);
+  --foreground: oklch(0.21 0.02 285);
+  --card: oklch(0.99 0.004 80);
+  --card-foreground: oklch(0.21 0.02 285);
+  --popover: oklch(0.99 0.004 80);
+  --popover-foreground: oklch(0.21 0.02 285);
+  --primary: oklch(0.42 0.07 305);
+  --primary-foreground: oklch(0.98 0.005 80);
+  --secondary: oklch(0.61 0.07 305);
+  --secondary-foreground: oklch(0.98 0.005 80);
+  --muted: oklch(0.94 0.008 80);
+  --muted-foreground: oklch(0.53 0.015 285);
+  --accent: oklch(0.74 0.09 75);
+  --accent-foreground: oklch(0.22 0.03 40);
+  --gold: oklch(0.74 0.09 75);
+  --gold-foreground: oklch(0.22 0.03 40);
+  --dark: oklch(0.24 0.02 40);
   --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --destructive-foreground: oklch(0.984 0.003 80);
+  --border: oklch(0.88 0.012 80);
+  --input: oklch(0.9 0.01 80);
+  --ring: oklch(0.42 0.07 305);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --sidebar: oklch(0.99 0.004 80);
+  --sidebar-foreground: oklch(0.21 0.02 285);
+  --sidebar-primary: oklch(0.42 0.07 305);
+  --sidebar-primary-foreground: oklch(0.98 0.005 80);
+  --sidebar-accent: oklch(0.94 0.008 80);
+  --sidebar-accent-foreground: oklch(0.42 0.07 305);
+  --sidebar-border: oklch(0.88 0.012 80);
+  --sidebar-ring: oklch(0.42 0.07 305);
+
+  --gradient-royal: linear-gradient(135deg, oklch(0.42 0.07 305), oklch(0.61 0.07 305));
+  --gradient-gold: linear-gradient(135deg, oklch(0.78 0.1 75), oklch(0.66 0.1 60));
+  --gradient-hero: radial-gradient(ellipse at top, oklch(0.61 0.07 305 / 0.18), transparent 60%),
+                   radial-gradient(ellipse at bottom right, oklch(0.74 0.09 75 / 0.15), transparent 55%),
+                   oklch(0.972 0.005 80);
+  --shadow-glow: 0 20px 60px -20px oklch(0.42 0.07 305 / 0.45);
+  --shadow-gold: 0 18px 50px -18px oklch(0.74 0.09 75 / 0.5);
+  --shadow-soft: 0 8px 30px -12px oklch(0.24 0.02 40 / 0.18);
 }
 
 .dark {
@@ -140,5 +161,59 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-arabic);
+    -webkit-font-smoothing: antialiased;
   }
+
+  [dir="ltr"] body {
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display-ar);
+    letter-spacing: -0.01em;
+  }
+}
+
+@utility bg-gradient-royal {
+  background-image: var(--gradient-royal);
+}
+@utility bg-gradient-gold {
+  background-image: var(--gradient-gold);
+}
+@utility bg-hero {
+  background-image: var(--gradient-hero);
+}
+@utility shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+@utility shadow-gold {
+  box-shadow: var(--shadow-gold);
+}
+@utility shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+@utility islamic-pattern {
+  background-color: transparent;
+  background-image:
+    radial-gradient(circle at 1px 1px, color-mix(in oklab, var(--primary) 22%, transparent) 1px, transparent 0),
+    repeating-linear-gradient(45deg, color-mix(in oklab, var(--gold) 8%, transparent) 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(-45deg, color-mix(in oklab, var(--gold) 8%, transparent) 0 1px, transparent 1px 22px);
+  background-size: 24px 24px, auto, auto;
+}
+
+@keyframes rawa-float {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-10px) rotate(0.5deg); }
+}
+@keyframes rawa-glow {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.08); }
+}
+@utility animate-float {
+  animation: rawa-float 6s ease-in-out infinite;
+}
+@utility animate-glow {
+  animation: rawa-glow 4s ease-in-out infinite;
 }
