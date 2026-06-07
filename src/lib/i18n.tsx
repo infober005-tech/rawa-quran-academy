@@ -1,0 +1,283 @@
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+
+export type Lang = "ar" | "fr" | "en";
+
+const DICT: Record<Lang, Record<string, string>> = {
+  ar: {
+    "app.name": "رواء",
+    "app.tagline": "منزِل الإتقان · لارتواء الجنان",
+    "nav.login": "تسجيل الدخول",
+    "nav.register": "ابدأ التسجيل",
+    "nav.logout": "تسجيل الخروج",
+    "nav.dashboard": "اللوحة",
+    "nav.halaqas": "الحلقات",
+    "nav.events": "الفعاليات",
+    "nav.notifications": "الإشعارات",
+    "nav.settings": "الإعدادات",
+    "nav.admin": "الإدارة",
+    "auth.login": "تسجيل الدخول",
+    "auth.register": "إنشاء حساب طالب",
+    "auth.email": "البريد الإلكتروني",
+    "auth.password": "كلمة المرور",
+    "auth.confirm_password": "تأكيد كلمة المرور",
+    "auth.full_name": "الاسم الكامل",
+    "auth.parent_name": "اسم ولي الأمر (اختياري)",
+    "auth.phone": "رقم الهاتف",
+    "auth.gender": "الجنس",
+    "auth.male": "ذكر",
+    "auth.female": "أنثى",
+    "auth.age": "العمر",
+    "auth.country": "الدولة",
+    "auth.city": "المدينة",
+    "auth.quran_level": "المستوى القرآني",
+    "auth.level.beginner": "مبتدئ",
+    "auth.level.intermediate": "متوسط",
+    "auth.level.advanced": "متقدم",
+    "auth.schedule": "الوقت المفضل",
+    "auth.forgot": "نسيت كلمة المرور؟",
+    "auth.google": "المتابعة باستخدام Google",
+    "auth.or": "أو",
+    "auth.remember": "تذكرني",
+    "auth.check_email": "تحقق من بريدك لتأكيد الحساب",
+    "auth.reset_sent": "إذا كان البريد مسجلاً، فستصلك رسالة لإعادة تعيين كلمة المرور.",
+    "auth.new_password": "كلمة المرور الجديدة",
+    "auth.update_password": "تحديث كلمة المرور",
+    "status.pending": "حسابك قيد المراجعة من قِبَل إدارة المنصة.",
+    "status.rejected": "تم رفض طلبك. تواصل مع الإدارة.",
+    "status.suspended": "حسابك موقوف حالياً.",
+    "dash.welcome": "أهلاً",
+    "dash.my_halaqa": "حلقتي",
+    "dash.attendance": "الحضور",
+    "dash.evaluations": "التقييمات",
+    "dash.upcoming": "الجلسات القادمة",
+    "dash.join": "الانضمام للجلسة",
+    "dash.no_halaqa": "لم يتم تعيينك في حلقة بعد.",
+    "dir.pending_students": "طلبات التسجيل قيد المراجعة",
+    "dir.approve": "قبول",
+    "dir.reject": "رفض",
+    "dir.users": "إدارة المستخدمين",
+    "dir.role": "الدور",
+    "dir.halaqas": "إدارة الحلقات",
+    "dir.new_halaqa": "حلقة جديدة",
+    "dir.assign_role": "تعيين دور",
+    "common.save": "حفظ",
+    "common.cancel": "إلغاء",
+    "common.loading": "جاري التحميل…",
+    "common.actions": "إجراءات",
+    "common.name": "الاسم",
+    "common.level": "المستوى",
+    "common.teacher": "المعلم",
+    "common.supervisor": "المشرف",
+    "common.students": "الطلاب",
+    "common.date": "التاريخ",
+    "common.status": "الحالة",
+    "common.notes": "ملاحظات",
+    "common.present": "حاضر",
+    "common.absent": "غائب",
+    "common.late": "متأخر",
+    "common.submit": "إرسال",
+    "common.signin_with_google": "Google",
+  },
+  fr: {
+    "app.name": "Rawa",
+    "app.tagline": "Demeure de l'excellence · pour étancher les cœurs",
+    "nav.login": "Connexion",
+    "nav.register": "S'inscrire",
+    "nav.logout": "Déconnexion",
+    "nav.dashboard": "Tableau de bord",
+    "nav.halaqas": "Halaqas",
+    "nav.events": "Événements",
+    "nav.notifications": "Notifications",
+    "nav.settings": "Paramètres",
+    "nav.admin": "Administration",
+    "auth.login": "Connexion",
+    "auth.register": "Créer un compte étudiant",
+    "auth.email": "E-mail",
+    "auth.password": "Mot de passe",
+    "auth.confirm_password": "Confirmer le mot de passe",
+    "auth.full_name": "Nom complet",
+    "auth.parent_name": "Nom du parent (optionnel)",
+    "auth.phone": "Téléphone",
+    "auth.gender": "Genre",
+    "auth.male": "Homme",
+    "auth.female": "Femme",
+    "auth.age": "Âge",
+    "auth.country": "Pays",
+    "auth.city": "Ville",
+    "auth.quran_level": "Niveau Coranique",
+    "auth.level.beginner": "Débutant",
+    "auth.level.intermediate": "Intermédiaire",
+    "auth.level.advanced": "Avancé",
+    "auth.schedule": "Créneau préféré",
+    "auth.forgot": "Mot de passe oublié ?",
+    "auth.google": "Continuer avec Google",
+    "auth.or": "ou",
+    "auth.remember": "Se souvenir de moi",
+    "auth.check_email": "Vérifiez votre e-mail pour confirmer votre compte.",
+    "auth.reset_sent": "Si l'e-mail existe, un lien de réinitialisation a été envoyé.",
+    "auth.new_password": "Nouveau mot de passe",
+    "auth.update_password": "Mettre à jour",
+    "status.pending": "Votre compte est en cours d'examen par la direction.",
+    "status.rejected": "Votre demande a été refusée. Contactez l'administration.",
+    "status.suspended": "Votre compte est suspendu.",
+    "dash.welcome": "Bienvenue",
+    "dash.my_halaqa": "Ma halaqa",
+    "dash.attendance": "Présence",
+    "dash.evaluations": "Évaluations",
+    "dash.upcoming": "Sessions à venir",
+    "dash.join": "Rejoindre",
+    "dash.no_halaqa": "Vous n'êtes pas encore assigné à une halaqa.",
+    "dir.pending_students": "Demandes en attente",
+    "dir.approve": "Accepter",
+    "dir.reject": "Refuser",
+    "dir.users": "Gestion des utilisateurs",
+    "dir.role": "Rôle",
+    "dir.halaqas": "Gestion des halaqas",
+    "dir.new_halaqa": "Nouvelle halaqa",
+    "dir.assign_role": "Assigner un rôle",
+    "common.save": "Enregistrer",
+    "common.cancel": "Annuler",
+    "common.loading": "Chargement…",
+    "common.actions": "Actions",
+    "common.name": "Nom",
+    "common.level": "Niveau",
+    "common.teacher": "Enseignant",
+    "common.supervisor": "Superviseur",
+    "common.students": "Étudiants",
+    "common.date": "Date",
+    "common.status": "Statut",
+    "common.notes": "Notes",
+    "common.present": "Présent",
+    "common.absent": "Absent",
+    "common.late": "En retard",
+    "common.submit": "Envoyer",
+    "common.signin_with_google": "Google",
+  },
+  en: {
+    "app.name": "Rawa",
+    "app.tagline": "Home of mastery · for hearts to be quenched",
+    "nav.login": "Sign in",
+    "nav.register": "Register",
+    "nav.logout": "Sign out",
+    "nav.dashboard": "Dashboard",
+    "nav.halaqas": "Halaqas",
+    "nav.events": "Events",
+    "nav.notifications": "Notifications",
+    "nav.settings": "Settings",
+    "nav.admin": "Admin",
+    "auth.login": "Sign in",
+    "auth.register": "Create student account",
+    "auth.email": "Email",
+    "auth.password": "Password",
+    "auth.confirm_password": "Confirm password",
+    "auth.full_name": "Full name",
+    "auth.parent_name": "Parent name (optional)",
+    "auth.phone": "Phone",
+    "auth.gender": "Gender",
+    "auth.male": "Male",
+    "auth.female": "Female",
+    "auth.age": "Age",
+    "auth.country": "Country",
+    "auth.city": "City",
+    "auth.quran_level": "Quran level",
+    "auth.level.beginner": "Beginner",
+    "auth.level.intermediate": "Intermediate",
+    "auth.level.advanced": "Advanced",
+    "auth.schedule": "Preferred schedule",
+    "auth.forgot": "Forgot password?",
+    "auth.google": "Continue with Google",
+    "auth.or": "or",
+    "auth.remember": "Remember me",
+    "auth.check_email": "Check your email to confirm your account.",
+    "auth.reset_sent": "If the email exists, a password reset link has been sent.",
+    "auth.new_password": "New password",
+    "auth.update_password": "Update password",
+    "status.pending": "Your account is pending review by the academy.",
+    "status.rejected": "Your application was rejected. Contact administration.",
+    "status.suspended": "Your account is currently suspended.",
+    "dash.welcome": "Welcome",
+    "dash.my_halaqa": "My halaqa",
+    "dash.attendance": "Attendance",
+    "dash.evaluations": "Evaluations",
+    "dash.upcoming": "Upcoming sessions",
+    "dash.join": "Join session",
+    "dash.no_halaqa": "You haven't been assigned to a halaqa yet.",
+    "dir.pending_students": "Pending registrations",
+    "dir.approve": "Approve",
+    "dir.reject": "Reject",
+    "dir.users": "User management",
+    "dir.role": "Role",
+    "dir.halaqas": "Halaqa management",
+    "dir.new_halaqa": "New halaqa",
+    "dir.assign_role": "Assign role",
+    "common.save": "Save",
+    "common.cancel": "Cancel",
+    "common.loading": "Loading…",
+    "common.actions": "Actions",
+    "common.name": "Name",
+    "common.level": "Level",
+    "common.teacher": "Teacher",
+    "common.supervisor": "Supervisor",
+    "common.students": "Students",
+    "common.date": "Date",
+    "common.status": "Status",
+    "common.notes": "Notes",
+    "common.present": "Present",
+    "common.absent": "Absent",
+    "common.late": "Late",
+    "common.submit": "Submit",
+    "common.signin_with_google": "Google",
+  },
+};
+
+type Ctx = { lang: Lang; setLang: (l: Lang) => void; t: (k: string) => string; dir: "rtl" | "ltr" };
+const I18nContext = createContext<Ctx | null>(null);
+
+export function I18nProvider({ children }: { children: ReactNode }) {
+  const [lang, setLangState] = useState<Lang>("ar");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = (localStorage.getItem("rawa.lang") as Lang | null) ?? "ar";
+    setLangState(saved);
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  }, [lang]);
+
+  const setLang = (l: Lang) => {
+    setLangState(l);
+    if (typeof window !== "undefined") localStorage.setItem("rawa.lang", l);
+  };
+
+  const t = (k: string) => DICT[lang][k] ?? DICT.ar[k] ?? k;
+  const dir: "rtl" | "ltr" = lang === "ar" ? "rtl" : "ltr";
+
+  return <I18nContext.Provider value={{ lang, setLang, t, dir }}>{children}</I18nContext.Provider>;
+}
+
+export function useI18n() {
+  const ctx = useContext(I18nContext);
+  if (!ctx) throw new Error("useI18n must be used within I18nProvider");
+  return ctx;
+}
+
+export function LangSwitcher() {
+  const { lang, setLang } = useI18n();
+  return (
+    <div className="inline-flex rounded-full border border-border bg-card/60 p-0.5 text-xs">
+      {(["ar", "fr", "en"] as Lang[]).map((l) => (
+        <button
+          key={l}
+          onClick={() => setLang(l)}
+          className={`px-3 py-1 rounded-full transition ${lang === l ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          {l.toUpperCase()}
+        </button>
+      ))}
+    </div>
+  );
+}
