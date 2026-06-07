@@ -4,9 +4,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Rawa — رواء brand fonts */
-@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Aref+Ruqaa:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap");
-
 /*
  * Design system definition.
  *
