@@ -67,7 +67,7 @@ function UsersPanel() {
   });
 
   const setStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+    mutationFn: async ({ id, status }: { id: string; status: "pending_review" | "approved" | "rejected" | "suspended" }) => {
       const { error } = await supabase.from("profiles").update({ status }).eq("id", id);
       if (error) throw error;
     },
@@ -88,7 +88,7 @@ function UsersPanel() {
               <td className="p-3 text-xs">{u.email}</td>
               <td className="p-3 text-xs">{u.gender ?? "—"}</td>
               <td className="p-3">
-                <select value={u.status} onChange={(e) => setStatus.mutate({ id: u.id, status: e.target.value })} className="px-2 py-1 rounded-lg border border-input bg-background text-xs">
+                <select value={u.status} onChange={(e) => setStatus.mutate({ id: u.id, status: e.target.value as any })} className="px-2 py-1 rounded-lg border border-input bg-background text-xs">
                   <option value="pending_review">pending_review</option>
                   <option value="approved">approved</option>
                   <option value="rejected">rejected</option>
