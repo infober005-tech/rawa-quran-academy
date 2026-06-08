@@ -17,7 +17,11 @@ export function UsersPanel() {
       const { data: roles } = await supabase.from("user_roles").select("user_id, role");
       const byUser: Record<string, AppRole[]> = {};
       (roles ?? []).forEach((r: { user_id: string; role: AppRole }) => { (byUser[r.user_id] ??= []).push(r.role); });
-      return (data ?? []).map((u: Record<string, unknown> & { id: string }) => ({ ...u, roles: byUser[u.id] ?? [] }));
+      type Row = { id: string; full_name: string | null; email: string | null; gender: string | null; status: string; roles: AppRole[] };
+      return (data ?? []).map((u): Row => ({
+        id: u.id, full_name: u.full_name, email: u.email, gender: u.gender, status: u.status,
+        roles: byUser[u.id] ?? [],
+      }));
     },
   });
 
@@ -49,12 +53,12 @@ export function UsersPanel() {
         </thead>
         <tbody>
           {users?.map((u) => (
-            <tr key={u.id as string} className="border-t border-border align-top">
-              <td className="p-3 font-semibold text-primary">{(u.full_name as string) || "—"}</td>
-              <td className="p-3 text-xs">{u.email as string}</td>
-              <td className="p-3 text-xs">{(u.gender as string) ?? "—"}</td>
+            <tr key={u.id} className="border-t border-border align-top">
+              <td className="p-3 font-semibold text-primary">{u.full_name || "—"}</td>
+              <td className="p-3 text-xs">{u.email}</td>
+              <td className="p-3 text-xs">{u.gender ?? "—"}</td>
               <td className="p-3">
-                <select value={u.status as string} onChange={(e) => setStatus.mutate({ id: u.id as string, status: e.target.value as "pending_review" | "approved" | "rejected" | "suspended" })} className="px-2 py-1 rounded-lg border border-input bg-background text-xs">
+                <select value={u.status} onChange={(e) => setStatus.mutate({ id: u.id, status: e.target.value as "pending_review" | "approved" | "rejected" | "suspended" })} className="px-2 py-1 rounded-lg border border-input bg-background text-xs">
                   <option value="pending_review">pending_review</option>
                   <option value="approved">approved</option>
                   <option value="rejected">rejected</option>
@@ -62,7 +66,7 @@ export function UsersPanel() {
                 </select>
               </td>
               <td className="p-3">
-                <select value={(u.roles as AppRole[])[0] ?? "student"} onChange={(e) => setRole.mutate({ userId: u.id as string, role: e.target.value as AppRole })} className="px-2 py-1 rounded-lg border border-input bg-background text-xs">
+                <select value={u.roles[0] ?? "student"} onChange={(e) => setRole.mutate({ userId: u.id, role: e.target.value as AppRole })} className="px-2 py-1 rounded-lg border border-input bg-background text-xs">
                   {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
               </td>
