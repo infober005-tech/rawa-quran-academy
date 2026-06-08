@@ -227,6 +227,42 @@ export type Database = {
           },
         ]
       }
+      event_registrations: {
+        Row: {
+          event_id: string
+          id: string
+          registered_at: string
+          user_id: string
+        }
+        Insert: {
+          event_id: string
+          id?: string
+          registered_at?: string
+          user_id: string
+        }
+        Update: {
+          event_id?: string
+          id?: string
+          registered_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_registrations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           category: string | null
@@ -235,9 +271,18 @@ export type Database = {
           created_by: string | null
           date: string
           description: string | null
+          end_time: string | null
+          event_type: string | null
           id: string
+          max_participants: number | null
           meeting_link: string | null
+          meeting_provider: string | null
+          registration_required: boolean
+          speaker: string | null
+          start_time: string | null
+          status: string
           title: string
+          updated_at: string
         }
         Insert: {
           category?: string | null
@@ -246,9 +291,18 @@ export type Database = {
           created_by?: string | null
           date: string
           description?: string | null
+          end_time?: string | null
+          event_type?: string | null
           id?: string
+          max_participants?: number | null
           meeting_link?: string | null
+          meeting_provider?: string | null
+          registration_required?: boolean
+          speaker?: string | null
+          start_time?: string | null
+          status?: string
           title: string
+          updated_at?: string
         }
         Update: {
           category?: string | null
@@ -257,9 +311,18 @@ export type Database = {
           created_by?: string | null
           date?: string
           description?: string | null
+          end_time?: string | null
+          event_type?: string | null
           id?: string
+          max_participants?: number | null
           meeting_link?: string | null
+          meeting_provider?: string | null
+          registration_required?: boolean
+          speaker?: string | null
+          start_time?: string | null
+          status?: string
           title?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -275,12 +338,17 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          end_time: string | null
           gender: Database["public"]["Enums"]["gender_type"]
           id: string
           level: Database["public"]["Enums"]["quran_level"]
+          max_students: number | null
           meeting_link: string | null
+          meeting_provider: string | null
           name: string
           schedule: string | null
+          schedule_days: string[] | null
+          start_time: string | null
           status: Database["public"]["Enums"]["halaqa_status"]
           supervisor_id: string | null
           teacher_id: string | null
@@ -289,12 +357,17 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          end_time?: string | null
           gender: Database["public"]["Enums"]["gender_type"]
           id?: string
           level: Database["public"]["Enums"]["quran_level"]
+          max_students?: number | null
           meeting_link?: string | null
+          meeting_provider?: string | null
           name: string
           schedule?: string | null
+          schedule_days?: string[] | null
+          start_time?: string | null
           status?: Database["public"]["Enums"]["halaqa_status"]
           supervisor_id?: string | null
           teacher_id?: string | null
@@ -303,12 +376,17 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          end_time?: string | null
           gender?: Database["public"]["Enums"]["gender_type"]
           id?: string
           level?: Database["public"]["Enums"]["quran_level"]
+          max_students?: number | null
           meeting_link?: string | null
+          meeting_provider?: string | null
           name?: string
           schedule?: string | null
+          schedule_days?: string[] | null
+          start_time?: string | null
           status?: Database["public"]["Enums"]["halaqa_status"]
           supervisor_id?: string | null
           teacher_id?: string | null
@@ -553,7 +631,7 @@ export type Database = {
         | "director"
       attendance_status: "present" | "absent" | "late"
       gender_type: "male" | "female"
-      halaqa_status: "active" | "archived"
+      halaqa_status: "active" | "archived" | "inactive"
       quran_level: "beginner" | "intermediate" | "advanced"
       student_status: "pending_review" | "approved" | "rejected" | "suspended"
     }
@@ -693,7 +771,7 @@ export const Constants = {
       ],
       attendance_status: ["present", "absent", "late"],
       gender_type: ["male", "female"],
-      halaqa_status: ["active", "archived"],
+      halaqa_status: ["active", "archived", "inactive"],
       quran_level: ["beginner", "intermediate", "advanced"],
       student_status: ["pending_review", "approved", "rejected", "suspended"],
     },
