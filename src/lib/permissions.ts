@@ -83,12 +83,21 @@ const DIRECTOR: Permission[] = [
   "admin.access", "settings.platform",
 ];
 
+const PARENT: Permission[] = [
+  "halaqa.view.assigned",
+  "event.view",
+  "user.view.self",
+  "attendance.view.assigned",
+  "evaluation.view.assigned",
+];
+
 const MATRIX: Record<AppRole, Permission[]> = {
   student: STUDENT,
   teacher: TEACHER,
   halaqa_supervisor: HALAQA_SUPERVISOR,
   general_supervisor: GENERAL_SUPERVISOR,
   director: DIRECTOR,
+  parent: PARENT,
 };
 
 export function rolesCan(roles: AppRole[], perm: Permission): boolean {
