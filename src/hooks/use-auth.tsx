@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { rolesCan, rolesCanAny, type Permission } from "@/lib/permissions";
 
 export type AppRole = "student" | "teacher" | "halaqa_supervisor" | "general_supervisor" | "director";
 export type StudentStatus = "pending_review" | "approved" | "rejected" | "suspended";
@@ -26,6 +27,9 @@ type Ctx = {
   loading: boolean;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
+  can: (perm: Permission) => boolean;
+  canAny: (perms: Permission[]) => boolean;
+  hasRole: (role: AppRole) => boolean;
 };
 
 const AuthContext = createContext<Ctx | null>(null);
@@ -108,6 +112,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refresh: async () => {
       if (user) await loadProfile(user.id);
     },
+    can: (perm) => rolesCan(roles, perm),
+    canAny: (perms) => rolesCanAny(roles, perms),
+    hasRole: (role) => roles.includes(role),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
