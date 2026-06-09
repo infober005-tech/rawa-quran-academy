@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 export function StudentDashboard() {
   const { user, profile } = useAuth();
@@ -33,7 +34,25 @@ export function StudentDashboard() {
     queryKey: ["my-evals", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase.from("evaluations").select("*").eq("student_id", user!.id).order("created_at", { ascending: false }).limit(10);
+      const { data } = await supabase.from("evaluations").select("*").eq("student_id", user!.id).order("created_at", { ascending: true }).limit(20);
+      return data ?? [];
+    },
+  });
+
+  const { data: homework } = useQuery({
+    queryKey: ["my-homework", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.from("assignments").select("*").or(`student_id.eq.${user!.id},halaqa_id.not.is.null`).order("due_date", { ascending: true }).limit(20);
+      return data ?? [];
+    },
+  });
+
+  const { data: upcoming } = useQuery({
+    queryKey: ["my-events", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.from("events").select("*").eq("status", "published").gte("start_at", new Date().toISOString()).order("start_at", { ascending: true }).limit(5);
       return data ?? [];
     },
   });
@@ -43,6 +62,12 @@ export function StudentDashboard() {
   const rate = total ? Math.round((present / total) * 100) : 0;
 
   const halaqa = (assignment as any)?.halaqa;
+  const chartData = (evals ?? []).map((e: any, i: number) => ({
+    name: `#${i + 1}`,
+    tajweed: e.tajweed_score ?? 0,
+    memorization: e.memorization_score ?? 0,
+    fluency: e.fluency_score ?? 0,
+  }));
 
   return (
     <div className="space-y-6">
@@ -71,6 +96,67 @@ export function StudentDashboard() {
         </div>
       ) : (
         <div className="p-10 rounded-2xl bg-card border border-dashed border-border text-center text-muted-foreground">{t("dash.no_halaqa")}</div>
+      )}
+
+      {chartData.length > 0 && (
+        <div className="p-6 rounded-2xl bg-card border border-border shadow-soft">
+          <h2 className="text-xl font-bold text-primary mb-4">📈 Progress</h2>
+          <div style={{ width: "100%", height: 240 }}>
+            <ResponsiveContainer>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis dataKey="name" fontSize={11} />
+                <YAxis domain={[0, 100]} fontSize={11} />
+                <Tooltip />
+                <Line type="monotone" dataKey="tajweed" stroke="#8b5cf6" strokeWidth={2} />
+                <Line type="monotone" dataKey="memorization" stroke="#f59e0b" strokeWidth={2} />
+                <Line type="monotone" dataKey="fluency" stroke="#10b981" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="p-6 rounded-2xl bg-card border border-border shadow-soft">
+          <h2 className="text-xl font-bold text-primary mb-4">📝 Homework</h2>
+          <div className="divide-y divide-border">
+            {homework?.map((h: any) => (
+              <div key={h.id} className="py-2.5">
+                <div className="font-semibold text-sm">{h.title}</div>
+                {h.due_date && <div className="text-xs text-gold">Due: {h.due_date}</div>}
+                {h.description && <div className="text-xs text-muted-foreground mt-1">{h.description}</div>}
+              </div>
+            ))}
+            {(!homework || homework.length === 0) && <div className="py-4 text-center text-muted-foreground text-sm">—</div>}
+          </div>
+        </div>
+        <div className="p-6 rounded-2xl bg-card border border-border shadow-soft">
+          <h2 className="text-xl font-bold text-primary mb-4">📅 {t("dash.upcoming")}</h2>
+          <div className="divide-y divide-border">
+            {upcoming?.map((e: any) => (
+              <div key={e.id} className="py-2.5">
+                <div className="font-semibold text-sm">{e.title}</div>
+                <div className="text-xs text-muted-foreground">{new Date(e.start_at).toLocaleString()}</div>
+              </div>
+            ))}
+            {(!upcoming || upcoming.length === 0) && <div className="py-4 text-center text-muted-foreground text-sm">—</div>}
+          </div>
+        </div>
+      </div>
+
+      {att && att.length > 0 && (
+        <div className="p-6 rounded-2xl bg-card border border-border shadow-soft">
+          <h2 className="text-xl font-bold text-primary mb-4">✅ Attendance History</h2>
+          <div className="grid grid-cols-7 sm:grid-cols-10 gap-1.5">
+            {att.slice(0, 40).map((a: any, i: number) => (
+              <div key={i} className={`aspect-square rounded-md text-[10px] flex flex-col items-center justify-center font-semibold ${a.status === "present" ? "bg-green-500/20 text-green-600" : a.status === "late" ? "bg-amber-500/20 text-amber-600" : "bg-red-500/20 text-red-600"}`} title={`${a.date}: ${a.status}`}>
+                <span>{new Date(a.date).getDate()}</span>
+                <span>{a.status[0].toUpperCase()}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {evals && evals.length > 0 && (

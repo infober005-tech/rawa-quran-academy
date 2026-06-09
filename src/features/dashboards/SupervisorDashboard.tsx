@@ -60,8 +60,12 @@ function AttendanceSheet({ halaqaId }: { halaqaId: string }) {
   });
 
   const mark = useMutation({
-    mutationFn: async ({ studentId, status }: { studentId: string; status: "present" | "absent" | "late" }) => {
-      const { error } = await supabase.from("attendance").upsert({ student_id: studentId, halaqa_id: halaqaId, date, status, recorded_by: user!.id }, { onConflict: "student_id,halaqa_id,date" });
+    mutationFn: async ({ studentId, status, notes }: { studentId: string; status?: "present" | "absent" | "late"; notes?: string }) => {
+      const existingRow = existing?.find((a) => a.student_id === studentId);
+      const payload: any = { student_id: studentId, halaqa_id: halaqaId, date, recorded_by: user!.id };
+      payload.status = status ?? existingRow?.status ?? "present";
+      if (notes !== undefined) payload.notes = notes;
+      const { error } = await supabase.from("attendance").upsert(payload, { onConflict: "student_id,halaqa_id,date" });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["sup-att", halaqaId, date] }),
@@ -69,6 +73,7 @@ function AttendanceSheet({ halaqaId }: { halaqaId: string }) {
   });
 
   const statusOf = (id: string) => existing?.find((a) => a.student_id === id)?.status as string | undefined;
+  const noteOf = (id: string) => existing?.find((a) => a.student_id === id)?.notes as string | undefined;
 
   return (
     <div className="p-6 rounded-2xl bg-card border border-border shadow-soft">
@@ -76,24 +81,42 @@ function AttendanceSheet({ halaqaId }: { halaqaId: string }) {
         <h2 className="font-bold text-primary">{t("dash.attendance")}</h2>
         <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="px-3 py-1.5 rounded-xl border border-input bg-background text-sm" />
       </div>
-      <div className="divide-y divide-border">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/40 text-xs text-muted-foreground">
+            <tr><th className="p-2 text-start">{t("common.name")}</th><th className="p-2 text-start">{t("common.status")}</th><th className="p-2 text-start">{t("common.notes")}</th></tr>
+          </thead>
+          <tbody>
         {students?.map((s: any) => {
           const cur = statusOf(s.id);
           return (
-            <div key={s.id} className="py-3 flex items-center justify-between gap-3">
-              <div className="font-medium">{s.full_name}</div>
-              <div className="flex gap-1">
+            <tr key={s.id} className="border-t border-border align-top">
+              <td className="p-2 font-medium">{s.full_name}</td>
+              <td className="p-2"><div className="flex gap-1">
                 {(["present", "late", "absent"] as const).map((st) => (
                   <button key={st} onClick={() => mark.mutate({ studentId: s.id, status: st })} className={`px-3 py-1 rounded-full text-xs font-semibold transition ${cur === st ? (st === "present" ? "bg-green-500 text-white" : st === "late" ? "bg-amber-500 text-white" : "bg-red-500 text-white") : "bg-muted text-muted-foreground hover:bg-muted/70"}`}>
                     {t(`common.${st}`)}
                   </button>
                 ))}
-              </div>
-            </div>
+              </div></td>
+              <td className="p-2"><NoteInput initial={noteOf(s.id) ?? ""} onSave={(notes) => mark.mutate({ studentId: s.id, notes })} /></td>
+            </tr>
           );
         })}
-        {(!students || students.length === 0) && <div className="py-6 text-center text-muted-foreground">—</div>}
+        {(!students || students.length === 0) && <tr><td colSpan={3} className="py-6 text-center text-muted-foreground">—</td></tr>}
+          </tbody>
+        </table>
       </div>
+    </div>
+  );
+}
+
+function NoteInput({ initial, onSave }: { initial: string; onSave: (v: string) => void }) {
+  const [v, setV] = useState(initial);
+  return (
+    <div className="flex gap-1">
+      <input value={v} onChange={(e) => setV(e.target.value)} placeholder="—" className="px-2 py-1 rounded-lg border border-input bg-background text-xs w-40" />
+      {v !== initial && <button onClick={() => onSave(v)} className="px-2 py-1 rounded-lg bg-primary text-primary-foreground text-xs">✓</button>}
     </div>
   );
 }
