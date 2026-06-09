@@ -579,6 +579,58 @@ export type Database = {
           },
         ]
       }
+      supervisor_notes: {
+        Row: {
+          author_id: string
+          category: Database["public"]["Enums"]["supervisor_note_category"]
+          created_at: string
+          halaqa_id: string
+          id: string
+          note: string
+          student_id: string
+        }
+        Insert: {
+          author_id: string
+          category?: Database["public"]["Enums"]["supervisor_note_category"]
+          created_at?: string
+          halaqa_id: string
+          id?: string
+          note: string
+          student_id: string
+        }
+        Update: {
+          author_id?: string
+          category?: Database["public"]["Enums"]["supervisor_note_category"]
+          created_at?: string
+          halaqa_id?: string
+          id?: string
+          note?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supervisor_notes_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supervisor_notes_halaqa_id_fkey"
+            columns: ["halaqa_id"]
+            isOneToOne: false
+            referencedRelation: "halaqas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supervisor_notes_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -634,6 +686,11 @@ export type Database = {
       halaqa_status: "active" | "archived" | "inactive"
       quran_level: "beginner" | "intermediate" | "advanced"
       student_status: "pending_review" | "approved" | "rejected" | "suspended"
+      supervisor_note_category:
+        | "behavior"
+        | "attendance"
+        | "technical"
+        | "follow_up"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -774,6 +831,12 @@ export const Constants = {
       halaqa_status: ["active", "archived", "inactive"],
       quran_level: ["beginner", "intermediate", "advanced"],
       student_status: ["pending_review", "approved", "rejected", "suspended"],
+      supervisor_note_category: [
+        "behavior",
+        "attendance",
+        "technical",
+        "follow_up",
+      ],
     },
   },
 } as const
