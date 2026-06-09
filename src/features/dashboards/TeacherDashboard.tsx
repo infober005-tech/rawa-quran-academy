@@ -20,6 +20,8 @@ export function TeacherDashboard() {
   });
 
   const [openId, setOpenId] = useState<string | null>(null);
+  const [homeworkId, setHomeworkId] = useState<string | null>(null);
+  const [studentsId, setStudentsId] = useState<string | null>(null);
 
   return (
     <div className="space-y-6">
@@ -35,9 +37,11 @@ export function TeacherDashboard() {
               <span className={`text-[10px] px-2 py-0.5 rounded-full ${h.status === "active" ? "bg-gold/20 text-gold" : "bg-muted text-muted-foreground"}`}>{h.status}</span>
             </div>
             <div className="text-xs text-muted-foreground mt-3">{h.schedule}</div>
-            <button onClick={() => setOpenId(h.id)} className="mt-4 w-full px-4 py-2 rounded-xl bg-gradient-royal text-primary-foreground text-sm font-semibold">
-              {t("dash.evaluations")}
-            </button>
+            <div className="mt-4 grid grid-cols-3 gap-1.5">
+              <button onClick={() => setStudentsId(h.id)} className="px-2 py-2 rounded-xl bg-muted text-foreground text-xs font-semibold hover:bg-muted/70">👥 Students</button>
+              <button onClick={() => setOpenId(h.id)} className="px-2 py-2 rounded-xl bg-gradient-royal text-primary-foreground text-xs font-semibold">⭐ Evaluate</button>
+              <button onClick={() => setHomeworkId(h.id)} className="px-2 py-2 rounded-xl bg-gold/20 text-gold text-xs font-semibold hover:bg-gold/30">📝 Homework</button>
+            </div>
           </div>
         ))}
         {(!halaqas || halaqas.length === 0) && (
@@ -46,7 +50,101 @@ export function TeacherDashboard() {
       </div>
 
       {openId && <EvaluateHalaqa halaqaId={openId} onClose={() => { setOpenId(null); qc.invalidateQueries(); }} />}
+      {studentsId && <StudentsModal halaqaId={studentsId} onClose={() => setStudentsId(null)} />}
+      {homeworkId && <HomeworkModal halaqaId={homeworkId} onClose={() => { setHomeworkId(null); qc.invalidateQueries(); }} />}
     </div>
+  );
+}
+
+function ModalShell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-card rounded-3xl border border-border max-w-3xl w-full max-h-[85vh] overflow-y-auto shadow-glow" onClick={(e) => e.stopPropagation()}>
+        <div className="p-6 border-b border-border flex justify-between items-center">
+          <h2 className="font-bold text-primary">{title}</h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">✕</button>
+        </div>
+        <div className="p-6 space-y-4">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function StudentsModal({ halaqaId, onClose }: { halaqaId: string; onClose: () => void }) {
+  const { data: students } = useQuery({
+    queryKey: ["t-students", halaqaId],
+    queryFn: async () => {
+      const { data } = await supabase.from("student_halaqas").select("student:profiles(id, full_name, email, phone, gender, age)").eq("halaqa_id", halaqaId);
+      return (data ?? []).map((r: any) => r.student);
+    },
+  });
+  return (
+    <ModalShell title="Students" onClose={onClose}>
+      <table className="w-full text-sm">
+        <thead className="bg-muted/40 text-xs text-muted-foreground"><tr><th className="p-2 text-start">Name</th><th className="p-2 text-start">Email</th><th className="p-2 text-start">Age</th><th className="p-2 text-start">Phone</th></tr></thead>
+        <tbody>
+          {students?.map((s: any) => (
+            <tr key={s.id} className="border-t border-border"><td className="p-2 font-semibold">{s.full_name}</td><td className="p-2 text-xs">{s.email}</td><td className="p-2">{s.age ?? "—"}</td><td className="p-2 text-xs">{s.phone ?? "—"}</td></tr>
+          ))}
+          {(!students || students.length === 0) && <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">—</td></tr>}
+        </tbody>
+      </table>
+    </ModalShell>
+  );
+}
+
+function HomeworkModal({ halaqaId, onClose }: { halaqaId: string; onClose: () => void }) {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const [form, setForm] = useState({ title: "", description: "", due_date: "" });
+
+  const { data: list } = useQuery({
+    queryKey: ["t-homework", halaqaId],
+    queryFn: async () => {
+      const { data } = await supabase.from("assignments").select("*").eq("halaqa_id", halaqaId).order("created_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+
+  const create = useMutation({
+    mutationFn: async () => {
+      if (!form.title.trim()) throw new Error("Title required");
+      const { error } = await supabase.from("assignments").insert({ halaqa_id: halaqaId, teacher_id: user!.id, title: form.title, description: form.description || null, due_date: form.due_date || null });
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("✓"); setForm({ title: "", description: "", due_date: "" }); qc.invalidateQueries({ queryKey: ["t-homework", halaqaId] }); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const del = useMutation({
+    mutationFn: async (id: string) => { const { error } = await supabase.from("assignments").delete().eq("id", id); if (error) throw error; },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["t-homework", halaqaId] }),
+  });
+
+  return (
+    <ModalShell title="Homework" onClose={onClose}>
+      <div className="p-4 rounded-2xl bg-muted/40 border border-border space-y-2">
+        <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Title" className="w-full px-3 py-2 rounded-xl border border-input bg-background text-sm" />
+        <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description" rows={2} className="w-full px-3 py-2 rounded-xl border border-input bg-background text-sm" />
+        <div className="flex gap-2">
+          <input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} className="px-3 py-2 rounded-xl border border-input bg-background text-sm" />
+          <button onClick={() => create.mutate()} disabled={create.isPending} className="px-4 py-2 rounded-full bg-gradient-royal text-primary-foreground text-sm font-semibold">+ Add</button>
+        </div>
+      </div>
+      <div className="divide-y divide-border">
+        {list?.map((h: any) => (
+          <div key={h.id} className="py-3 flex items-start justify-between gap-3">
+            <div>
+              <div className="font-semibold text-primary">{h.title}</div>
+              {h.description && <div className="text-xs text-muted-foreground mt-1">{h.description}</div>}
+              {h.due_date && <div className="text-xs text-gold mt-1">Due: {h.due_date}</div>}
+            </div>
+            <button onClick={() => del.mutate(h.id)} className="text-xs text-red-500 hover:underline">Delete</button>
+          </div>
+        ))}
+        {(!list || list.length === 0) && <div className="py-6 text-center text-muted-foreground text-sm">No homework yet</div>}
+      </div>
+    </ModalShell>
   );
 }
 
