@@ -4,7 +4,7 @@ import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import type { AppRole } from "@/hooks/use-auth";
 
-const ROLES: AppRole[] = ["student", "teacher", "halaqa_supervisor", "general_supervisor", "director"];
+const ROLES: AppRole[] = ["student", "teacher", "halaqa_supervisor", "general_supervisor", "director", "parent"];
 
 export function UsersPanel() {
   const { t } = useI18n();
