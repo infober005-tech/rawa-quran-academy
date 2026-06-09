@@ -5,7 +5,7 @@ import { useI18n, LangSwitcher } from "@/lib/i18n";
 import type { ReactNode } from "react";
 
 export function DashboardShell({ children }: { children: ReactNode }) {
-  const { profile, primaryRole, signOut } = useAuth();
+  const { profile, primaryRole, signOut, can } = useAuth();
   const { t, dir } = useI18n();
   const navigate = useNavigate();
   const { location } = useRouterState();
@@ -17,7 +17,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
     { to: "/notifications", label: t("nav.notifications"), icon: "🔔" },
     { to: "/settings", label: t("nav.settings"), icon: "⚙️" },
   ];
-  if (primaryRole === "director") nav.push({ to: "/admin", label: t("nav.admin"), icon: "🛡️" });
+  if (can("admin.access")) nav.push({ to: "/admin", label: t("nav.admin"), icon: "🛡️" });
 
   const handleSignOut = async () => {
     await signOut();
