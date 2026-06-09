@@ -15,16 +15,16 @@ export const Route = createFileRoute("/_authenticated/admin")({
 type Tab = "users" | "halaqas" | "events" | "calendar";
 
 function AdminPage() {
-  const { primaryRole, loading } = useAuth();
+  const { can, loading } = useAuth();
   const { t } = useI18n();
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("users");
 
   useEffect(() => {
-    if (!loading && primaryRole !== "director") void navigate({ to: "/dashboard" });
-  }, [loading, primaryRole, navigate]);
+    if (!loading && !can("admin.access")) void navigate({ to: "/dashboard" });
+  }, [loading, can, navigate]);
 
-  if (primaryRole !== "director") return null;
+  if (!can("admin.access")) return null;
 
   const tabs: { id: Tab; label: string }[] = [
     { id: "users", label: t("dir.users") },
