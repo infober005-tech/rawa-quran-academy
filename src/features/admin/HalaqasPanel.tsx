@@ -197,9 +197,19 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
       <input type="time" placeholder="Start" value={form.start_time ?? ""} onChange={(e) => setForm((f) => ({ ...f, start_time: e.target.value }))} className={input} />
       <input type="time" placeholder="End" value={form.end_time ?? ""} onChange={(e) => setForm((f) => ({ ...f, end_time: e.target.value }))} className={input} />
       <select value={form.meeting_provider ?? "google_meet"} onChange={(e) => setForm((f) => ({ ...f, meeting_provider: e.target.value }))} className={input}>
-        <option value="google_meet">Google Meet</option><option value="zoom">Zoom</option>
+        <option value="google_meet">Google Meet</option>
+        <option value="zoom">Zoom (coming soon)</option>
+        <option value="jitsi">Jitsi</option>
+        <option value="other">Other</option>
       </select>
-      <input placeholder="Meeting link" value={form.meeting_link ?? ""} onChange={(e) => setForm((f) => ({ ...f, meeting_link: e.target.value }))} className={input + " md:col-span-2"} />
+      <div className="md:col-span-2 flex gap-2">
+        <input placeholder="Meeting URL (e.g. https://meet.google.com/abc-defg-hij)" value={form.meeting_link ?? ""} onChange={(e) => setForm((f) => ({ ...f, meeting_link: e.target.value }))} className={input + " flex-1"} />
+        {form.meeting_provider === "google_meet" && (
+          <a href="https://meet.google.com/new" target="_blank" rel="noreferrer" className="px-3 py-2 rounded-xl bg-muted text-xs font-semibold whitespace-nowrap flex items-center">
+            + New Meet
+          </a>
+        )}
+      </div>
       <textarea placeholder={t("common.description")} value={form.description ?? ""} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} className={input + " md:col-span-3"} rows={2} />
       <div className="md:col-span-3 flex flex-wrap gap-2">
         {DAYS.map((d) => (
