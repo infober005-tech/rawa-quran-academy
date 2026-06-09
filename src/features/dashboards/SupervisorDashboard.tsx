@@ -22,7 +22,6 @@ export function SupervisorDashboard() {
     },
   });
 
-  const today = new Date().toISOString().slice(0, 10);
   const dow = ["sun","mon","tue","wed","thu","fri","sat"][new Date().getDay()];
   const todays = halaqas?.filter((h: any) => Array.isArray(h.schedule_days) ? h.schedule_days.some((d: string) => d.toLowerCase().startsWith(dow)) : true) ?? [];
 
