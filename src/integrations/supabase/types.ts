@@ -579,6 +579,53 @@ export type Database = {
           },
         ]
       }
+      students: {
+        Row: {
+          created_at: string
+          emergency_contact: string | null
+          enrollment_date: string
+          guardian_name: string | null
+          guardian_phone: string | null
+          id: string
+          notes: string | null
+          profile_id: string
+          student_code: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          emergency_contact?: string | null
+          enrollment_date?: string
+          guardian_name?: string | null
+          guardian_phone?: string | null
+          id?: string
+          notes?: string | null
+          profile_id: string
+          student_code?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          emergency_contact?: string | null
+          enrollment_date?: string
+          guardian_name?: string | null
+          guardian_phone?: string | null
+          id?: string
+          notes?: string | null
+          profile_id?: string
+          student_code?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "students_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supervisor_notes: {
         Row: {
           author_id: string
