@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 export function SupervisorDashboard() {
@@ -265,10 +265,11 @@ function SessionModal({ halaqaId, onClose }: { halaqaId: string; onClose: () => 
   const [queue, setQueue] = useState<string[]>([]);
   const [participated, setParticipated] = useState<Set<string>>(new Set());
 
-  // initialize order
-  if (students && order.length === 0 && students.length > 0) {
-    setOrder(students.map((s: any) => s.id));
-  }
+  useEffect(() => {
+    if (students && order.length === 0 && students.length > 0) {
+      setOrder(students.map((s: any) => s.id));
+    }
+  }, [students, order.length]);
 
   const move = (id: string, dir: -1 | 1) => {
     setOrder((o) => {
