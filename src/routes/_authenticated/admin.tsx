@@ -7,12 +7,13 @@ import { UsersPanel } from "@/features/admin/UsersPanel";
 import { HalaqasPanel } from "@/features/admin/HalaqasPanel";
 import { EventsPanel } from "@/features/admin/EventsPanel";
 import { CalendarPanel } from "@/features/admin/CalendarPanel";
+import { ParentLinksPanel } from "@/features/admin/ParentLinksPanel";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "users" | "halaqas" | "events" | "calendar";
+type Tab = "users" | "halaqas" | "events" | "calendar" | "parents";
 
 function AdminPage() {
   const { can, loading } = useAuth();
@@ -31,6 +32,7 @@ function AdminPage() {
     { id: "halaqas", label: t("dir.halaqas") },
     { id: "events", label: t("dir.events") },
     { id: "calendar", label: t("dir.calendar") },
+    { id: "parents", label: "Parent Links" },
   ];
 
   return (
@@ -50,6 +52,7 @@ function AdminPage() {
       {tab === "halaqas" && <HalaqasPanel />}
       {tab === "events" && <EventsPanel />}
       {tab === "calendar" && <CalendarPanel />}
+      {tab === "parents" && <ParentLinksPanel />}
     </DashboardShell>
   );
 }
