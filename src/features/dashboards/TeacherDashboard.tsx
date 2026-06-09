@@ -23,6 +23,36 @@ export function TeacherDashboard() {
   const [homeworkId, setHomeworkId] = useState<string | null>(null);
   const [studentsId, setStudentsId] = useState<string | null>(null);
 
+  const startSession = useMutation({
+    mutationFn: async (h: { id: string; meeting_link: string | null }) => {
+      const { error } = await supabase.from("halaqas").update({
+        live_session_active: true,
+        live_session_started_at: new Date().toISOString(),
+        live_session_started_by: user!.id,
+      }).eq("id", h.id);
+      if (error) throw error;
+      await supabase.from("halaqa_sessions").insert({
+        halaqa_id: h.id, started_at: new Date().toISOString(), started_by: user!.id,
+      });
+      if (h.meeting_link) window.open(h.meeting_link, "_blank", "noopener");
+    },
+    onSuccess: () => { toast.success("Live session started"); qc.invalidateQueries({ queryKey: ["teacher-halaqas"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const endSession = useMutation({
+    mutationFn: async (halaqaId: string) => {
+      const { error } = await supabase.from("halaqas").update({ live_session_active: false }).eq("id", halaqaId);
+      if (error) throw error;
+      const { data: open } = await supabase.from("halaqa_sessions")
+        .select("id").eq("halaqa_id", halaqaId).is("ended_at", null)
+        .order("started_at", { ascending: false }).limit(1).maybeSingle();
+      if (open) await supabase.from("halaqa_sessions").update({ ended_at: new Date().toISOString() }).eq("id", open.id);
+    },
+    onSuccess: () => { toast.success("Session ended"); qc.invalidateQueries({ queryKey: ["teacher-halaqas"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-primary">{t("common.teacher")} · {t("nav.dashboard")}</h1>
@@ -37,6 +67,23 @@ export function TeacherDashboard() {
               <span className={`text-[10px] px-2 py-0.5 rounded-full ${h.status === "active" ? "bg-gold/20 text-gold" : "bg-muted text-muted-foreground"}`}>{h.status}</span>
             </div>
             <div className="text-xs text-muted-foreground mt-3">{h.schedule}</div>
+            <div className="mt-3">
+              {h.live_session_active ? (
+                <div className="flex gap-2">
+                  <a href={h.meeting_link ?? "#"} target="_blank" rel="noreferrer" className="flex-1 px-3 py-2 rounded-xl bg-green-500/20 text-green-600 text-xs font-bold text-center animate-pulse">● LIVE — Open</a>
+                  <button onClick={() => endSession.mutate(h.id)} className="px-3 py-2 rounded-xl bg-destructive/10 text-destructive text-xs font-semibold">End</button>
+                </div>
+              ) : (
+                <button
+                  disabled={!h.meeting_link || startSession.isPending}
+                  onClick={() => startSession.mutate({ id: h.id, meeting_link: h.meeting_link })}
+                  className="w-full px-3 py-2 rounded-xl bg-gradient-royal text-primary-foreground text-xs font-semibold disabled:opacity-50"
+                  title={!h.meeting_link ? "Set a meeting link first (Director)" : ""}
+                >
+                  ▶ Start live session
+                </button>
+              )}
+            </div>
             <div className="mt-4 grid grid-cols-3 gap-1.5">
               <button onClick={() => setStudentsId(h.id)} className="px-2 py-2 rounded-xl bg-muted text-foreground text-xs font-semibold hover:bg-muted/70">👥 Students</button>
               <button onClick={() => setOpenId(h.id)} className="px-2 py-2 rounded-xl bg-gradient-royal text-primary-foreground text-xs font-semibold">⭐ Evaluate</button>
