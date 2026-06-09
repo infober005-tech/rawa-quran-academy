@@ -334,6 +334,60 @@ export type Database = {
           },
         ]
       }
+      halaqa_sessions: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          halaqa_id: string
+          id: string
+          meeting_url_override: string | null
+          notes: string | null
+          scheduled_at: string | null
+          started_at: string | null
+          started_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          halaqa_id: string
+          id?: string
+          meeting_url_override?: string | null
+          notes?: string | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          started_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          halaqa_id?: string
+          id?: string
+          meeting_url_override?: string | null
+          notes?: string | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          started_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "halaqa_sessions_halaqa_id_fkey"
+            columns: ["halaqa_id"]
+            isOneToOne: false
+            referencedRelation: "halaqas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "halaqa_sessions_started_by_fkey"
+            columns: ["started_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       halaqas: {
         Row: {
           created_at: string
@@ -342,8 +396,13 @@ export type Database = {
           gender: Database["public"]["Enums"]["gender_type"]
           id: string
           level: Database["public"]["Enums"]["quran_level"]
+          live_session_active: boolean
+          live_session_started_at: string | null
+          live_session_started_by: string | null
           max_students: number | null
+          meeting_id: string | null
           meeting_link: string | null
+          meeting_passcode: string | null
           meeting_provider: string | null
           name: string
           schedule: string | null
@@ -361,8 +420,13 @@ export type Database = {
           gender: Database["public"]["Enums"]["gender_type"]
           id?: string
           level: Database["public"]["Enums"]["quran_level"]
+          live_session_active?: boolean
+          live_session_started_at?: string | null
+          live_session_started_by?: string | null
           max_students?: number | null
+          meeting_id?: string | null
           meeting_link?: string | null
+          meeting_passcode?: string | null
           meeting_provider?: string | null
           name: string
           schedule?: string | null
@@ -380,8 +444,13 @@ export type Database = {
           gender?: Database["public"]["Enums"]["gender_type"]
           id?: string
           level?: Database["public"]["Enums"]["quran_level"]
+          live_session_active?: boolean
+          live_session_started_at?: string | null
+          live_session_started_by?: string | null
           max_students?: number | null
+          meeting_id?: string | null
           meeting_link?: string | null
+          meeting_passcode?: string | null
           meeting_provider?: string | null
           name?: string
           schedule?: string | null
@@ -393,6 +462,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "halaqas_live_session_started_by_fkey"
+            columns: ["live_session_started_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "halaqas_supervisor_id_fkey"
             columns: ["supervisor_id"]
@@ -715,6 +791,10 @@ export type Database = {
         Args: { _halaqa_id: string; _user_id: string }
         Returns: boolean
       }
+      is_parent_of: {
+        Args: { _parent_id: string; _student_id: string }
+        Returns: boolean
+      }
       primary_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -728,6 +808,7 @@ export type Database = {
         | "halaqa_supervisor"
         | "general_supervisor"
         | "director"
+        | "parent"
       attendance_status: "present" | "absent" | "late"
       gender_type: "male" | "female"
       halaqa_status: "active" | "archived" | "inactive"
@@ -872,6 +953,7 @@ export const Constants = {
         "halaqa_supervisor",
         "general_supervisor",
         "director",
+        "parent",
       ],
       attendance_status: ["present", "absent", "late"],
       gender_type: ["male", "female"],

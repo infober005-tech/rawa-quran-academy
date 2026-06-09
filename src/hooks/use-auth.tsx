@@ -3,7 +3,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { rolesCan, rolesCanAny, type Permission } from "@/lib/permissions";
 
-export type AppRole = "student" | "teacher" | "halaqa_supervisor" | "general_supervisor" | "director";
+export type AppRole = "student" | "teacher" | "halaqa_supervisor" | "general_supervisor" | "director" | "parent";
 export type StudentStatus = "pending_review" | "approved" | "rejected" | "suspended";
 
 export interface Profile {
@@ -39,7 +39,8 @@ const ROLE_RANK: Record<AppRole, number> = {
   general_supervisor: 2,
   halaqa_supervisor: 3,
   teacher: 4,
-  student: 5,
+  parent: 5,
+  student: 6,
 };
 
 function pickPrimary(roles: AppRole[]): AppRole | null {

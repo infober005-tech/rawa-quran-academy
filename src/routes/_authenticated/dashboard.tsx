@@ -7,6 +7,7 @@ import { TeacherDashboard } from "@/features/dashboards/TeacherDashboard";
 import { SupervisorDashboard } from "@/features/dashboards/SupervisorDashboard";
 import { GeneralSupervisorDashboard } from "@/features/dashboards/GeneralSupervisorDashboard";
 import { DirectorDashboard } from "@/features/dashboards/DirectorDashboard";
+import { ParentDashboard } from "@/features/dashboards/ParentDashboard";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardRouter,
@@ -40,6 +41,7 @@ function DashboardRouter() {
       {primaryRole === "halaqa_supervisor" && <SupervisorDashboard />}
       {primaryRole === "teacher" && <TeacherDashboard />}
       {primaryRole === "student" && <StudentDashboard />}
+      {primaryRole === "parent" && <ParentDashboard />}
     </DashboardShell>
   );
 }

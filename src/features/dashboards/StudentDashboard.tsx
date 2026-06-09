@@ -14,7 +14,7 @@ export function StudentDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("student_halaqas")
-        .select("halaqa:halaqas(id, name, level, schedule, meeting_link, teacher:profiles!halaqas_teacher_id_fkey(full_name), supervisor:profiles!halaqas_supervisor_id_fkey(full_name))")
+        .select("halaqa:halaqas(id, name, level, schedule, meeting_link, live_session_active, meeting_provider, teacher:profiles!halaqas_teacher_id_fkey(full_name), supervisor:profiles!halaqas_supervisor_id_fkey(full_name))")
         .eq("student_id", user!.id)
         .maybeSingle();
       return data;
@@ -89,9 +89,23 @@ export function StudentDashboard() {
             <Info label={t("auth.schedule")} value={halaqa.schedule ?? "—"} />
           </div>
           {halaqa.meeting_link && (
-            <a href={halaqa.meeting_link} target="_blank" rel="noreferrer" className="inline-block mt-5 px-6 py-2.5 rounded-full bg-gradient-royal text-primary-foreground font-semibold shadow-glow">
-              ▶ {t("dash.join")}
-            </a>
+            <div className="mt-5 flex items-center gap-3 flex-wrap">
+              {halaqa.live_session_active && (
+                <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-600 text-xs font-bold animate-pulse">● LIVE NOW</span>
+              )}
+              <a
+                href={halaqa.meeting_link}
+                target="_blank"
+                rel="noreferrer"
+                className={`inline-block px-6 py-2.5 rounded-full font-semibold shadow-glow ${
+                  halaqa.live_session_active
+                    ? "bg-green-600 text-white"
+                    : "bg-gradient-royal text-primary-foreground"
+                }`}
+              >
+                ▶ {halaqa.live_session_active ? "Join live session" : t("dash.join")}
+              </a>
+            </div>
           )}
         </div>
       ) : (
