@@ -31,9 +31,15 @@ export function PaymentSettingsPanel() {
     mutationFn: async () => {
       if (!settings) return;
       const payload = {
-        ...form,
-        ccp_key: form.ccp_key || null,
-        rip_number: form.rip_number || null,
+        subscription_name_ar: String(form.subscription_name_ar ?? ""),
+        description_ar: String(form.description_ar ?? ""),
+        price_dzd: Number(form.price_dzd ?? 0),
+        currency: String(form.currency ?? "DZD"),
+        ccp_number: String(form.ccp_number ?? ""),
+        ccp_key: form.ccp_key ? String(form.ccp_key) : null,
+        account_holder: String(form.account_holder ?? ""),
+        rip_number: form.rip_number ? String(form.rip_number) : null,
+        subscription_duration_days: Number(form.subscription_duration_days ?? 30),
         benefits_ar: benefits.split("\n").map((s) => s.trim()).filter(Boolean),
       };
       const { error } = await supabase.from("payment_settings").update(payload).eq("id", settings.id);
