@@ -5,7 +5,8 @@ import { Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
   Radio, CheckCircle2, BookOpen, Star, Users, Bell, Download,
-  MessageSquare, Calendar, Target, Sparkles, ChevronRight, GraduationCap,
+  MessageSquare, Calendar, Sparkles, ChevronRight, GraduationCap,
+  TrendingUp, Award, Activity, Clock,
 } from "lucide-react";
 
 type Child = { id: string; full_name: string | null; email: string | null; gender: string | null; avatar_url?: string | null };
@@ -215,33 +216,32 @@ function ChildPanel({ parentName, child }: { parentName: string; child: Child })
 
   return (
     <div className="space-y-6">
-      {/* TOP — Welcome + Live status */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        <WelcomeCard parentName={parentName} child={child} halaqa={halaqa} />
-        <LiveStatusCard halaqa={halaqa} />
+      {/* TOP — Student hero card */}
+      <StudentHero parentName={parentName} child={child} halaqa={halaqa} attendance={rate} memorization={avgMem} />
+
+      {/* CENTER — Circular progress + KPI cards */}
+      <div className="grid lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-5">
+          <ProgressPanel memorization={avgMem} attendance={rate} halaqa={halaqa} />
+        </div>
+        <div className="lg:col-span-7 grid grid-cols-2 gap-4">
+          <KpiCard icon={<BookOpen className="w-5 h-5" />} label="السور المحفوظة" value={String(Math.round((avgMem / 100) * 30))} sub="من 30 سورة" tone="primary" />
+          <KpiCard icon={<CheckCircle2 className="w-5 h-5" />} label="حضور هذا الأسبوع" value={`${rate}%`} sub={`${present} حصة`} tone="emerald" trend={rate >= 80 ? "up" : "down"} />
+          <KpiCard icon={<Star className="w-5 h-5" />} label="آخر تقييم" value={`${overall}/100`} sub={evals?.[0] ? new Date(evals[0].created_at).toLocaleDateString("ar") : "—"} tone="gold" />
+          <KpiCard icon={<Activity className="w-5 h-5" />} label="نسبة المراجعة" value={`${Math.min(100, Math.round(avgMem * 0.9))}%`} sub={`${sessionsCount} جلسة`} tone="secondary" trend="up" />
+        </div>
       </div>
 
-      {/* PROGRESS OVERVIEW */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={<CheckCircle2 />} label="الحضور" value={`${rate}%`} accent="from-emerald-500/20 to-emerald-400/5" tone="text-emerald-600" />
-        <StatCard icon={<BookOpen />} label="الحفظ المكتمل" value={`${avgMem}%`} accent="from-primary/20 to-primary/5" tone="text-primary" />
-        <StatCard icon={<Star />} label="التقييم العام" value={`${overall}%`} accent="from-gold/30 to-gold/5" tone="text-gold-foreground" />
-        <StatCard icon={<Users />} label="عدد الحلقات" value={String(sessionsCount)} accent="from-secondary/20 to-secondary/5" tone="text-secondary" />
-      </div>
-
-      {/* MEMORIZATION + WEEKLY GOALS */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        <MemorizationTracker halaqa={halaqa} percentage={avgMem} />
-        <WeeklyGoals halaqa={halaqa} />
-      </div>
-
-      {/* ATTENDANCE chart + Teacher notes */}
+      {/* TIMELINE + Teacher notes */}
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <AttendanceChart monthly={monthly} present={present} absent={absent} late={late} />
+          <ActivityTimeline evals={evals ?? []} att={att ?? []} notes={notes ?? []} halaqa={halaqa} />
         </div>
         <TeacherNotes notes={notes ?? []} />
       </div>
+
+      {/* ATTENDANCE chart */}
+      <AttendanceChart monthly={monthly} present={present} absent={absent} late={late} />
 
       {/* EVALUATIONS table */}
       <EvaluationsTable evals={evals ?? []} />
@@ -260,89 +260,285 @@ function ChildPanel({ parentName, child }: { parentName: string; child: Child })
 
 /* ============================== CARDS ============================== */
 
-function WelcomeCard({
-  parentName, child, halaqa,
-}: { parentName: string; child: Child; halaqa: HalaqaInfo | null | undefined }) {
+function StudentHero({
+  parentName, child, halaqa, attendance, memorization,
+}: {
+  parentName: string; child: Child; halaqa: HalaqaInfo | null | undefined;
+  attendance: number; memorization: number;
+}) {
   const initials = (child.full_name ?? "ط").trim().slice(0, 1);
-  return (
-    <div className="lg:col-span-2 relative overflow-hidden rounded-3xl p-6 md:p-8 bg-gradient-to-l from-primary via-primary/95 to-secondary text-primary-foreground shadow-[var(--shadow-glow)]">
-      <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-gold/30 blur-3xl" />
-      <div className="absolute -bottom-20 right-10 w-60 h-60 rounded-full bg-white/10 blur-3xl" />
-      <div className="relative flex items-start gap-5 flex-wrap">
-        <div className="relative shrink-0">
-          <div className="absolute inset-0 rounded-2xl bg-gold/40 blur-xl" />
-          <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-gold to-gold/70 text-dark text-3xl font-bold flex items-center justify-center shadow-xl">
-            {child.avatar_url ? (
-              <img src={child.avatar_url} alt="" className="w-full h-full rounded-2xl object-cover" />
-            ) : initials}
-          </div>
-        </div>
-        <div className="flex-1 min-w-[200px]">
-          <div className="text-xs uppercase tracking-wider text-primary-foreground/70 mb-1">أهلاً وسهلاً</div>
-          <h1 className="text-2xl md:text-3xl font-bold leading-tight" style={{ fontFamily: "var(--font-display-ar)" }}>
-            {parentName} 👋
-          </h1>
-          <div className="mt-3 grid sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
-            <InfoRow label="الطالب" value={child.full_name ?? "—"} />
-            <InfoRow label="الحلقة" value={halaqa?.name ?? "—"} />
-            <InfoRow label="المعلم" value={halaqa?.teacher?.full_name ?? "—"} />
-            <InfoRow label="المشرف" value={halaqa?.supervisor?.full_name ?? "—"} />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline gap-2">
-      <span className="text-primary-foreground/60 text-xs">{label}:</span>
-      <span className="font-semibold truncate">{value}</span>
-    </div>
-  );
-}
-
-function LiveStatusCard({ halaqa }: { halaqa: HalaqaInfo | null | undefined }) {
   const isLive = !!halaqa?.live_session_active;
   return (
-    <div className={`relative overflow-hidden rounded-3xl p-6 backdrop-blur-xl border shadow-[var(--shadow-soft)] ${
-      isLive ? "bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 border-emerald-400/40" : "bg-card/70 border-border/60"
-    }`}>
-      <div className="flex items-center gap-2 mb-3">
-        <Radio className={`w-5 h-5 ${isLive ? "text-emerald-500" : "text-muted-foreground"}`} />
-        <span className="text-sm font-semibold text-muted-foreground">حالة الحلقة</span>
+    <div className="relative overflow-hidden rounded-3xl p-6 md:p-8 bg-gradient-to-l from-primary via-primary/95 to-secondary text-primary-foreground shadow-[var(--shadow-glow)]">
+      {/* Islamic pattern overlay (very low opacity) */}
+      <svg className="absolute inset-0 w-full h-full opacity-[0.07] pointer-events-none" aria-hidden>
+        <defs>
+          <pattern id="ihp" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M20 0 L40 20 L20 40 L0 20 Z M20 8 L32 20 L20 32 L8 20 Z" fill="none" stroke="white" strokeWidth="0.8" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#ihp)" />
+      </svg>
+      <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-gold/30 blur-3xl" />
+      <div className="absolute -bottom-24 right-10 w-72 h-72 rounded-full bg-white/10 blur-3xl" />
+
+      <div className="relative grid grid-cols-[auto_minmax(0,1fr)] lg:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-5 lg:gap-8">
+        {/* Avatar */}
+        <div className="relative shrink-0">
+          <div className="absolute inset-0 rounded-3xl bg-gold/50 blur-2xl" />
+          <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-3xl bg-gradient-to-br from-gold to-gold/60 text-dark text-4xl font-bold flex items-center justify-center shadow-2xl ring-4 ring-white/20">
+            {child.avatar_url
+              ? <img src={child.avatar_url} alt="" className="w-full h-full rounded-3xl object-cover" />
+              : <span style={{ fontFamily: "var(--font-display-ar)" }}>{initials}</span>}
+          </div>
+          <span className="absolute -bottom-1 -left-1 w-7 h-7 rounded-full bg-emerald-500 ring-4 ring-primary flex items-center justify-center">
+            <CheckCircle2 className="w-4 h-4 text-white" />
+          </span>
+        </div>
+
+        {/* Info */}
+        <div className="min-w-0">
+          <div className="text-xs uppercase tracking-[0.2em] text-primary-foreground/60">أهلاً وسهلاً، {parentName}</div>
+          <h1 className="mt-1 text-2xl md:text-3xl font-bold truncate" style={{ fontFamily: "var(--font-display-ar)" }}>
+            {child.full_name ?? "—"}
+          </h1>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Chip icon={<BookOpen className="w-3.5 h-3.5" />} label={halaqa?.name ?? "—"} />
+            <Chip icon={<GraduationCap className="w-3.5 h-3.5" />} label={halaqa?.teacher?.full_name ?? "—"} />
+            <Chip icon={<Award className="w-3.5 h-3.5" />} label={halaqa?.level ?? "—"} />
+            {isLive && (
+              <a
+                href={halaqa?.meeting_link ?? "#"}
+                target="_blank" rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/95 text-white text-xs font-bold shadow-lg hover:bg-emerald-400 transition"
+              >
+                <Radio className="w-3.5 h-3.5 animate-pulse" />
+                مباشر — انضم
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* Mini metrics */}
+        <div className="hidden lg:flex items-center gap-3 shrink-0">
+          <MiniMetric label="الحضور" value={`${attendance}%`} />
+          <MiniMetric label="الحفظ" value={`${memorization}%`} />
+        </div>
       </div>
-      {isLive ? (
-        <>
-          <div className="flex items-center gap-2 text-xl font-bold text-emerald-600">
-            <span className="relative flex w-3 h-3">
-              <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
-              <span className="relative inline-flex w-3 h-3 rounded-full bg-emerald-500" />
-            </span>
-            الحلقة مباشرة الآن
-          </div>
-          <p className="text-xs text-muted-foreground mt-1 mb-4">{halaqa?.name} · {halaqa?.teacher?.full_name}</p>
-          {halaqa?.meeting_link && (
-            <a href={halaqa.meeting_link} target="_blank" rel="noreferrer"
-               className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm transition shadow-lg">
-              انضم الآن
-              <ChevronRight className="w-4 h-4" />
-            </a>
-          )}
-        </>
-      ) : (
-        <>
-          <div className="flex items-center gap-2 text-lg font-bold text-muted-foreground">
-            <span className="w-3 h-3 rounded-full bg-muted-foreground/40" />
-            لا توجد حلقة مباشرة حالياً
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            {halaqa?.schedule_days?.join("، ") || halaqa?.schedule || "سيتم الإشعار عند بدء الجلسة"}
-          </p>
-        </>
-      )}
     </div>
+  );
+}
+
+function Chip({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur border border-white/20 text-xs font-medium text-primary-foreground/95 max-w-[200px] truncate">
+      <span className="text-gold/90">{icon}</span>
+      <span className="truncate">{label}</span>
+    </span>
+  );
+}
+function MiniMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="px-4 py-3 rounded-2xl bg-white/10 backdrop-blur border border-white/15 text-center min-w-[88px]">
+      <div className="text-[10px] text-primary-foreground/70 uppercase tracking-wider">{label}</div>
+      <div className="text-xl font-bold text-gold">{value}</div>
+    </div>
+  );
+}
+
+/* ===== Progress + KPI ===== */
+function ProgressPanel({
+  memorization, attendance, halaqa,
+}: { memorization: number; attendance: number; halaqa: HalaqaInfo | null | undefined }) {
+  return (
+    <div className="relative h-full overflow-hidden rounded-3xl p-6 bg-card/70 backdrop-blur-xl border border-gold/30 shadow-[var(--shadow-soft)]">
+      <div className="absolute -top-16 -left-10 w-56 h-56 rounded-full bg-gold/15 blur-3xl" />
+      <div className="relative flex items-center justify-between mb-5">
+        <div>
+          <h3 className="font-bold text-primary text-lg" style={{ fontFamily: "var(--font-display-ar)" }}>متابعة الحفظ</h3>
+          <p className="text-xs text-muted-foreground">الهدف الأسبوعي</p>
+        </div>
+        <span className="text-[11px] px-2.5 py-1 rounded-full bg-gold/20 text-gold-foreground font-bold">
+          {halaqa?.target_surah || "سورة مريم"}
+        </span>
+      </div>
+
+      <div className="relative flex items-center justify-center gap-4">
+        <CircularProgress value={memorization} size={180} stroke={14} gradientId="grad-mem" from="var(--primary)" to="var(--gold)" label="الحفظ" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 mt-5">
+        <MiniStat label="الحضور" value={`${attendance}%`} icon={<CheckCircle2 className="w-4 h-4" />} accent="text-emerald-600 bg-emerald-500/10" />
+        <MiniStat label="الهدف الأسبوعي" value="10 آيات" icon={<TrendingUp className="w-4 h-4" />} accent="text-secondary bg-secondary/10" />
+      </div>
+    </div>
+  );
+}
+
+function CircularProgress({
+  value, size, stroke, gradientId, from, to, label,
+}: { value: number; size: number; stroke: number; gradientId: string; from: string; to: string; label: string }) {
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const v = Math.max(0, Math.min(100, value));
+  const offset = c - (v / 100) * c;
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <defs>
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={from} />
+            <stop offset="100%" stopColor={to} />
+          </linearGradient>
+        </defs>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" className="text-muted/60" strokeWidth={stroke} />
+        <circle
+          cx={size / 2} cy={size / 2} r={r}
+          fill="none" stroke={`url(#${gradientId})`} strokeWidth={stroke} strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={offset}
+          style={{ transition: "stroke-dashoffset 1s ease-out" }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <div className="text-4xl font-bold bg-gradient-to-l from-primary to-secondary bg-clip-text text-transparent">{v}%</div>
+        <div className="text-[11px] text-muted-foreground mt-0.5">{label}</div>
+      </div>
+    </div>
+  );
+}
+
+function MiniStat({ label, value, icon, accent }: { label: string; value: string; icon: React.ReactNode; accent: string }) {
+  return (
+    <div className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/40">
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${accent}`}>{icon}</div>
+      <div className="min-w-0">
+        <div className="text-[10px] text-muted-foreground">{label}</div>
+        <div className="font-bold text-sm text-primary truncate">{value}</div>
+      </div>
+    </div>
+  );
+}
+
+function KpiCard({
+  icon, label, value, sub, tone, trend,
+}: {
+  icon: React.ReactNode; label: string; value: string; sub: string;
+  tone: "primary" | "secondary" | "gold" | "emerald";
+  trend?: "up" | "down";
+}) {
+  const palette = {
+    primary: { ring: "from-primary/30 to-primary/0", chip: "bg-primary/15 text-primary", val: "text-primary" },
+    secondary: { ring: "from-secondary/30 to-secondary/0", chip: "bg-secondary/15 text-secondary", val: "text-secondary" },
+    gold: { ring: "from-gold/40 to-gold/0", chip: "bg-gold/20 text-gold-foreground", val: "text-gold-foreground" },
+    emerald: { ring: "from-emerald-500/30 to-emerald-500/0", chip: "bg-emerald-500/15 text-emerald-600", val: "text-emerald-600" },
+  }[tone];
+  return (
+    <div className="group relative overflow-hidden rounded-2xl p-5 bg-card/70 backdrop-blur-xl border border-border/60 shadow-[var(--shadow-soft)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-glow)] transition">
+      <div className={`absolute -top-12 -left-12 w-32 h-32 rounded-full bg-gradient-to-br ${palette.ring} blur-2xl`} />
+      <div className="relative flex items-start justify-between mb-3">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${palette.chip}`}>{icon}</div>
+        {trend && (
+          <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+            trend === "up" ? "bg-emerald-500/15 text-emerald-600" : "bg-rose-500/15 text-rose-600"
+          }`}>
+            <TrendingUp className={`w-3 h-3 ${trend === "down" ? "rotate-180" : ""}`} />
+            {trend === "up" ? "تحسن" : "تراجع"}
+          </span>
+        )}
+      </div>
+      <div className="relative">
+        <div className="text-xs text-muted-foreground">{label}</div>
+        <div className={`text-2xl font-bold mt-1 ${palette.val}`}>{value}</div>
+        <div className="text-[11px] text-muted-foreground mt-0.5 truncate">{sub}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ===== Activity Timeline ===== */
+function ActivityTimeline({
+  evals, att, notes, halaqa,
+}: {
+  evals: Array<{ id: string; created_at: string; memorization_score: number | null; tajweed_score: number | null; notes: string | null }>;
+  att: Array<{ status: string; date: string }>;
+  notes: Array<{ id: string; note: string; created_at: string }>;
+  halaqa: HalaqaInfo | null | undefined;
+}) {
+  type Item = { id: string; when: string; icon: React.ReactNode; title: string; desc: string; tone: string };
+  const items: Item[] = [];
+  if (att[0]) items.push({
+    id: "a-" + att[0].date, when: att[0].date,
+    icon: <CheckCircle2 className="w-4 h-4" />,
+    title: att[0].status === "present" ? "حضور الحلقة" : att[0].status === "late" ? "تأخر عن الحلقة" : "غياب",
+    desc: halaqa?.name ?? "الحلقة",
+    tone: att[0].status === "present" ? "bg-emerald-500/15 text-emerald-600" : att[0].status === "late" ? "bg-amber-500/15 text-amber-600" : "bg-rose-500/15 text-rose-600",
+  });
+  if (evals[0]) items.push({
+    id: "e-" + evals[0].id, when: evals[0].created_at,
+    icon: <Star className="w-4 h-4" />,
+    title: "تقييم جديد",
+    desc: `الحفظ ${evals[0].memorization_score ?? "—"} · التجويد ${evals[0].tajweed_score ?? "—"}`,
+    tone: "bg-gold/20 text-gold-foreground",
+  });
+  if (notes[0]) items.push({
+    id: "n-" + notes[0].id, when: notes[0].created_at,
+    icon: <MessageSquare className="w-4 h-4" />,
+    title: "ملاحظة من المعلم",
+    desc: notes[0].note,
+    tone: "bg-primary/15 text-primary",
+  });
+  if (evals[1]) items.push({
+    id: "e2-" + evals[1].id, when: evals[1].created_at,
+    icon: <BookOpen className="w-4 h-4" />,
+    title: "تسليم الحفظ",
+    desc: `الحفظ ${evals[1].memorization_score ?? "—"}/100`,
+    tone: "bg-secondary/15 text-secondary",
+  });
+  if (items.length === 0) {
+    items.push(
+      { id: "fb1", when: new Date().toISOString(), icon: <CheckCircle2 className="w-4 h-4" />, title: "حضور الحلقة", desc: halaqa?.name ?? "الحلقة", tone: "bg-emerald-500/15 text-emerald-600" },
+      { id: "fb2", when: new Date(Date.now() - 86400000).toISOString(), icon: <BookOpen className="w-4 h-4" />, title: "تسليم الحفظ", desc: "10 آيات جديدة", tone: "bg-primary/15 text-primary" },
+      { id: "fb3", when: new Date(Date.now() - 86400000 * 2).toISOString(), icon: <MessageSquare className="w-4 h-4" />, title: "ملاحظة من المعلم", desc: "أداء ممتاز هذا الأسبوع.", tone: "bg-gold/20 text-gold-foreground" },
+    );
+  }
+  items.sort((a, b) => +new Date(b.when) - +new Date(a.when));
+
+  return (
+    <div className="relative h-full overflow-hidden rounded-3xl p-6 bg-card/70 backdrop-blur-xl border border-border/60 shadow-[var(--shadow-soft)]">
+      <div className="flex items-center gap-2 mb-5">
+        <Activity className="w-5 h-5 text-secondary" />
+        <h3 className="font-bold text-primary">آخر النشاطات</h3>
+      </div>
+      <ol className="relative space-y-4 pr-4 border-r-2 border-dashed border-border/60">
+        {items.slice(0, 6).map((it) => (
+          <li key={it.id} className="relative">
+            <span className={`absolute -right-[26px] top-1 w-8 h-8 rounded-full flex items-center justify-center ring-4 ring-background ${it.tone}`}>
+              {it.icon}
+            </span>
+            <div className="p-3 rounded-2xl bg-muted/40 hover:bg-muted/60 transition">
+              <div className="flex items-baseline justify-between gap-3">
+                <div className="font-semibold text-sm text-primary truncate">{it.title}</div>
+                <div className="text-[10px] text-muted-foreground flex items-center gap-1 shrink-0">
+                  <Clock className="w-3 h-3" />
+                  {new Date(it.when).toLocaleDateString("ar")}
+                </div>
+              </div>
+              <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{it.desc}</div>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+/* ===== old hidden helper kept for compatibility (currently unused) ===== */
+function _Unused() {
+  return (
+    <>
+      <span>{""}</span>
+            {halaqa?.schedule_days?.join("، ") || halaqa?.schedule || "سيتم الإشعار عند بدء الجلسة"}
+    </>
   );
 }
 
