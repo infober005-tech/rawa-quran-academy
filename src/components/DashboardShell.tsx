@@ -14,7 +14,6 @@ export function DashboardShell({ children }: { children: ReactNode }) {
     { to: "/dashboard", label: t("nav.dashboard"), icon: "🏠" },
     { to: "/halaqas", label: t("nav.halaqas"), icon: "🕌" },
     { to: "/events", label: t("nav.events"), icon: "🎤" },
-    { to: "/chat", label: t("nav.chat"), icon: "💬" },
     { to: "/notifications", label: t("nav.notifications"), icon: "🔔" },
     { to: "/settings", label: t("nav.settings"), icon: "⚙️" },
   ];
