@@ -31,7 +31,7 @@ export function useConversations(userId: string | undefined) {
         supabase.from("conversations").select("*").in("id", convIds).order("last_message_at", { ascending: false }),
         supabase
           .from("conversation_members")
-          .select("conversation_id, user:profiles!conversation_members_user_id_fkey(id, full_name, email, avatar_url)")
+          .select("conversation_id, user_id")
           .in("conversation_id", convIds),
         supabase
           .from("messages")
@@ -41,11 +41,18 @@ export function useConversations(userId: string | undefined) {
           .limit(200),
       ]);
 
+      const userIds = Array.from(new Set((allMembers ?? []).map((m: any) => m.user_id)));
+      const { data: profiles } = userIds.length
+        ? await supabase.from("profiles").select("id, full_name, email, avatar_url").in("id", userIds)
+        : { data: [] as MemberProfile[] };
+      const profileById = new Map<string, MemberProfile>((profiles ?? []).map((p: any) => [p.id, p]));
+
       const lastReadMap = new Map((myMemberships ?? []).map((m) => [m.conversation_id, m.last_read_at]));
       const membersByConv = new Map<string, MemberProfile[]>();
       (allMembers ?? []).forEach((row: any) => {
         const arr = membersByConv.get(row.conversation_id) ?? [];
-        if (row.user) arr.push(row.user);
+        const p = profileById.get(row.user_id);
+        if (p) arr.push(p);
         membersByConv.set(row.conversation_id, arr);
       });
       const lastByConv = new Map<string, any>();
