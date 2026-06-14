@@ -6,7 +6,7 @@ import {
   UserPlus, ShieldCheck, Users, PlayCircle, Star, ChevronDown,
   Mail, Phone, MapPin, Facebook, Instagram, Youtube, Twitter,
 } from "lucide-react";
-import logoAsset from "@/assets/rawa-logo.png.asset.json";
+import logoUrl from "@/assets/rawa-logo-3d.png";
 
 const Logo3D = lazy(() => import("@/components/landing/Logo3D").then((m) => ({ default: m.Logo3D })));
 
@@ -66,10 +66,7 @@ function Nav() {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="absolute inset-0 rounded-full bg-gold/40 blur-md animate-pulse" />
-            <img src={logoAsset.url} alt="شعار رواء" className="relative w-11 h-11 rounded-full" />
-          </div>
+          <img src={logoUrl} alt="شعار رواء" className="relative w-12 h-12 object-contain drop-shadow-[0_6px_14px_rgba(199,163,92,0.35)]" />
           <div className="leading-tight">
             <div className="font-bold text-lg text-primary" style={{ fontFamily: "var(--font-display-ar)" }}>رواء</div>
             <div className="text-[11px] text-muted-foreground">أكاديمية القرآن الكريم</div>
