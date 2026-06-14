@@ -102,7 +102,7 @@ function ChildPanel({ parentName, child }: { parentName: string; child: Child })
       const { data } = await supabase
         .from("student_halaqas")
         .select(
-          "halaqa:halaqas(id, name, level, schedule, schedule_days, start_time, end_time, meeting_provider, meeting_link, live_session_active, current_surah, target_surah, teacher:profiles!halaqas_teacher_id_fkey(full_name), supervisor:profiles!halaqas_supervisor_id_fkey(full_name))"
+          "halaqa:halaqas(id, name, level, schedule, schedule_days, start_time, end_time, meeting_provider, meeting_link, live_session_active, teacher:profiles!halaqas_teacher_id_fkey(full_name), supervisor:profiles!halaqas_supervisor_id_fkey(full_name))"
         )
         .eq("student_id", child.id)
         .maybeSingle();
