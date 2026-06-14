@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DashboardShell } from "@/components/DashboardShell";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/use-auth";
+import { SubscriptionGate } from "@/components/SubscriptionGate";
 
 export const Route = createFileRoute("/_authenticated/halaqas")({
   component: HalaqasPage,
@@ -24,6 +25,7 @@ function HalaqasPage() {
   return (
     <DashboardShell>
       <h1 className="text-3xl font-bold text-primary mb-6">{t("nav.halaqas")}</h1>
+      <SubscriptionGate>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {data?.map((h: any) => (
           <div key={h.id} className="p-5 rounded-2xl bg-card border border-border shadow-soft hover:border-gold/40 transition">
@@ -46,6 +48,7 @@ function HalaqasPage() {
         ))}
         {(!data || data.length === 0) && <div className="md:col-span-3 p-10 text-center text-muted-foreground border border-dashed rounded-2xl">—</div>}
       </div>
+      </SubscriptionGate>
     </DashboardShell>
   );
 }
