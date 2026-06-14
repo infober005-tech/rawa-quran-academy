@@ -8,12 +8,14 @@ import { HalaqasPanel } from "@/features/admin/HalaqasPanel";
 import { EventsPanel } from "@/features/admin/EventsPanel";
 import { CalendarPanel } from "@/features/admin/CalendarPanel";
 import { ParentLinksPanel } from "@/features/admin/ParentLinksPanel";
+import { PaymentsPanel } from "@/features/admin/PaymentsPanel";
+import { PaymentSettingsPanel } from "@/features/admin/PaymentSettingsPanel";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "users" | "halaqas" | "events" | "calendar" | "parents";
+type Tab = "users" | "halaqas" | "events" | "calendar" | "parents" | "payments" | "payment_settings";
 
 function AdminPage() {
   const { can, loading } = useAuth();
@@ -33,6 +35,8 @@ function AdminPage() {
     { id: "events", label: t("dir.events") },
     { id: "calendar", label: t("dir.calendar") },
     { id: "parents", label: "Parent Links" },
+    { id: "payments", label: "💳 المدفوعات" },
+    { id: "payment_settings", label: "⚙️ إعدادات الدفع" },
   ];
 
   return (
@@ -53,6 +57,8 @@ function AdminPage() {
       {tab === "events" && <EventsPanel />}
       {tab === "calendar" && <CalendarPanel />}
       {tab === "parents" && <ParentLinksPanel />}
+      {tab === "payments" && <PaymentsPanel />}
+      {tab === "payment_settings" && <PaymentSettingsPanel />}
     </DashboardShell>
   );
 }

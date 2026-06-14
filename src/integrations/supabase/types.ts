@@ -559,6 +559,132 @@ export type Database = {
           },
         ]
       }
+      payment_settings: {
+        Row: {
+          account_holder: string
+          benefits_ar: Json
+          benefits_en: Json
+          benefits_fr: Json
+          ccp_key: string | null
+          ccp_number: string
+          created_at: string
+          currency: string
+          description_ar: string
+          description_en: string
+          description_fr: string
+          id: string
+          price_dzd: number
+          qr_code_url: string | null
+          rip_number: string | null
+          subscription_duration_days: number
+          subscription_name_ar: string
+          subscription_name_en: string
+          subscription_name_fr: string
+          updated_at: string
+        }
+        Insert: {
+          account_holder?: string
+          benefits_ar?: Json
+          benefits_en?: Json
+          benefits_fr?: Json
+          ccp_key?: string | null
+          ccp_number?: string
+          created_at?: string
+          currency?: string
+          description_ar?: string
+          description_en?: string
+          description_fr?: string
+          id?: string
+          price_dzd?: number
+          qr_code_url?: string | null
+          rip_number?: string | null
+          subscription_duration_days?: number
+          subscription_name_ar?: string
+          subscription_name_en?: string
+          subscription_name_fr?: string
+          updated_at?: string
+        }
+        Update: {
+          account_holder?: string
+          benefits_ar?: Json
+          benefits_en?: Json
+          benefits_fr?: Json
+          ccp_key?: string | null
+          ccp_number?: string
+          created_at?: string
+          currency?: string
+          description_ar?: string
+          description_en?: string
+          description_fr?: string
+          id?: string
+          price_dzd?: number
+          qr_code_url?: string | null
+          rip_number?: string | null
+          subscription_duration_days?: number
+          subscription_name_ar?: string
+          subscription_name_en?: string
+          subscription_name_fr?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          approved_at: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          payment_date: string
+          phone: string | null
+          receipt_file_url: string
+          rejected_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          student_id: string
+          transaction_number: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          approved_at?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          payment_date: string
+          phone?: string | null
+          receipt_file_url: string
+          rejected_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          student_id: string
+          transaction_number: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          approved_at?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          payment_date?: string
+          phone?: string | null
+          receipt_file_url?: string
+          rejected_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          student_id?: string
+          transaction_number?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number | null
@@ -702,6 +828,47 @@ export type Database = {
           },
         ]
       }
+      subscriptions: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          payment_id: string | null
+          start_date: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          payment_id?: string | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          payment_id?: string | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supervisor_notes: {
         Row: {
           author_id: string
@@ -780,6 +947,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      has_active_subscription: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -812,8 +980,15 @@ export type Database = {
       attendance_status: "present" | "absent" | "late"
       gender_type: "male" | "female"
       halaqa_status: "active" | "archived" | "inactive"
+      payment_status: "pending" | "approved" | "rejected"
       quran_level: "beginner" | "intermediate" | "advanced"
       student_status: "pending_review" | "approved" | "rejected" | "suspended"
+      subscription_status:
+        | "pending"
+        | "active"
+        | "expired"
+        | "rejected"
+        | "cancelled"
       supervisor_note_category:
         | "behavior"
         | "attendance"
@@ -958,8 +1133,16 @@ export const Constants = {
       attendance_status: ["present", "absent", "late"],
       gender_type: ["male", "female"],
       halaqa_status: ["active", "archived", "inactive"],
+      payment_status: ["pending", "approved", "rejected"],
       quran_level: ["beginner", "intermediate", "advanced"],
       student_status: ["pending_review", "approved", "rejected", "suspended"],
+      subscription_status: [
+        "pending",
+        "active",
+        "expired",
+        "rejected",
+        "cancelled",
+      ],
       supervisor_note_category: [
         "behavior",
         "attendance",

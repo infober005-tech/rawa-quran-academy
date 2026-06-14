@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { SubscriptionPanel } from "@/features/subscription/SubscriptionPanel";
 
 export function StudentDashboard() {
   const { user, profile } = useAuth();
@@ -72,6 +73,8 @@ export function StudentDashboard() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-primary">{t("dash.welcome")}، {profile?.full_name} 🌙</h1>
+
+      <SubscriptionPanel />
 
       <div className="grid md:grid-cols-3 gap-4">
         <StatCard icon="🕌" label={t("dash.my_halaqa")} value={halaqa?.name ?? "—"} />

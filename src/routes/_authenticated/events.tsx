@@ -5,6 +5,7 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
+import { SubscriptionGate } from "@/components/SubscriptionGate";
 
 export const Route = createFileRoute("/_authenticated/events")({
   component: EventsPage,
@@ -48,6 +49,7 @@ function EventsPage() {
   return (
     <DashboardShell>
       <h1 className="text-3xl font-bold text-primary mb-6">{t("nav.events")}</h1>
+      <SubscriptionGate>
       <div className="grid md:grid-cols-2 gap-4">
         {data?.map((e) => {
           const registered = myRegs?.has(e.id);
@@ -78,6 +80,7 @@ function EventsPage() {
         })}
         {(!data || data.length === 0) && <div className="md:col-span-2 p-10 text-center text-muted-foreground border border-dashed rounded-2xl">—</div>}
       </div>
+      </SubscriptionGate>
     </DashboardShell>
   );
 }
