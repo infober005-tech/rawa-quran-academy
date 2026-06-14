@@ -19,9 +19,9 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "رواء — أكاديمية القرآن الكريم وعلومه" },
       { property: "og:description", content: "رحلة متكاملة لحفظ القرآن الكريم، تصحيح التلاوة، التجويد والمتون العلمية بإشراف نخبة من المعلمين." },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: logoAsset.url },
+      { property: "og:image", content: logoUrl },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:image", content: logoAsset.url },
+      { name: "twitter:image", content: logoUrl },
     ],
     links: [{ rel: "canonical", href: "/" }],
   }),
@@ -229,7 +229,7 @@ function Hero() {
 function LogoFallback() {
   return (
     <div className="relative w-full aspect-square flex items-center justify-center">
-      <img src={logoAsset.url} alt="شعار رواء" className="w-[78%]" />
+      <img src={logoUrl} alt="شعار رواء" className="w-[78%]" />
     </div>
   );
 }
@@ -457,7 +457,7 @@ function Parents() {
             <div className="rounded-[2.2rem] aspect-[4/5] bg-gradient-to-br from-primary via-secondary to-primary p-10 flex flex-col justify-end relative overflow-hidden">
               <div className="absolute inset-0 opacity-10"><IslamicPattern /></div>
               <div className="absolute top-6 right-6 left-6 flex items-center gap-3">
-                <img src={logoAsset.url} alt="" className="w-12 h-12 rounded-full" />
+                <img src={logoUrl} alt="" className="w-12 h-12 rounded-full" />
                 <div className="text-primary-foreground">
                   <div className="font-bold">لوحة وليّ الأمر</div>
                   <div className="text-xs text-primary-foreground/70">رواء</div>
@@ -659,7 +659,7 @@ function FinalCTA() {
         <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-gold/20 rounded-full blur-[120px]" />
         <div className="relative">
           <motion.img
-            src={logoAsset.url}
+            src={logoUrl}
             alt=""
             initial={{ rotateY: 0 }}
             whileInView={{ rotateY: 360 }}
@@ -694,7 +694,7 @@ function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-16 grid md:grid-cols-4 gap-10">
         <div className="md:col-span-2 space-y-4">
           <div className="flex items-center gap-3">
-            <img src={logoAsset.url} alt="" className="w-12 h-12 rounded-full" />
+            <img src={logoUrl} alt="" className="w-12 h-12 rounded-full" />
             <div>
               <div className="font-bold text-primary text-xl" style={{ fontFamily: "var(--font-display-ar)" }}>رواء</div>
               <div className="text-xs text-muted-foreground">أكاديمية القرآن الكريم وعلومه</div>
