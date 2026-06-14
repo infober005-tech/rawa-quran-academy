@@ -262,7 +262,7 @@ function ChildPanel({ parentName, child }: { parentName: string; child: Child })
 
 function WelcomeCard({
   parentName, child, halaqa,
-}: { parentName: string; child: Child; halaqa: HalaqaInfo | null }) {
+}: { parentName: string; child: Child; halaqa: HalaqaInfo | null | undefined }) {
   const initials = (child.full_name ?? "ط").trim().slice(0, 1);
   return (
     <div className="lg:col-span-2 relative overflow-hidden rounded-3xl p-6 md:p-8 bg-gradient-to-l from-primary via-primary/95 to-secondary text-primary-foreground shadow-[var(--shadow-glow)]">
@@ -303,7 +303,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function LiveStatusCard({ halaqa }: { halaqa: HalaqaInfo | null }) {
+function LiveStatusCard({ halaqa }: { halaqa: HalaqaInfo | null | undefined }) {
   const isLive = !!halaqa?.live_session_active;
   return (
     <div className={`relative overflow-hidden rounded-3xl p-6 backdrop-blur-xl border shadow-[var(--shadow-soft)] ${
@@ -363,7 +363,7 @@ function StatCard({
   );
 }
 
-function MemorizationTracker({ halaqa, percentage }: { halaqa: HalaqaInfo | null; percentage: number }) {
+function MemorizationTracker({ halaqa, percentage }: { halaqa: HalaqaInfo | null | undefined; percentage: number }) {
   const pct = Math.max(0, Math.min(100, percentage));
   return (
     <div className="lg:col-span-2 relative overflow-hidden rounded-3xl p-6 bg-card/70 backdrop-blur-xl border border-gold/30 shadow-[var(--shadow-soft)]">
@@ -409,7 +409,7 @@ function MemorizationTracker({ halaqa, percentage }: { halaqa: HalaqaInfo | null
   );
 }
 
-function WeeklyGoals({ halaqa }: { halaqa: HalaqaInfo | null }) {
+function WeeklyGoals({ halaqa }: { halaqa: HalaqaInfo | null | undefined }) {
   const items = [
     { icon: "📖", label: "الحفظ هذا الأسبوع", value: halaqa?.current_surah ? `من ${halaqa.current_surah}` : "10 آيات جديدة", tone: "text-primary" },
     { icon: "🔁", label: "المراجعة المطلوبة", value: "الجزء السابق", tone: "text-secondary" },
