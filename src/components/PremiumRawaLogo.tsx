@@ -3,7 +3,7 @@ import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { Float } from "@react-three/drei";
 import * as THREE from "three";
 import { TextureLoader } from "three";
-import logoAsset from "@/assets/rawa-logo-clean.png.asset.json";
+import logoAsset from "@/assets/rawa-emblem.png.asset.json";
 import type { RevealPhase } from "@/hooks/useLogoAnimation";
 
 interface PremiumRawaLogoProps {
