@@ -4,10 +4,12 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { SubscriptionPanel } from "@/features/subscription/SubscriptionPanel";
+import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 
 export function StudentDashboard() {
   const { user, profile } = useAuth();
   const { t } = useI18n();
+  useRealtimeInvalidate(["attendance", "evaluations", "halaqas"], ["my-attendance", "my-evals", "my-halaqa"]);
 
   const { data: assignment } = useQuery({
     queryKey: ["my-halaqa", user?.id],
