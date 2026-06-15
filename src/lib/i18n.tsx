@@ -39,6 +39,8 @@ const DICT: Record<Lang, Record<string, string>> = {
     "auth.or": "أو",
     "auth.remember": "تذكرني",
     "auth.check_email": "تحقق من بريدك لتأكيد الحساب",
+    "auth.pending_approval": "تم تسجيل حسابك بنجاح، في انتظار موافقة الإدارة لتفعيل الحساب",
+    "auth.weak_password": "كلمة المرور هذه ضعيفة أو تم تسريبها سابقًا، اختر كلمة مرور أقوى",
     "auth.reset_sent": "إذا كان البريد مسجلاً، فستصلك رسالة لإعادة تعيين كلمة المرور.",
     "auth.new_password": "كلمة المرور الجديدة",
     "auth.update_password": "تحديث كلمة المرور",
