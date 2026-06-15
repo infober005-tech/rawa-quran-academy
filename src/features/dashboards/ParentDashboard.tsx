@@ -282,28 +282,10 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
 
       {/* 4 stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon="✅" label="الحضور" value={`${stats.rate}%`} ring={stats.rate} tone="emerald" />
-        <StatCard
-          icon="📖"
-          label="الحفظ المكتمل"
-          value={`${stats.memAvg}%`}
-          ring={stats.memAvg}
-          tone="gold"
-        />
-        <StatCard
-          icon="⭐"
-          label="التقييم العام"
-          value={`${stats.overall}%`}
-          ring={stats.overall}
-          tone="violet"
-        />
-        <StatCard
-          icon="🕌"
-          label="عدد الحلقات"
-          value={`${stats.totalSessions}`}
-          ring={Math.min(100, stats.totalSessions * 4)}
-          tone="rose"
-        />
+        <StatCard icon="✅" label="الحضور" value={`${stats.rate}%`} ring={stats.rate} tone="emerald" trend={monthly.map((m) => m.present)} />
+        <StatCard icon="📖" label="الحفظ المكتمل" value={`${stats.memAvg}%`} ring={stats.memAvg} tone="gold" trend={(evals ?? []).slice(0, 6).map((e) => e.memorization_score ?? 0).reverse()} />
+        <StatCard icon="⭐" label="التقييم العام" value={`${stats.overall}%`} ring={stats.overall} tone="violet" trend={(evals ?? []).slice(0, 6).map((e) => ((e.tajweed_score ?? 0) + (e.memorization_score ?? 0)) / 2).reverse()} />
+        <StatCard icon="🕌" label="عدد الحلقات" value={`${stats.totalSessions}`} ring={Math.min(100, stats.totalSessions * 4)} tone="rose" trend={monthly.map((m) => m.present + m.late + m.absent)} />
       </div>
 
       {/* Memorization + Attendance chart */}
@@ -610,12 +592,14 @@ function StatCard({
   value,
   ring,
   tone,
+  trend,
 }: {
   icon: string;
   label: string;
   value: string;
   ring: number;
   tone: "emerald" | "gold" | "violet" | "rose";
+  trend?: number[];
 }) {
   const toneMap = {
     emerald: "stroke-emerald-500",
@@ -623,12 +607,25 @@ function StatCard({
     violet: "stroke-primary",
     rose: "stroke-rose-500",
   } as const;
+  const fillMap = {
+    emerald: "fill-emerald-500/30 stroke-emerald-500",
+    gold: "fill-gold/30 stroke-gold",
+    violet: "fill-primary/30 stroke-primary",
+    rose: "fill-rose-500/30 stroke-rose-500",
+  } as const;
   const r = 30;
   const c = 2 * Math.PI * r;
   const offset = c - (Math.min(100, Math.max(0, ring)) / 100) * c;
+  const pts = (trend && trend.length > 1 ? trend : [0, 0]).slice(-8);
+  const max = Math.max(1, ...pts);
+  const w = 100, h = 28;
+  const step = w / Math.max(1, pts.length - 1);
+  const line = pts.map((v, i) => `${i * step},${h - (v / max) * h}`).join(" ");
+  const area = `0,${h} ${line} ${w},${h}`;
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-border bg-card/60 backdrop-blur-xl p-5 shadow-soft">
-      <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-gold/5 blur-2xl" />
+    <div className="group relative overflow-hidden rounded-3xl border border-border bg-card/60 backdrop-blur-xl p-5 shadow-soft hover:border-gold/40 transition">
+      <div className="absolute -top-12 -right-12 h-36 w-36 rounded-full bg-gold/10 blur-2xl group-hover:bg-gold/20 transition" />
+      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
       <div className="relative flex items-center gap-4">
         <div className="relative h-20 w-20 shrink-0">
           <svg viewBox="0 0 80 80" className="h-full w-full -rotate-90">
@@ -648,9 +645,13 @@ function StatCard({
           </svg>
           <div className="absolute inset-0 grid place-items-center text-xl">{icon}</div>
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="text-xs text-muted-foreground">{label}</div>
           <div className="text-2xl font-black text-primary mt-1">{value}</div>
+          <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="mt-1 h-6 w-full opacity-80">
+            <polygon points={area} className={fillMap[tone]} strokeWidth="0" />
+            <polyline points={line} className={fillMap[tone]} fill="none" strokeWidth="1.5" />
+          </svg>
         </div>
       </div>
     </div>
