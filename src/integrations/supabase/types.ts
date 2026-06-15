@@ -119,6 +119,7 @@ export type Database = {
           id: string
           notes: string | null
           recorded_by: string | null
+          session_id: string | null
           status: Database["public"]["Enums"]["attendance_status"]
           student_id: string
         }
@@ -129,6 +130,7 @@ export type Database = {
           id?: string
           notes?: string | null
           recorded_by?: string | null
+          session_id?: string | null
           status: Database["public"]["Enums"]["attendance_status"]
           student_id: string
         }
@@ -139,6 +141,7 @@ export type Database = {
           id?: string
           notes?: string | null
           recorded_by?: string | null
+          session_id?: string | null
           status?: Database["public"]["Enums"]["attendance_status"]
           student_id?: string
         }
@@ -155,6 +158,13 @@ export type Database = {
             columns: ["recorded_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "halaqa_sessions"
             referencedColumns: ["id"]
           },
           {
@@ -241,6 +251,7 @@ export type Database = {
       }
       evaluations: {
         Row: {
+          behavior_score: number | null
           created_at: string
           fluency_score: number | null
           halaqa_id: string | null
@@ -248,11 +259,13 @@ export type Database = {
           memorization_score: number | null
           notes: string | null
           participation_score: number | null
+          session_id: string | null
           student_id: string
           tajweed_score: number | null
           teacher_id: string
         }
         Insert: {
+          behavior_score?: number | null
           created_at?: string
           fluency_score?: number | null
           halaqa_id?: string | null
@@ -260,11 +273,13 @@ export type Database = {
           memorization_score?: number | null
           notes?: string | null
           participation_score?: number | null
+          session_id?: string | null
           student_id: string
           tajweed_score?: number | null
           teacher_id: string
         }
         Update: {
+          behavior_score?: number | null
           created_at?: string
           fluency_score?: number | null
           halaqa_id?: string | null
@@ -272,6 +287,7 @@ export type Database = {
           memorization_score?: number | null
           notes?: string | null
           participation_score?: number | null
+          session_id?: string | null
           student_id?: string
           tajweed_score?: number | null
           teacher_id?: string
@@ -282,6 +298,13 @@ export type Database = {
             columns: ["halaqa_id"]
             isOneToOne: false
             referencedRelation: "halaqas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "halaqa_sessions"
             referencedColumns: ["id"]
           },
           {
