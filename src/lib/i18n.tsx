@@ -140,7 +140,7 @@ const DICT: Record<Lang, Record<string, string>> = {
   },
   fr: {
     "app.name": "Rawa",
-    "app.tagline": "Demeure de l'excellence · pour étancher les cœurs",
+    "app.tagline": "La demeure de l'excellence · pour abreuver les cœurs",
     "nav.login": "Connexion",
     "nav.register": "S'inscrire",
     "nav.logout": "Déconnexion",
