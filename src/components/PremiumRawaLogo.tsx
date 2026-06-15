@@ -119,6 +119,19 @@ export function PremiumRawaLogo({ phase, hovered }: PremiumRawaLogoProps) {
             envMapIntensity={1.8}
           />
         </mesh>
+
+        {/* Gold base disc behind the engraved logo face (revealed through alpha) */}
+        <mesh position={[0, 0, 0.108]}>
+          <circleGeometry args={[1.44, 96]} />
+          <meshStandardMaterial
+            color="#c9954a"
+            metalness={1}
+            roughness={0.28}
+            emissive="#3a2208"
+            emissiveIntensity={0.2}
+            envMapIntensity={1.4}
+          />
+        </mesh>
       </group>
     </Float>
   );
