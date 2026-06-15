@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { useState } from "react";
 import { toast } from "sonner";
+import { SessionCaptureModal } from "./SessionCaptureModal";
 
 export function TeacherDashboard() {
   const { user } = useAuth();
