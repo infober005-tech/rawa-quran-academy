@@ -217,11 +217,3 @@
 @utility animate-glow {
   animation: rawa-glow 4s ease-in-out infinite;
 }
-
-@keyframes rawa-rays-spin {
-  to { transform: rotate(360deg); }
-}
-@keyframes rawa-twinkle {
-  0%, 100% { opacity: 0; transform: scale(0.6); }
-  50% { opacity: 1; transform: scale(1.2); }
-}

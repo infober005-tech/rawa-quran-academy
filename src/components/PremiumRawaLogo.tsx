@@ -3,7 +3,7 @@ import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { Float } from "@react-three/drei";
 import * as THREE from "three";
 import { TextureLoader } from "three";
-import logoAsset from "@/assets/rawa-full.png.asset.json";
+import logoAsset from "@/assets/rawa-logo-clean.png.asset.json";
 import type { RevealPhase } from "@/hooks/useLogoAnimation";
 
 interface PremiumRawaLogoProps {
@@ -12,127 +12,144 @@ interface PremiumRawaLogoProps {
 }
 
 /**
- * 3D circular medal: the uploaded logo image is used DIRECTLY as a texture
- * on the front (and back) face of a thick cylinder. A metallic gold rim
- * surrounds the medal. No part of the logo is recreated — the image itself
- * is mapped onto the geometry.
+ * Premium luxury logo: embossed gold seal feel.
+ * The texture is rendered on a stack of thin planes to fake true 3D extrusion
+ * cheaply, with a metallic-gold material for the front face.
  */
 export function PremiumRawaLogo({ phase, hovered }: PremiumRawaLogoProps) {
   const root = useRef<THREE.Group>(null!);
-  const medal = useRef<THREE.Mesh>(null!);
-  const { mouse } = useThree();
-  const target = useRef({ x: 0, y: 0 });
+  const front = useRef<THREE.Mesh>(null!);
+  const shimmer = useRef<THREE.Mesh>(null!);
 
   const texture = useLoader(TextureLoader, logoAsset.url);
   useMemo(() => {
-    texture.anisotropy = 16;
+    texture.anisotropy = 8;
     texture.colorSpace = THREE.SRGBColorSpace;
-    texture.flipY = false;
-    texture.center.set(0.5, 0.5);
-    texture.rotation = 0;
     texture.needsUpdate = true;
   }, [texture]);
 
-  // Material per group: [0] side (rim), [1] top (front cap), [2] bottom (back cap)
-  const materials = useMemo(() => {
-    const rim = new THREE.MeshStandardMaterial({
-      color: "#e8c277",
-      metalness: 1,
-      roughness: 0.18,
-      emissive: "#3a2408",
-      emissiveIntensity: 0.25,
-      envMapIntensity: 1.5,
-    });
-    const face = new THREE.MeshStandardMaterial({
-      map: texture,
-      color: "#ffffff",
-      metalness: 0.35,
-      roughness: 0.45,
-      emissive: "#000000",
-      envMapIntensity: 1.2,
-      transparent: true,
-      alphaTest: 0.05,
-    });
-    const back = new THREE.MeshStandardMaterial({
-      map: texture,
-      color: "#d9ad60",
-      metalness: 0.9,
-      roughness: 0.3,
-      envMapIntensity: 1.2,
-    });
-    return [rim, face, back];
-  }, [texture]);
+  const { mouse } = useThree();
+  const target = useRef({ x: 0, y: 0 });
+  const startTime = useRef<number | null>(null);
+
+  // Extrusion: a few layered planes simulate thickness with low cost.
+  const layers = useMemo(() => {
+    const arr: Array<{ z: number; opacity: number; intensity: number }> = [];
+    const N = 6;
+    for (let i = 0; i < N; i++) {
+      const k = i / (N - 1);
+      arr.push({ z: -k * 0.16, opacity: 1, intensity: 0.6 + k * 0.4 });
+    }
+    return arr.reverse();
+  }, []);
 
   useFrame((state, dt) => {
     if (!root.current) return;
     const t = state.clock.elapsedTime;
+    if (startTime.current === null && phase >= 4) startTime.current = t;
 
-    target.current.x += (mouse.y * 0.15 - target.current.x) * 0.05;
-    target.current.y += (mouse.x * 0.25 - target.current.y) * 0.05;
+    // Camera parallax
+    target.current.x += (mouse.y * 0.18 - target.current.x) * 0.045;
+    target.current.y += (mouse.x * 0.28 - target.current.y) * 0.045;
 
-    const targetScale = phase < 3 ? 0.001 : phase === 3 ? 0.7 : 1;
-    const s = root.current.scale.x + (targetScale - root.current.scale.x) * Math.min(1, dt * 3);
-    root.current.scale.setScalar(s);
+    // Reveal scale/opacity
+    const revealAmt = Math.min(1, Math.max(0, (phase - 3) / 1.2)); // 0..1 during phase 4
+    const settled = phase >= 5 ? 1 : revealAmt;
 
+    const targetScale = phase < 3 ? 0.001 : phase === 3 ? 0.65 : 1;
+    root.current.scale.x += (targetScale - root.current.scale.x) * Math.min(1, dt * 3);
+    root.current.scale.y += (targetScale - root.current.scale.y) * Math.min(1, dt * 3);
+    root.current.scale.z += (targetScale - root.current.scale.z) * Math.min(1, dt * 3);
+
+    // Breathing + shimmer + rotation
     if (phase >= 5) {
-      // Slow continuous rotation
-      root.current.rotation.y += dt * (hovered ? 0.55 : 0.28);
-      // Subtle tilt from mouse
-      root.current.rotation.x += (target.current.x - root.current.rotation.x) * 0.04;
-      // Floating bob handled by Float, plus a breathing scale
-      const breathe = 1 + Math.sin(t * 1.1) * 0.015;
+      const breathe = 1 + Math.sin(t * 1.1) * 0.012;
       root.current.scale.multiplyScalar(breathe / (root.current.userData.lastBreathe ?? 1));
       root.current.userData.lastBreathe = breathe;
+
+      root.current.rotation.y += dt * (hovered ? 0.35 : 0.18) + (target.current.y - root.current.rotation.y) * 0.02;
+      root.current.rotation.x += (target.current.x - root.current.rotation.x) * 0.04;
     } else {
       root.current.rotation.x += (target.current.x - root.current.rotation.x) * 0.04;
       root.current.rotation.y += (target.current.y - root.current.rotation.y) * 0.04;
     }
+
+    // Shimmer sweep
+    if (shimmer.current) {
+      const sweep = (t % 5) / 5;
+      const m = shimmer.current.material as THREE.MeshBasicMaterial;
+      m.opacity = settled * (hovered ? 0.55 : 0.32) * Math.sin(sweep * Math.PI);
+      shimmer.current.position.x = -2 + sweep * 4;
+    }
+
+    // Materials live update
+    if (front.current) {
+      const mat = front.current.material as THREE.MeshStandardMaterial;
+      mat.emissiveIntensity = 0.25 + settled * 0.5 + (hovered ? 0.2 : 0);
+      mat.opacity = settled;
+      mat.transparent = settled < 0.999;
+    }
   });
 
   return (
-    <Float speed={1.4} rotationIntensity={0.15} floatIntensity={phase >= 5 ? 0.8 : 0}>
+    <Float speed={1.2} rotationIntensity={0.12} floatIntensity={phase >= 5 ? 0.6 : 0}>
       <group ref={root} scale={0.001}>
         {/* Back glow disc */}
-        <mesh position={[0, 0, -0.4]}>
-          <circleGeometry args={[1.8, 64]} />
-          <meshBasicMaterial color="#9b6cff" transparent opacity={0.22} toneMapped={false} />
+        <mesh position={[0, 0, -0.5]}>
+          <circleGeometry args={[1.7, 64]} />
+          <meshBasicMaterial color="#9b6cff" transparent opacity={0.18} toneMapped={false} />
         </mesh>
 
-        {/* The medal: cylinder with caps facing camera (rotate X by PI/2) */}
-        <mesh
-          ref={medal}
-          rotation={[Math.PI / 2, 0, 0]}
-          material={materials}
-          castShadow
-          receiveShadow
-        >
-          {/* radiusTop, radiusBottom, height (thickness), radialSegments */}
-          <cylinderGeometry args={[1.45, 1.45, 0.22, 128, 1, false]} />
-        </mesh>
+        {/* Extruded stack (back to front) */}
+        {layers.map((l, i) => (
+          <mesh key={i} position={[0, 0, l.z]} renderOrder={i}>
+            <planeGeometry args={[2.6, 2.9]} />
+            <meshStandardMaterial
+              map={texture}
+              transparent
+              alphaTest={0.04}
+              metalness={0.9}
+              roughness={0.22}
+              color="#caa15a"
+              emissive="#7a4d12"
+              emissiveMap={texture}
+              emissiveIntensity={0.18 * l.intensity}
+              side={THREE.DoubleSide}
+              depthWrite={false}
+            />
+          </mesh>
+        ))}
 
-        {/* Outer decorative gold ring (slightly larger, thin torus) */}
-        <mesh position={[0, 0, 0]}>
-          <torusGeometry args={[1.5, 0.05, 32, 128]} />
+        {/* Crisp front face with strong metallic look */}
+        <mesh ref={front} position={[0, 0, 0.02]}>
+          <planeGeometry args={[2.6, 2.9]} />
           <meshStandardMaterial
-            color="#f4cf78"
+            map={texture}
+            transparent
+            alphaTest={0.04}
             metalness={1}
-            roughness={0.12}
-            emissive="#7a4a08"
-            emissiveIntensity={0.35}
-            envMapIntensity={1.8}
+            roughness={0.15}
+            color="#e8c277"
+            emissive="#f2c75a"
+            emissiveMap={texture}
+            emissiveIntensity={0.45}
+            side={THREE.DoubleSide}
+            envMapIntensity={1.4}
           />
         </mesh>
 
-        {/* Gold base disc behind the engraved logo face (revealed through alpha) */}
-        <mesh position={[0, 0, 0.108]}>
-          <circleGeometry args={[1.44, 96]} />
-          <meshStandardMaterial
-            color="#c9954a"
-            metalness={1}
-            roughness={0.28}
-            emissive="#3a2208"
-            emissiveIntensity={0.2}
-            envMapIntensity={1.4}
+        {/* Shimmer sweep strip clipped by the logo alpha */}
+        <mesh ref={shimmer} position={[0, 0, 0.04]}>
+          <planeGeometry args={[0.6, 3.2]} />
+          <meshBasicMaterial
+            map={texture}
+            alphaMap={texture}
+            color="#fff6d6"
+            transparent
+            opacity={0}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+            toneMapped={false}
           />
         </mesh>
       </group>

@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import logoAsset from "@/assets/rawa-logo.png.asset.json";
 
-const LogoReveal = lazy(() => import("@/components/LogoReveal").then((m) => ({ default: m.LogoReveal })));
+const Logo3D = lazy(() => import("@/components/landing/Logo3D").then((m) => ({ default: m.Logo3D })));
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -115,7 +115,7 @@ function Hero() {
           <div className="relative rounded-[2.5rem] p-4 bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-xl border border-white/50 shadow-[0_30px_80px_-20px_rgba(94,75,123,0.4)]">
             <div className="rounded-[2rem] overflow-hidden bg-gradient-to-br from-primary/5 via-transparent to-gold/10">
               <Suspense fallback={<LogoFallback />}>
-                <LogoReveal />
+                <Logo3D />
               </Suspense>
             </div>
             <motion.div
