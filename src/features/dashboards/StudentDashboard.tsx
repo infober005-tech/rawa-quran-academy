@@ -5,6 +5,8 @@ import { useI18n } from "@/lib/i18n";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { SubscriptionPanel } from "@/features/subscription/SubscriptionPanel";
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
+import { RecordingsPanel } from "@/features/recordings/RecordingsPanel";
+import { AIInsightsPanel } from "@/features/insights/AIInsightsPanel";
 
 export function StudentDashboard() {
   const { user, profile } = useAuth();
