@@ -3,7 +3,7 @@ import logoAsset from "@/assets/rawa-logo.png.asset.json";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n, LangSwitcher } from "@/lib/i18n";
 import { useNotificationToasts } from "@/hooks/useNotificationToasts";
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 
 export function DashboardShell({ children }: { children: ReactNode }) {
   const { profile, primaryRole, signOut, can } = useAuth();
@@ -12,14 +12,17 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   const { location } = useRouterState();
   useNotificationToasts();
 
-  const nav = [
-    { to: "/dashboard", label: t("nav.dashboard"), icon: "🏠" },
-    { to: "/halaqas", label: t("nav.halaqas"), icon: "🕌" },
-    { to: "/events", label: t("nav.events"), icon: "🎤" },
-    { to: "/notifications", label: t("nav.notifications"), icon: "🔔" },
-    { to: "/settings", label: t("nav.settings"), icon: "⚙️" },
-  ];
-  if (can("admin.access")) nav.push({ to: "/admin", label: t("nav.admin"), icon: "🛡️" });
+  const nav = useMemo(() => {
+    const items = [
+      { to: "/dashboard", label: t("nav.dashboard"), icon: "🏠" },
+      { to: "/halaqas", label: t("nav.halaqas"), icon: "🕌" },
+      { to: "/events", label: t("nav.events"), icon: "🎤" },
+      { to: "/notifications", label: t("nav.notifications"), icon: "🔔" },
+      { to: "/settings", label: t("nav.settings"), icon: "⚙️" },
+    ];
+    if (can("admin.access")) items.push({ to: "/admin", label: t("nav.admin"), icon: "🛡️" });
+    return items;
+  }, [t, can]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -89,18 +92,51 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <nav className="lg:hidden flex gap-1 overflow-x-auto px-3 py-2 border-b border-border bg-card/40">
+        {/* Top scroll pill nav (mobile) */}
+        <nav className="lg:hidden flex gap-1 overflow-x-auto px-3 py-2 border-b border-border bg-card/40" aria-label="primary">
           {nav.map((n) => {
             const active = location.pathname.startsWith(n.to);
             return (
-              <Link key={n.to} to={n.to} className={`shrink-0 px-3 py-1.5 rounded-full text-xs ${active ? "bg-gradient-royal text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                {n.icon} {n.label}
+              <Link
+                key={n.to}
+                to={n.to}
+                className={`shrink-0 inline-flex items-center min-h-11 px-4 py-2 rounded-full text-xs font-medium ${
+                  active ? "bg-gradient-royal text-primary-foreground" : "bg-muted text-muted-foreground"
+                }`}
+              >
+                <span className="me-1.5 text-base">{n.icon}</span>
+                {n.label}
               </Link>
             );
           })}
         </nav>
 
-        <main className="flex-1 p-4 lg:p-8 max-w-7xl w-full mx-auto">{children}</main>
+        <main className="flex-1 p-4 lg:p-8 max-w-7xl w-full mx-auto pb-24 lg:pb-8">{children}</main>
+
+        {/* Bottom nav (mobile) — large touch targets for low-end devices */}
+        <nav
+          className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border safe-pb"
+          aria-label="bottom navigation"
+        >
+          <ul className="grid grid-cols-5">
+            {nav.slice(0, 5).map((n) => {
+              const active = location.pathname.startsWith(n.to);
+              return (
+                <li key={n.to}>
+                  <Link
+                    to={n.to}
+                    className={`flex flex-col items-center justify-center gap-0.5 min-h-14 py-2 text-[10px] font-medium ${
+                      active ? "text-gold" : "text-muted-foreground"
+                    }`}
+                  >
+                    <span className="text-xl leading-none">{n.icon}</span>
+                    <span className="truncate max-w-full px-1">{n.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
       </div>
     </div>
   );
