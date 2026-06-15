@@ -27,6 +27,9 @@ export function PremiumRawaLogo({ phase, hovered }: PremiumRawaLogoProps) {
   useMemo(() => {
     texture.anisotropy = 16;
     texture.colorSpace = THREE.SRGBColorSpace;
+    texture.flipY = false;
+    texture.center.set(0.5, 0.5);
+    texture.rotation = 0;
     texture.needsUpdate = true;
   }, [texture]);
 
