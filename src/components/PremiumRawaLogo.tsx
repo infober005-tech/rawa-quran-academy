@@ -47,6 +47,8 @@ export function PremiumRawaLogo({ phase, hovered }: PremiumRawaLogoProps) {
       roughness: 0.45,
       emissive: "#000000",
       envMapIntensity: 1.2,
+      transparent: true,
+      alphaTest: 0.05,
     });
     const back = new THREE.MeshStandardMaterial({
       map: texture,
