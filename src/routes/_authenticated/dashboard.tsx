@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { DashboardShell } from "@/components/DashboardShell";
+import { SubscriptionGate } from "@/components/SubscriptionGate";
 import {
   StudentDashboard,
   TeacherDashboard,
@@ -44,7 +45,11 @@ function DashboardRouter() {
         {primaryRole === "general_supervisor" && <GeneralSupervisorDashboard />}
         {primaryRole === "halaqa_supervisor" && <SupervisorDashboard />}
         {primaryRole === "teacher" && <TeacherDashboard />}
-        {primaryRole === "student" && <StudentDashboard />}
+        {primaryRole === "student" && (
+          <SubscriptionGate>
+            <StudentDashboard />
+          </SubscriptionGate>
+        )}
         {primaryRole === "parent" && <ParentDashboard />}
       </LazyDashboard>
     </DashboardShell>
