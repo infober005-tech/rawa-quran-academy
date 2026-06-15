@@ -140,8 +140,11 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
       },
     });
     setBusy(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success(t("auth.check_email"));
+    if (error) {
+      toast.error(isWeakPasswordError(error.message) ? t("auth.weak_password") : error.message);
+      return;
+    }
+    toast.success(t("auth.pending_approval"), { duration: 8000 });
     onDone();
   };
 
