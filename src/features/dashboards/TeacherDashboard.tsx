@@ -5,6 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SessionCaptureModal } from "./SessionCaptureModal";
+import { RecordingsPanel } from "@/features/recordings/RecordingsPanel";
 
 export function TeacherDashboard() {
   const { user } = useAuth();
@@ -100,6 +101,10 @@ export function TeacherDashboard() {
       {openId && <SessionCaptureModal halaqaId={openId} teacherId={user!.id} onClose={() => { setOpenId(null); qc.invalidateQueries(); }} />}
       {studentsId && <StudentsModal halaqaId={studentsId} onClose={() => setStudentsId(null)} />}
       {homeworkId && <HomeworkModal halaqaId={homeworkId} onClose={() => { setHomeworkId(null); qc.invalidateQueries(); }} />}
+
+      {halaqas?.[0] && (
+        <RecordingsPanel halaqaId={halaqas[0].id} allowUpload allowModerate={false} />
+      )}
     </div>
   );
 }
