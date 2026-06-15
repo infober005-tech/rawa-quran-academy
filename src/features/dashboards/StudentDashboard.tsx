@@ -5,6 +5,8 @@ import { useI18n } from "@/lib/i18n";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { SubscriptionPanel } from "@/features/subscription/SubscriptionPanel";
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
+import { RecordingsPanel } from "@/features/recordings/RecordingsPanel";
+import { AIInsightsPanel } from "@/features/insights/AIInsightsPanel";
 
 export function StudentDashboard() {
   const { user, profile } = useAuth();
@@ -177,6 +179,9 @@ export function StudentDashboard() {
           </div>
         </div>
       )}
+
+      {user && <AIInsightsPanel studentId={user.id} studentName={profile?.full_name ?? undefined} />}
+      {halaqa && <RecordingsPanel halaqaId={halaqa.id} />}
 
       {evals && evals.length > 0 && (
         <div className="p-6 rounded-2xl bg-card border border-border shadow-soft">

@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { RecordingsPanel } from "@/features/recordings/RecordingsPanel";
 
 export function SupervisorDashboard() {
   const { user } = useAuth();
@@ -68,6 +69,10 @@ export function SupervisorDashboard() {
       {notesId && <NotesModal halaqaId={notesId} onClose={() => setNotesId(null)} />}
       {sessionId && <SessionModal halaqaId={sessionId} onClose={() => setSessionId(null)} />}
       {reportsId && <ReportModal halaqaId={reportsId} onClose={() => setReportsId(null)} />}
+
+      {halaqas?.[0] && (
+        <RecordingsPanel halaqaId={halaqas[0].id} allowModerate />
+      )}
     </div>
   );
 }

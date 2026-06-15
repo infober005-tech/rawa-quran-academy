@@ -7,6 +7,8 @@ import { useI18n } from "@/lib/i18n";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
+import { RecordingsPanel } from "@/features/recordings/RecordingsPanel";
+import { AIInsightsPanel } from "@/features/insights/AIInsightsPanel";
 
 type Child = {
   id: string;
@@ -544,6 +546,9 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
           </div>
         </div>
       </div>
+
+      <AIInsightsPanel studentId={child.id} studentName={child.full_name ?? undefined} />
+      {halaqa?.id && <RecordingsPanel halaqaId={halaqa.id} />}
     </div>
   );
 }
