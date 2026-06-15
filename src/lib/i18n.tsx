@@ -348,7 +348,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     "ev.type.workshop": "Workshop",
     "ev.type.lecture": "Lecture",
     "ev.type.competition": "Competition",
-    "ev.type.live": "Live broadcast",
+    "ev.type.live": "Live session",
     "ev.register": "Register",
     "ev.registered_label": "Registered",
     "ev.unregister": "Unregister",
