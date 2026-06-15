@@ -18,7 +18,7 @@ export function PostFX({ phase, hovered }: PostFXProps) {
   const caOffset = useMemo<[number, number]>(() => [0.0006, 0.0009], []);
 
   return (
-    <EffectComposer multisampling={0} disableNormalPass>
+    <EffectComposer multisampling={0}>
       <Bloom
         intensity={bloomIntensity}
         luminanceThreshold={0.2}
