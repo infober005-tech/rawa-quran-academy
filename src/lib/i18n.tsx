@@ -174,6 +174,8 @@ const DICT: Record<Lang, Record<string, string>> = {
     "auth.or": "ou",
     "auth.remember": "Se souvenir de moi",
     "auth.check_email": "Vérifiez votre e-mail pour confirmer votre compte.",
+    "auth.pending_approval": "Votre compte a bien été créé. Il sera activé dès l'approbation de la direction.",
+    "auth.weak_password": "Ce mot de passe est trop faible ou a déjà été divulgué. Veuillez en choisir un plus robuste.",
     "auth.reset_sent": "Si l'e-mail existe, un lien de réinitialisation a été envoyé.",
     "auth.new_password": "Nouveau mot de passe",
     "auth.update_password": "Mettre à jour",
