@@ -299,7 +299,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     "auth.age": "Age",
     "auth.country": "Country",
     "auth.city": "City",
-    "auth.quran_level": "Quran level",
+    "auth.quran_level": "Qur'an level",
     "auth.level.beginner": "Beginner",
     "auth.level.intermediate": "Intermediate",
     "auth.level.advanced": "Advanced",
