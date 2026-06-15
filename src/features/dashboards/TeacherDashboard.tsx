@@ -97,7 +97,7 @@ export function TeacherDashboard() {
         )}
       </div>
 
-      {openId && <EvaluateHalaqa halaqaId={openId} onClose={() => { setOpenId(null); qc.invalidateQueries(); }} />}
+      {openId && <SessionCaptureModal halaqaId={openId} teacherId={user!.id} onClose={() => { setOpenId(null); qc.invalidateQueries(); }} />}
       {studentsId && <StudentsModal halaqaId={studentsId} onClose={() => setStudentsId(null)} />}
       {homeworkId && <HomeworkModal halaqaId={homeworkId} onClose={() => { setHomeworkId(null); qc.invalidateQueries(); }} />}
     </div>
