@@ -4,10 +4,12 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { SubscriptionPanel } from "@/features/subscription/SubscriptionPanel";
+import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 
 export function StudentDashboard() {
   const { user, profile } = useAuth();
   const { t } = useI18n();
+  useRealtimeInvalidate(["attendance", "evaluations", "halaqas"], ["my-attendance", "my-evals", "my-halaqa"]);
 
   const { data: assignment } = useQuery({
     queryKey: ["my-halaqa", user?.id],
@@ -181,9 +183,10 @@ export function StudentDashboard() {
           <h2 className="text-xl font-bold text-primary mb-4">{t("dash.evaluations")}</h2>
           <div className="space-y-3">
             {evals.map((e: any) => (
-              <div key={e.id} className="p-3 rounded-xl bg-muted/40 text-sm grid grid-cols-2 md:grid-cols-5 gap-2">
+              <div key={e.id} className="p-3 rounded-xl bg-muted/40 text-sm grid grid-cols-2 md:grid-cols-6 gap-2">
                 <div><span className="text-xs text-muted-foreground">تجويد</span><div className="font-bold text-primary">{e.tajweed_score ?? "—"}</div></div>
                 <div><span className="text-xs text-muted-foreground">حفظ</span><div className="font-bold text-primary">{e.memorization_score ?? "—"}</div></div>
+                <div><span className="text-xs text-muted-foreground">سلوك</span><div className="font-bold text-primary">{e.behavior_score ?? "—"}</div></div>
                 <div><span className="text-xs text-muted-foreground">طلاقة</span><div className="font-bold text-primary">{e.fluency_score ?? "—"}</div></div>
                 <div><span className="text-xs text-muted-foreground">مشاركة</span><div className="font-bold text-primary">{e.participation_score ?? "—"}</div></div>
                 <div className="col-span-2 md:col-span-1 text-xs text-muted-foreground">{new Date(e.created_at).toLocaleDateString()}</div>

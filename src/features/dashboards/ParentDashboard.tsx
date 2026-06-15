@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 
 type Child = {
   id: string;
@@ -35,6 +36,10 @@ type HalaqaInfo = {
 export function ParentDashboard() {
   const { user, profile } = useAuth();
   const [activeChild, setActiveChild] = useState<string | null>(null);
+  useRealtimeInvalidate(
+    ["attendance", "evaluations", "halaqas"],
+    ["parent-child-att", "parent-child-evals", "parent-child-halaqa"],
+  );
 
   const { data: children } = useQuery({
     queryKey: ["parent-children", user?.id],

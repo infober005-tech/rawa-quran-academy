@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { useState } from "react";
 import { toast } from "sonner";
+import { SessionCaptureModal } from "./SessionCaptureModal";
 
 export function TeacherDashboard() {
   const { user } = useAuth();
@@ -96,7 +97,7 @@ export function TeacherDashboard() {
         )}
       </div>
 
-      {openId && <EvaluateHalaqa halaqaId={openId} onClose={() => { setOpenId(null); qc.invalidateQueries(); }} />}
+      {openId && <SessionCaptureModal halaqaId={openId} teacherId={user!.id} onClose={() => { setOpenId(null); qc.invalidateQueries(); }} />}
       {studentsId && <StudentsModal halaqaId={studentsId} onClose={() => setStudentsId(null)} />}
       {homeworkId && <HomeworkModal halaqaId={homeworkId} onClose={() => { setHomeworkId(null); qc.invalidateQueries(); }} />}
     </div>
