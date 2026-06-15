@@ -5,6 +5,8 @@ import { useI18n } from "@/lib/i18n";
 import logoAsset from "@/assets/rawa-logo.png.asset.json";
 import { toast } from "sonner";
 
+const WEAK_PWD_PATTERNS = /pwned|leaked|compromis|breach|weak[_ ]?password|haveibeenpwned/i;
+
 export const Route = createFileRoute("/reset-password")({
   component: ResetPasswordPage,
 });
@@ -21,7 +23,11 @@ function ResetPasswordPage() {
     setBusy(true);
     const { error } = await supabase.auth.updateUser({ password });
     setBusy(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      const weak = WEAK_PWD_PATTERNS.test(error.message);
+      toast.error(weak ? t("auth.weak_password") : error.message);
+      return;
+    }
     toast.success("✓");
     void navigate({ to: "/dashboard" });
   };
