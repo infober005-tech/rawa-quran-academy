@@ -390,11 +390,11 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-xs text-muted-foreground border-b border-border">
-                  <th className="text-right py-2 font-semibold">التاريخ</th>
-                  <th className="text-right py-2 font-semibold">المعلم</th>
+                  <th className="text-start py-2 font-semibold">التاريخ</th>
+                  <th className="text-start py-2 font-semibold">المعلم</th>
                   <th className="text-center py-2 font-semibold">التجويد</th>
                   <th className="text-center py-2 font-semibold">الحفظ</th>
-                  <th className="text-right py-2 font-semibold">ملاحظات</th>
+                  <th className="text-start py-2 font-semibold">ملاحظات</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
@@ -433,7 +433,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
           <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
             📝 ملاحظات المعلمين
           </h3>
-          <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-80 overflow-y-auto pe-1">
             {(notes ?? []).map((n) => (
               <div
                 key={n.id}
