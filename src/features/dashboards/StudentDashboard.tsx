@@ -180,6 +180,9 @@ export function StudentDashboard() {
         </div>
       )}
 
+      {user && <AIInsightsPanel studentId={user.id} studentName={profile?.full_name ?? undefined} />}
+      {halaqa && <RecordingsPanel halaqaId={halaqa.id} />}
+
       {evals && evals.length > 0 && (
         <div className="p-6 rounded-2xl bg-card border border-border shadow-soft">
           <h2 className="text-xl font-bold text-primary mb-4">{t("dash.evaluations")}</h2>
