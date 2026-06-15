@@ -8,7 +8,7 @@ import { Particles } from "./Particles";
 import { Lights } from "./Lights";
 import { PostFX } from "./PostFX";
 import { isWebGLAvailable, useLogoAnimation } from "@/hooks/useLogoAnimation";
-import emblemAsset from "@/assets/rawa-emblem.png.asset.json";
+import emblemAsset from "@/assets/rawa-full.png.asset.json";
 
 interface LogoRevealProps {
   className?: string;
