@@ -275,7 +275,7 @@ const DICT: Record<Lang, Record<string, string>> = {
   },
   en: {
     "app.name": "Rawa",
-    "app.tagline": "Home of mastery · for hearts to be quenched",
+    "app.tagline": "A home of mastery — where hearts find their fill",
     "nav.login": "Sign in",
     "nav.register": "Register",
     "nav.logout": "Sign out",
