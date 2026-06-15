@@ -1,86 +1,80 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
-import { Float, Sparkles, Environment } from "@react-three/drei";
-import * as THREE from "three";
-import { TextureLoader } from "three";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { Canvas } from "@react-three/fiber";
+import { Environment } from "@react-three/drei";
 import logoAsset from "@/assets/rawa-logo.png.asset.json";
+import { useLogoAnimation, isWebGLAvailable } from "@/hooks/useLogoAnimation";
+import { PremiumRawaLogo } from "@/components/PremiumRawaLogo";
+import { Lights } from "@/components/Lights";
+import { Particles } from "@/components/Particles";
+import { PostFX } from "@/components/PostFX";
 
-function LogoMesh({ hovered }: { hovered: boolean }) {
-  const ref = useRef<THREE.Mesh>(null!);
-  const texture = useLoader(TextureLoader, logoAsset.url);
-  texture.anisotropy = 8;
-  const { mouse } = useThree();
-  const target = useRef({ x: 0, y: 0 });
-
-  useFrame((_, delta) => {
-    if (!ref.current) return;
-    target.current.x += (mouse.y * 0.18 - target.current.x) * 0.04;
-    target.current.y += (mouse.x * 0.25 - target.current.y) * 0.04;
-    ref.current.rotation.x = target.current.x;
-    ref.current.rotation.y += delta * 0.18 + (target.current.y - ref.current.rotation.y) * 0.02;
-    const s = hovered ? 1.08 : 1;
-    ref.current.scale.x += (s - ref.current.scale.x) * 0.08;
-    ref.current.scale.y += (s - ref.current.scale.y) * 0.08;
-    ref.current.scale.z += (s - ref.current.scale.z) * 0.08;
-  });
-
-  return (
-    <Float speed={1.4} rotationIntensity={0.15} floatIntensity={0.8}>
-      <mesh ref={ref}>
-        <planeGeometry args={[3.2, 3.2]} />
-        <meshStandardMaterial
-          map={texture}
-          transparent
-          alphaTest={0.05}
-          emissive={new THREE.Color("#C7A35C")}
-          emissiveMap={texture}
-          emissiveIntensity={0.35}
-          roughness={0.4}
-          metalness={0.3}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-    </Float>
-  );
-}
-
-function LightRays() {
-  const ref = useRef<THREE.Mesh>(null!);
-  useFrame((_, dt) => {
-    if (ref.current) ref.current.rotation.z += dt * 0.05;
-  });
-  const geometry = useMemo(() => new THREE.CircleGeometry(4.2, 64), []);
-  return (
-    <mesh ref={ref} position={[0, 0, -1.5]} geometry={geometry}>
-      <meshBasicMaterial color="#C7A35C" transparent opacity={0.08} blending={THREE.AdditiveBlending} />
-    </mesh>
-  );
-}
-
-function GoldGlow() {
-  return (
-    <mesh position={[0, 0, -0.5]}>
-      <circleGeometry args={[2.4, 64]} />
-      <meshBasicMaterial color="#C7A35C" transparent opacity={0.18} blending={THREE.AdditiveBlending} />
-    </mesh>
-  );
+/** Soft, short, spiritual chime via Web Audio — no external asset. */
+function playChime(muted: boolean) {
+  if (muted || typeof window === "undefined") return;
+  try {
+    const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AC) return;
+    const ctx = new AC();
+    if (ctx.state === "suspended") void ctx.resume();
+    const now = ctx.currentTime;
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0, now);
+    master.gain.linearRampToValueAtTime(0.18, now + 0.08);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
+    master.connect(ctx.destination);
+    // perfect-fifth bell: A4 + E5 + A5, sine + soft triangle
+    [
+      { f: 440, type: "sine" as OscillatorType, g: 1 },
+      { f: 659.25, type: "sine" as OscillatorType, g: 0.55 },
+      { f: 880, type: "triangle" as OscillatorType, g: 0.35 },
+    ].forEach((v) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = v.type;
+      o.frequency.setValueAtTime(v.f, now);
+      g.gain.setValueAtTime(v.g, now);
+      o.connect(g);
+      g.connect(master);
+      o.start(now);
+      o.stop(now + 1.9);
+    });
+    setTimeout(() => void ctx.close(), 2200);
+  } catch {
+    /* noop */
+  }
 }
 
 export function Logo3D() {
   const [mounted, setMounted] = useState(false);
-  const [hovered, setHovered] = useState(false);
   const [webgl, setWebgl] = useState(true);
+  const [hovered, setHovered] = useState(false);
+  const [muted, setMuted] = useState(true); // default muted for autoplay policy
+  const chimePlayed = useRef(false);
 
   useEffect(() => {
     setMounted(true);
-    try {
-      const c = document.createElement("canvas");
-      const gl = c.getContext("webgl2") || c.getContext("webgl");
-      if (!gl) setWebgl(false);
-    } catch {
-      setWebgl(false);
-    }
+    setWebgl(isWebGLAvailable());
   }, []);
+
+  const { phase, setHovered: setLogoHover } = useLogoAnimation({ autoStart: mounted, webglOk: webgl });
+
+  // Trigger chime once on materialize phase (if user unmuted before that)
+  useEffect(() => {
+    if (phase >= 4 && !chimePlayed.current && !muted) {
+      chimePlayed.current = true;
+      playChime(false);
+    }
+  }, [phase, muted]);
+
+  // When user toggles sound on after materialize, play immediately once
+  const onToggleMute = () => {
+    const next = !muted;
+    setMuted(next);
+    if (!next && phase >= 4 && !chimePlayed.current) {
+      chimePlayed.current = true;
+      playChime(false);
+    }
+  };
 
   if (!mounted || !webgl) {
     return (
@@ -95,32 +89,138 @@ export function Logo3D() {
     );
   }
 
+  // Cinematic CSS overlays driven by phase
+  const dark = phase < 1 ? 1 : phase < 2 ? 0.85 : phase < 3 ? 0.55 : phase < 4 ? 0.3 : 0;
+  const beam = phase >= 1 ? Math.min(1, (phase - 0.4) / 2) : 0;
+  const flare = phase >= 4 ? 1 : 0;
+
   return (
     <div
-      className="relative w-full aspect-square"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      className="relative w-full aspect-square overflow-hidden rounded-[2.5rem]"
+      onMouseEnter={() => {
+        setHovered(true);
+        setLogoHover(true);
+      }}
+      onMouseLeave={() => {
+        setHovered(false);
+        setLogoHover(false);
+      }}
     >
-      {/* Soft halo behind canvas */}
-      <div className="absolute inset-6 rounded-full bg-gradient-to-br from-[#C7A35C]/30 via-[#8B79A8]/25 to-[#5E4B7B]/30 blur-3xl pointer-events-none" />
+      {/* Deep background dark veil — fades out as reveal progresses */}
+      <div
+        className="absolute inset-0 pointer-events-none transition-opacity duration-[1400ms] ease-out"
+        style={{
+          opacity: dark,
+          background:
+            "radial-gradient(ellipse at center, rgba(20,8,42,0.6) 0%, rgba(8,4,20,0.95) 60%, #050210 100%)",
+        }}
+      />
+
+      {/* Volumetric golden beam behind logo */}
+      <div
+        className="absolute inset-0 pointer-events-none transition-opacity duration-[1600ms] ease-out"
+        style={{
+          opacity: beam,
+          background:
+            "radial-gradient(circle at 50% 50%, rgba(255,215,140,0.55) 0%, rgba(199,163,92,0.25) 22%, rgba(94,75,123,0.15) 45%, transparent 70%)",
+          mixBlendMode: "screen",
+        }}
+      />
+
+      {/* Conic golden light rays (slow rotation) */}
+      <div
+        className="absolute inset-0 pointer-events-none transition-opacity duration-[1800ms]"
+        style={{
+          opacity: beam * 0.55,
+          background:
+            "conic-gradient(from 0deg, transparent 0deg, rgba(255,214,138,0.25) 18deg, transparent 36deg, transparent 90deg, rgba(255,214,138,0.18) 108deg, transparent 126deg, transparent 180deg, rgba(255,214,138,0.22) 198deg, transparent 216deg, transparent 270deg, rgba(255,214,138,0.18) 288deg, transparent 306deg)",
+          maskImage: "radial-gradient(circle at center, black 35%, transparent 70%)",
+          WebkitMaskImage: "radial-gradient(circle at center, black 35%, transparent 70%)",
+          animation: "rawaSpin 28s linear infinite",
+          mixBlendMode: "screen",
+        }}
+      />
+
+      {/* Cinematic lens flare at materialize */}
+      <div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-opacity duration-[1200ms]"
+        style={{ opacity: flare }}
+      >
+        <div
+          className="h-[140%] w-[8px] blur-[2px]"
+          style={{
+            background: "linear-gradient(to bottom, transparent, rgba(255,238,180,0.85), transparent)",
+          }}
+        />
+      </div>
+      <div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-opacity duration-[1200ms]"
+        style={{ opacity: flare * 0.7 }}
+      >
+        <div
+          className="w-[140%] h-[6px] blur-[2px]"
+          style={{
+            background: "linear-gradient(to right, transparent, rgba(255,238,180,0.75), transparent)",
+          }}
+        />
+      </div>
+
       <Canvas
         dpr={[1, 2]}
         camera={{ position: [0, 0, 5.2], fov: 45 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       >
         <Suspense fallback={null}>
-          <ambientLight intensity={0.55} color="#E9DDF0" />
-          <pointLight position={[3, 3, 3]} intensity={2.2} color="#C7A35C" />
-          <pointLight position={[-3, -2, 2]} intensity={1.6} color="#5E4B7B" />
-          <pointLight position={[0, 0, 4]} intensity={0.9} color="#ffffff" />
-          <LightRays />
-          <GoldGlow />
-          <LogoMesh hovered={hovered} />
-          <Sparkles count={70} scale={[6, 6, 2]} size={3} speed={0.4} color="#D4AF37" opacity={0.9} />
-          <Sparkles count={40} scale={[8, 8, 3]} size={2} speed={0.25} color="#E9DDF0" opacity={0.6} />
+          <Lights phase={phase} hovered={hovered} />
+          <PremiumRawaLogo phase={phase} hovered={hovered} />
+          <Particles count={72} phase={phase} hovered={hovered} />
           <Environment preset="sunset" />
+          <PostFX phase={phase} hovered={hovered} />
         </Suspense>
       </Canvas>
+
+      {/* Subtle soft golden shimmer overlay every few seconds (post-reveal) */}
+      {phase >= 5 && (
+        <div
+          className="absolute inset-0 pointer-events-none opacity-60"
+          style={{
+            background:
+              "linear-gradient(115deg, transparent 30%, rgba(255,228,160,0.18) 50%, transparent 70%)",
+            animation: "rawaShimmer 6.5s ease-in-out infinite",
+            mixBlendMode: "screen",
+          }}
+        />
+      )}
+
+      {/* Mute toggle */}
+      <button
+        type="button"
+        onClick={onToggleMute}
+        aria-label={muted ? "تشغيل الصوت" : "كتم الصوت"}
+        className="absolute bottom-3 left-3 z-10 grid h-9 w-9 place-items-center rounded-full border border-[#C7A35C]/40 bg-black/40 text-[#f5d68a] backdrop-blur-md transition hover:bg-black/60"
+      >
+        {muted ? (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 5 6 9H2v6h4l5 4z" />
+            <line x1="22" y1="9" x2="16" y2="15" />
+            <line x1="16" y1="9" x2="22" y2="15" />
+          </svg>
+        ) : (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 5 6 9H2v6h4l5 4z" />
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+          </svg>
+        )}
+      </button>
+
+      <style>{`
+        @keyframes rawaSpin { to { transform: rotate(360deg); } }
+        @keyframes rawaShimmer {
+          0%, 100% { transform: translateX(-30%); opacity: 0; }
+          50%      { transform: translateX(30%);  opacity: 0.7; }
+        }
+      `}</style>
     </div>
   );
 }
