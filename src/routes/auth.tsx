@@ -7,6 +7,11 @@ import { useI18n } from "@/lib/i18n";
 import logoAsset from "@/assets/rawa-logo.png.asset.json";
 import { toast } from "sonner";
 
+const WEAK_PWD_PATTERNS = /pwned|leaked|compromis|breach|weak[_ ]?password|haveibeenpwned/i;
+function isWeakPasswordError(msg: string | undefined) {
+  return !!msg && WEAK_PWD_PATTERNS.test(msg);
+}
+
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "تسجيل الدخول · رواء" }] }),
   component: AuthPage,
@@ -135,8 +140,11 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
       },
     });
     setBusy(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success(t("auth.check_email"));
+    if (error) {
+      toast.error(isWeakPasswordError(error.message) ? t("auth.weak_password") : error.message);
+      return;
+    }
+    toast.success(t("auth.pending_approval"), { duration: 8000 });
     onDone();
   };
 
