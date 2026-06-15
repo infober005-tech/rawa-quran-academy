@@ -2,12 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { DashboardShell } from "@/components/DashboardShell";
-import { StudentDashboard } from "@/features/dashboards/StudentDashboard";
-import { TeacherDashboard } from "@/features/dashboards/TeacherDashboard";
-import { SupervisorDashboard } from "@/features/dashboards/SupervisorDashboard";
-import { GeneralSupervisorDashboard } from "@/features/dashboards/GeneralSupervisorDashboard";
-import { DirectorDashboard } from "@/features/dashboards/DirectorDashboard";
-import { ParentDashboard } from "@/features/dashboards/ParentDashboard";
+import {
+  StudentDashboard,
+  TeacherDashboard,
+  SupervisorDashboard,
+  GeneralSupervisorDashboard,
+  DirectorDashboard,
+  ParentDashboard,
+  LazyDashboard,
+} from "@/components/RoleDashboards";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardRouter,
@@ -36,12 +39,14 @@ function DashboardRouter() {
 
   return (
     <DashboardShell>
-      {primaryRole === "director" && <DirectorDashboard />}
-      {primaryRole === "general_supervisor" && <GeneralSupervisorDashboard />}
-      {primaryRole === "halaqa_supervisor" && <SupervisorDashboard />}
-      {primaryRole === "teacher" && <TeacherDashboard />}
-      {primaryRole === "student" && <StudentDashboard />}
-      {primaryRole === "parent" && <ParentDashboard />}
+      <LazyDashboard>
+        {primaryRole === "director" && <DirectorDashboard />}
+        {primaryRole === "general_supervisor" && <GeneralSupervisorDashboard />}
+        {primaryRole === "halaqa_supervisor" && <SupervisorDashboard />}
+        {primaryRole === "teacher" && <TeacherDashboard />}
+        {primaryRole === "student" && <StudentDashboard />}
+        {primaryRole === "parent" && <ParentDashboard />}
+      </LazyDashboard>
     </DashboardShell>
   );
 }
