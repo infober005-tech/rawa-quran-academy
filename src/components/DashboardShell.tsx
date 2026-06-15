@@ -2,6 +2,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import logoAsset from "@/assets/rawa-logo.png.asset.json";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n, LangSwitcher } from "@/lib/i18n";
+import { useNotificationToasts } from "@/hooks/useNotificationToasts";
 import type { ReactNode } from "react";
 
 export function DashboardShell({ children }: { children: ReactNode }) {
@@ -9,6 +10,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   const { t, dir } = useI18n();
   const navigate = useNavigate();
   const { location } = useRouterState();
+  useNotificationToasts();
 
   const nav = [
     { to: "/dashboard", label: t("nav.dashboard"), icon: "🏠" },
