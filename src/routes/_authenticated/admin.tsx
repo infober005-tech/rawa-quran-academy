@@ -1,5 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { DashboardShell } from "@/components/DashboardShell";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
@@ -12,6 +13,19 @@ import { PaymentsPanel } from "@/features/admin/PaymentsPanel";
 import { PaymentSettingsPanel } from "@/features/admin/PaymentSettingsPanel";
 
 export const Route = createFileRoute("/_authenticated/admin")({
+  beforeLoad: async () => {
+    const { data: userRes } = await supabase.auth.getUser();
+    const uid = userRes.user?.id;
+    if (!uid) throw redirect({ to: "/auth" });
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", uid);
+    const allowed = (roles ?? []).some((r) =>
+      ["director", "general_supervisor"].includes(r.role as string),
+    );
+    if (!allowed) throw redirect({ to: "/dashboard" });
+  },
   component: AdminPage,
 });
 
