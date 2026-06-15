@@ -879,6 +879,64 @@ export type Database = {
         }
         Relationships: []
       }
+      session_recordings: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          file_path: string
+          halaqa_id: string
+          id: string
+          session_id: string | null
+          size_bytes: number | null
+          title: string | null
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          file_path: string
+          halaqa_id: string
+          id?: string
+          session_id?: string | null
+          size_bytes?: number | null
+          title?: string | null
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          file_path?: string
+          halaqa_id?: string
+          id?: string
+          session_id?: string | null
+          size_bytes?: number | null
+          title?: string | null
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_recordings_halaqa_id_fkey"
+            columns: ["halaqa_id"]
+            isOneToOne: false
+            referencedRelation: "halaqas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_recordings_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "halaqa_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_recordings_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_halaqas: {
         Row: {
           halaqa_id: string
