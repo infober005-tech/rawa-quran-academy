@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useInView, useScroll, useTransform, animate } from "framer-motion";
 import {
   BookOpen, Mic, GraduationCap, CalendarCheck, BarChart3, Sparkles,
