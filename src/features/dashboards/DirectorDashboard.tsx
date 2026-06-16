@@ -4,6 +4,7 @@ import { useI18n } from "@/lib/i18n";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Legend } from "recharts";
+import { LogoPremium3D } from "@/components/LogoPremium3D";
 
 export function DirectorDashboard() {
   const { t } = useI18n();
@@ -74,8 +75,16 @@ export function DirectorDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-3xl font-bold text-primary">{t("nav.admin")} · {t("nav.dashboard")}</h1>
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-card to-gold/10 px-5 py-4 shadow-soft">
+        <div className="flex items-center gap-4 min-w-0">
+          <LogoPremium3D size="sm" halo />
+          <div className="min-w-0">
+            <h1 className="text-2xl md:text-3xl font-bold text-primary truncate">
+              {t("nav.admin")} · {t("nav.dashboard")}
+            </h1>
+            <p className="text-xs text-muted-foreground truncate">رواء — أكاديمية القرآن الكريم</p>
+          </div>
+        </div>
       </div>
 
       <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3">
