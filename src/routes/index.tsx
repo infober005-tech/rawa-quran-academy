@@ -228,14 +228,6 @@ function Hero() {
   );
 }
 
-function LogoFallback() {
-  return (
-    <div className="relative w-full aspect-square flex items-center justify-center">
-      <img src={logoAsset.url} alt="شعار رواء" className="w-[78%]" />
-    </div>
-  );
-}
-
 function IslamicPattern() {
   return (
     <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
