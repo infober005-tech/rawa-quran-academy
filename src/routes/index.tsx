@@ -7,8 +7,7 @@ import {
   Mail, Phone, MapPin, Facebook, Instagram, Youtube, Twitter,
 } from "lucide-react";
 import logoAsset from "@/assets/rawa-logo.png.asset.json";
-
-const Logo3D = lazy(() => import("@/components/landing/Logo3D").then((m) => ({ default: m.Logo3D })));
+import { LogoPremium3D } from "@/components/LogoPremium3D";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -114,9 +113,9 @@ function Hero() {
         >
           <div className="relative rounded-[2.5rem] p-4 bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-xl border border-white/50 shadow-[0_30px_80px_-20px_rgba(94,75,123,0.4)]">
             <div className="rounded-[2rem] overflow-hidden bg-gradient-to-br from-primary/5 via-transparent to-gold/10">
-              <Suspense fallback={<LogoFallback />}>
-                <Logo3D />
-              </Suspense>
+              <div className="w-full aspect-square grid place-items-center p-4 sm:p-6">
+                <LogoPremium3D size="xl" intro particles interactive className="w-full max-w-[460px] h-auto aspect-square" />
+              </div>
             </div>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
