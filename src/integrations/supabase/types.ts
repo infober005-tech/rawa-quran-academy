@@ -772,6 +772,7 @@ export type Database = {
           full_name: string
           id: string
           payment_date: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
           phone: string | null
           receipt_file_url: string
           rejected_at: string | null
@@ -790,6 +791,7 @@ export type Database = {
           full_name: string
           id?: string
           payment_date: string
+          payment_method?: Database["public"]["Enums"]["payment_method"]
           phone?: string | null
           receipt_file_url: string
           rejected_at?: string | null
@@ -808,6 +810,7 @@ export type Database = {
           full_name?: string
           id?: string
           payment_date?: string
+          payment_method?: Database["public"]["Enums"]["payment_method"]
           phone?: string | null
           receipt_file_url?: string
           rejected_at?: string | null
@@ -1026,6 +1029,7 @@ export type Database = {
           end_date: string
           id: string
           payment_id: string | null
+          reminders_sent: Json
           start_date: string
           status: Database["public"]["Enums"]["subscription_status"]
           student_id: string
@@ -1036,6 +1040,7 @@ export type Database = {
           end_date: string
           id?: string
           payment_id?: string | null
+          reminders_sent?: Json
           start_date?: string
           status?: Database["public"]["Enums"]["subscription_status"]
           student_id: string
@@ -1046,6 +1051,7 @@ export type Database = {
           end_date?: string
           id?: string
           payment_id?: string | null
+          reminders_sent?: Json
           start_date?: string
           status?: Database["public"]["Enums"]["subscription_status"]
           student_id?: string
@@ -1163,6 +1169,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      process_subscription_reminders: { Args: never; Returns: undefined }
     }
     Enums: {
       app_language: "ar" | "fr" | "en"
@@ -1177,6 +1184,7 @@ export type Database = {
       conversation_kind: "direct" | "group" | "halaqa"
       gender_type: "male" | "female"
       halaqa_status: "active" | "archived" | "inactive"
+      payment_method: "edahabia" | "baridimob"
       payment_status: "pending" | "approved" | "rejected"
       quran_level: "beginner" | "intermediate" | "advanced"
       student_status: "pending_review" | "approved" | "rejected" | "suspended"
@@ -1331,6 +1339,7 @@ export const Constants = {
       conversation_kind: ["direct", "group", "halaqa"],
       gender_type: ["male", "female"],
       halaqa_status: ["active", "archived", "inactive"],
+      payment_method: ["edahabia", "baridimob"],
       payment_status: ["pending", "approved", "rejected"],
       quran_level: ["beginner", "intermediate", "advanced"],
       student_status: ["pending_review", "approved", "rejected", "suspended"],
