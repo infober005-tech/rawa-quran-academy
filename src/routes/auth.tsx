@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
-import logoAsset from "@/assets/rawa-logo.png.asset.json";
 import { toast } from "sonner";
+import { LogoPremium3D } from "@/components/LogoPremium3D";
 
 const WEAK_PWD_PATTERNS = /pwned|leaked|compromis|breach|weak[_ ]?password|haveibeenpwned/i;
 function isWeakPasswordError(msg: string | undefined) {
@@ -30,8 +30,8 @@ function AuthPage() {
   return (
     <div dir={dir} className="min-h-screen bg-hero islamic-pattern flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Link to="/" className="flex items-center justify-center gap-3 mb-6">
-          <img src={logoAsset.url} alt="" className="w-14 h-14 rounded-full shadow-glow" />
+        <Link to="/" className="flex flex-col items-center justify-center gap-2 mb-6">
+          <LogoPremium3D size="md" intro />
           <div className="text-center">
             <div className="text-2xl font-bold text-primary" style={{ fontFamily: "var(--font-display-ar)" }}>{t("app.name")}</div>
             <div className="text-xs text-muted-foreground">{t("app.tagline")}</div>

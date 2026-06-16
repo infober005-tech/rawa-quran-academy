@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { RecordingsPanel } from "@/features/recordings/RecordingsPanel";
 import { AIInsightsPanel } from "@/features/insights/AIInsightsPanel";
+import { LogoPremium3D } from "@/components/LogoPremium3D";
 
 type Child = {
   id: string;
@@ -249,6 +250,17 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
 
   return (
     <div className="space-y-6">
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-card to-gold/10 px-5 py-4 shadow-soft">
+        <div className="flex items-center gap-4 min-w-0">
+          <LogoPremium3D size="sm" halo />
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-2xl font-bold text-primary truncate">
+              {parentName ? `أهلًا ${parentName}` : "لوحة ولي الأمر"}
+            </h1>
+            <p className="text-xs text-muted-foreground truncate">رواء — أكاديمية القرآن الكريم</p>
+          </div>
+        </div>
+      </div>
       {/* Welcome card with student / halaqa / teacher / supervisor */}
       <div className="rounded-3xl border border-border bg-card/60 backdrop-blur-xl p-6 shadow-soft">
         <div className="grid lg:grid-cols-[auto_1fr_auto] items-center gap-6">

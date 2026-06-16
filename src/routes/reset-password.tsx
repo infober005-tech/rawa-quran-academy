@@ -2,8 +2,8 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
-import logoAsset from "@/assets/rawa-logo.png.asset.json";
 import { toast } from "sonner";
+import { LogoPremium3D } from "@/components/LogoPremium3D";
 
 const WEAK_PWD_PATTERNS = /pwned|leaked|compromis|breach|weak[_ ]?password|haveibeenpwned/i;
 
@@ -35,8 +35,8 @@ function ResetPasswordPage() {
   return (
     <div dir={dir} className="min-h-screen bg-hero islamic-pattern flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-card border border-border rounded-3xl p-8 shadow-soft">
-        <Link to="/" className="flex items-center justify-center gap-3 mb-6">
-          <img src={logoAsset.url} alt="" className="w-12 h-12 rounded-full" />
+        <Link to="/" className="flex flex-col items-center justify-center gap-2 mb-6">
+          <LogoPremium3D size="md" intro />
           <span className="font-bold text-primary text-lg">{t("app.name")}</span>
         </Link>
         <form onSubmit={submit} className="space-y-4">
