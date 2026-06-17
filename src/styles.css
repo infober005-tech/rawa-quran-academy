@@ -214,12 +214,7 @@
   backdrop-filter: blur(24px) saturate(160%);
   border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
 }
-@utility text-gold {
-  color: var(--gold);
-}
-@utility ring-gold {
-  --tw-ring-color: var(--gold);
-}
+
 
 @utility islamic-pattern {
   background-color: transparent;
