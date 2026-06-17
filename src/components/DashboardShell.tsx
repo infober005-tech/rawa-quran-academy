@@ -1,142 +1,44 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import logoAsset from "@/assets/rawa-logo.png.asset.json";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n, LangSwitcher } from "@/lib/i18n";
 import { useNotificationToasts } from "@/hooks/useNotificationToasts";
-import { useMemo, type ReactNode } from "react";
+import { PremiumSidebar, MobileSidebar } from "@/components/PremiumSidebar";
+import type { ReactNode } from "react";
 
 export function DashboardShell({ children }: { children: ReactNode }) {
-  const { profile, primaryRole, signOut, can } = useAuth();
+  const { profile, signOut } = useAuth();
   const { t, dir } = useI18n();
   const navigate = useNavigate();
-  const { location } = useRouterState();
   useNotificationToasts();
-
-  const nav = useMemo(() => {
-    const items = [
-      { to: "/dashboard", label: t("nav.dashboard"), icon: "🏠" },
-      { to: "/halaqas", label: t("nav.halaqas"), icon: "🕌" },
-      { to: "/events", label: t("nav.events"), icon: "🎤" },
-      { to: "/notifications", label: t("nav.notifications"), icon: "🔔" },
-      { to: "/settings", label: t("nav.settings"), icon: "⚙️" },
-    ];
-    if (can("admin.access")) items.push({ to: "/admin", label: t("nav.admin"), icon: "🛡️" });
-    return items;
-  }, [t, can]);
 
   const handleSignOut = async () => {
     await signOut();
     await navigate({ to: "/" });
   };
 
-  const roleLabel: Record<string, string> = {
-    director: dir === "rtl" ? "مدير المنصة" : "Director",
-    general_supervisor: dir === "rtl" ? "مشرف عام" : "General Supervisor",
-    halaqa_supervisor: dir === "rtl" ? "مشرف حلقة" : "Halaqa Supervisor",
-    teacher: dir === "rtl" ? "معلم" : "Teacher",
-    student: dir === "rtl" ? "طالب" : "Student",
-  };
-
   return (
-    <div dir={dir} className="min-h-screen bg-background text-foreground flex">
-      <aside className="hidden lg:flex w-64 flex-col bg-card/60 backdrop-blur-xl border-l border-border shrink-0">
-        <div className="p-6 flex items-center gap-3 border-b border-border">
-          <img src={logoAsset.url} alt="" className="w-10 h-10 rounded-full" />
-          <div>
-            <div className="font-bold text-primary" style={{ fontFamily: "var(--font-display-ar)" }}>{t("app.name")}</div>
-            <div className="text-[10px] text-muted-foreground">{t("app.tagline")}</div>
-          </div>
-        </div>
-        <nav className="flex-1 p-3 space-y-1">
-          {nav.map((n) => {
-            const active = location.pathname.startsWith(n.to);
-            return (
-              <Link
-                key={n.to}
-                to={n.to}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition ${
-                  active ? "bg-gradient-royal text-primary-foreground shadow-glow" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                <span className="text-lg">{n.icon}</span>
-                <span>{n.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="p-3 border-t border-border space-y-2">
-          <div className="px-3 py-2 rounded-xl bg-muted/50">
-            <div className="text-sm font-semibold text-primary truncate">{profile?.full_name || profile?.email}</div>
-            <div className="text-[11px] text-gold">{primaryRole ? roleLabel[primaryRole] : ""}</div>
-          </div>
-          <button onClick={handleSignOut} className="w-full px-3 py-2 rounded-xl text-sm text-destructive hover:bg-destructive/10 transition text-start">
-            ⎋ {t("nav.logout")}
-          </button>
-        </div>
-      </aside>
+    <div dir={dir} className="min-h-screen bg-hero text-foreground flex">
+      <PremiumSidebar onSignOut={handleSignOut} />
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border px-4 lg:px-8 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 lg:hidden">
-            <img src={logoAsset.url} alt="" className="w-9 h-9 rounded-full" />
-            <div className="font-bold text-primary">{t("app.name")}</div>
+        <header className="sticky top-0 z-30 glass-panel border-b border-border/60 px-4 lg:px-8 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <MobileSidebar onSignOut={handleSignOut} />
+            <div className="flex items-center gap-3 lg:hidden min-w-0">
+              <img src={logoAsset.url} alt="" className="w-9 h-9 rounded-full ring-2 ring-gold/40 shrink-0" />
+              <div className="font-bold text-primary truncate">{t("app.name")}</div>
+            </div>
+            <div className="hidden lg:block text-sm text-muted-foreground truncate">
+              {t("dash.welcome")}، <span className="text-primary font-semibold">{profile?.full_name || profile?.email}</span>
+            </div>
           </div>
-          <div className="hidden lg:block text-sm text-muted-foreground">
-            {t("dash.welcome")}، <span className="text-primary font-semibold">{profile?.full_name || profile?.email}</span>
-          </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <LangSwitcher />
-            <button onClick={handleSignOut} className="lg:hidden px-3 py-1.5 rounded-full text-xs text-destructive border border-destructive/30">
-              {t("nav.logout")}
-            </button>
           </div>
         </header>
 
-        {/* Top scroll pill nav (mobile) */}
-        <nav className="lg:hidden flex gap-1 overflow-x-auto px-3 py-2 border-b border-border bg-card/40" aria-label="primary">
-          {nav.map((n) => {
-            const active = location.pathname.startsWith(n.to);
-            return (
-              <Link
-                key={n.to}
-                to={n.to}
-                className={`shrink-0 inline-flex items-center min-h-11 px-4 py-2 rounded-full text-xs font-medium ${
-                  active ? "bg-gradient-royal text-primary-foreground" : "bg-muted text-muted-foreground"
-                }`}
-              >
-                <span className="me-1.5 text-base">{n.icon}</span>
-                {n.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <main className="flex-1 p-4 lg:p-8 max-w-7xl w-full mx-auto pb-24 lg:pb-8">{children}</main>
-
-        {/* Bottom nav (mobile) — large touch targets for low-end devices */}
-        <nav
-          className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border safe-pb"
-          aria-label="bottom navigation"
-        >
-          <ul className="grid grid-cols-5">
-            {nav.slice(0, 5).map((n) => {
-              const active = location.pathname.startsWith(n.to);
-              return (
-                <li key={n.to}>
-                  <Link
-                    to={n.to}
-                    className={`flex flex-col items-center justify-center gap-0.5 min-h-14 py-2 text-[10px] font-medium ${
-                      active ? "text-gold" : "text-muted-foreground"
-                    }`}
-                  >
-                    <span className="text-xl leading-none">{n.icon}</span>
-                    <span className="truncate max-w-full px-1">{n.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+        <main className="flex-1 p-4 lg:p-8 max-w-7xl w-full mx-auto">{children}</main>
       </div>
     </div>
   );
