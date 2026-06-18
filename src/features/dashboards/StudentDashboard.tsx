@@ -59,7 +59,7 @@ export function StudentDashboard() {
     queryKey: ["my-events", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase.from("events").select("*").eq("status", "published").gte("start_at", new Date().toISOString()).order("start_at", { ascending: true }).limit(5);
+      const { data } = await supabase.from("events").select("*").eq("status", "published").gte("date", new Date().toISOString()).order("date", { ascending: true }).limit(5);
       return data ?? [];
     },
   });
@@ -175,7 +175,7 @@ export function StudentDashboard() {
             {upcoming?.map((e: any) => (
               <div key={e.id} className="py-2.5">
                 <div className="font-semibold text-sm">{e.title}</div>
-                <div className="text-xs text-muted-foreground">{new Date(e.start_at).toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground">{new Date(e.date).toLocaleString()}</div>
               </div>
             ))}
             {(!upcoming || upcoming.length === 0) && (

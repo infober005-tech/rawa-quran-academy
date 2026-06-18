@@ -86,10 +86,10 @@ export function DirectorDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("events")
-        .select("id, title, start_at")
+        .select("id, title, date")
         .eq("status", "published")
-        .gte("start_at", new Date().toISOString())
-        .order("start_at", { ascending: true })
+        .gte("date", new Date().toISOString())
+        .order("date", { ascending: true })
         .limit(5);
       return data ?? [];
     },
@@ -216,7 +216,7 @@ export function DirectorDashboard() {
             {upcomingEvents.map((e) => (
               <Link key={e.id} to="/events" className="py-3 flex items-center justify-between gap-3 hover:bg-muted/30 rounded-xl px-2 transition">
                 <div className="font-semibold text-primary text-sm truncate">{e.title}</div>
-                <div className="text-xs text-muted-foreground shrink-0">{new Date(e.start_at).toLocaleDateString()}</div>
+                <div className="text-xs text-muted-foreground shrink-0">{new Date(e.date).toLocaleDateString()}</div>
               </Link>
             ))}
           </div>
