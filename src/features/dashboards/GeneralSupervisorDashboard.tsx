@@ -6,6 +6,8 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContai
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import { EmptyState } from "@/components/EmptyState";
 
 type Tab = "overview" | "halaqas" | "teachers" | "supervisors" | "analytics" | "reports";
 
@@ -59,7 +61,11 @@ export function GeneralSupervisorDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-primary">{t("gs.title")}</h1>
+      <DashboardHeader
+        badge="General supervisor"
+        title={t("gs.title")}
+        subtitle="Cross-halaqa monitoring · analytics · reports"
+      />
 
       <div className="grid md:grid-cols-4 gap-4">
         <Stat icon="🕌" label={t("nav.halaqas")} value={String(stats.halaqas)} />
@@ -170,7 +176,7 @@ function TeachersMon({ halaqas, evaluations }: { halaqas: any[]; evaluations: an
         <thead className="bg-muted/50 text-xs text-muted-foreground"><tr><th className="p-3 text-start">{t("common.teacher")}</th><th className="p-3 text-start">{t("nav.halaqas")}</th><th className="p-3 text-start">{t("dash.evaluations")}</th><th className="p-3 text-start">{t("gs.avg_score")}</th></tr></thead>
         <tbody>
           {teachers.map((tch) => <tr key={tch.id} className="border-t border-border"><td className="p-3 font-semibold text-primary">{tch.name}</td><td className="p-3">{tch.halaqas}</td><td className="p-3">{tch.evals}</td><td className="p-3">{tch.avgScore ? tch.avgScore.toFixed(1) : "—"}</td></tr>)}
-          {!teachers.length && <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">—</td></tr>}
+          {!teachers.length && <tr><td colSpan={4} className="p-0"><EmptyState compact variant="students" title="No teacher data yet" description="Assign teachers to halaqas to see performance analytics here." /></td></tr>}
         </tbody>
       </table>
     </div>
@@ -197,7 +203,7 @@ function SupervisorsMon({ halaqas, attendance, notes }: { halaqas: any[]; attend
         <thead className="bg-muted/50 text-xs text-muted-foreground"><tr><th className="p-3 text-start">{t("common.supervisor")}</th><th className="p-3 text-start">{t("nav.halaqas")}</th><th className="p-3 text-start">{t("gs.records")}</th><th className="p-3 text-start">{t("sup.notes")}</th></tr></thead>
         <tbody>
           {sups.map((s) => <tr key={s.id} className="border-t border-border"><td className="p-3 font-semibold text-primary">{s.name}</td><td className="p-3">{s.halaqas}</td><td className="p-3">{s.recorded}</td><td className="p-3">{s.notes}</td></tr>)}
-          {!sups.length && <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">—</td></tr>}
+          {!sups.length && <tr><td colSpan={4} className="p-0"><EmptyState compact variant="students" title="No supervisor data" description="Assign supervisors to halaqas to track their activity." /></td></tr>}
         </tbody>
       </table>
     </div>
