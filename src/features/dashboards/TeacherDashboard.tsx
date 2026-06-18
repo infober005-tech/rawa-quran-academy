@@ -6,6 +6,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { SessionCaptureModal } from "./SessionCaptureModal";
 import { RecordingsPanel } from "@/features/recordings/RecordingsPanel";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import { EmptyState } from "@/components/EmptyState";
 
 export function TeacherDashboard() {
   const { user } = useAuth();
@@ -57,7 +59,24 @@ export function TeacherDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-primary">{t("common.teacher")} · {t("nav.dashboard")}</h1>
+      <DashboardHeader
+        badge="Teacher · Halaqat"
+        title={`${t("common.teacher")} · ${t("nav.dashboard")}`}
+        subtitle="Manage your halaqas, students and live sessions"
+        actions={
+          halaqas && halaqas.some((h) => h.live_session_active) ? (
+            <span className="px-3 py-1.5 rounded-full bg-green-500/20 text-green-600 text-xs font-bold animate-pulse">● LIVE</span>
+          ) : null
+        }
+      />
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatTile icon="🕌" label="Halaqas" value={String(halaqas?.length ?? 0)} />
+        <StatTile icon="🟢" label="Active" value={String(halaqas?.filter((h) => h.status === "active").length ?? 0)} />
+        <StatTile icon="🎙" label="Live now" value={String(halaqas?.filter((h) => h.live_session_active).length ?? 0)} />
+        <StatTile icon="📅" label="With link" value={String(halaqas?.filter((h) => !!h.meeting_link).length ?? 0)} />
+      </div>
+
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {halaqas?.map((h) => (
           <div key={h.id} className="p-5 rounded-2xl bg-card border border-border shadow-soft">
@@ -94,7 +113,13 @@ export function TeacherDashboard() {
           </div>
         ))}
         {(!halaqas || halaqas.length === 0) && (
-          <div className="md:col-span-3 p-10 text-center text-muted-foreground border border-dashed rounded-2xl">{t("dash.no_halaqa")}</div>
+          <div className="md:col-span-3">
+            <EmptyState
+              variant="halaqas"
+              title="No halaqas assigned yet"
+              description="Once the director assigns you a halaqa, you'll be able to evaluate students, manage homework and start live sessions from here."
+            />
+          </div>
         )}
       </div>
 
@@ -105,6 +130,16 @@ export function TeacherDashboard() {
       {halaqas?.[0] && (
         <RecordingsPanel halaqaId={halaqas[0].id} allowUpload allowModerate={false} />
       )}
+    </div>
+  );
+}
+
+function StatTile({ icon, label, value }: { icon: string; label: string; value: string }) {
+  return (
+    <div className="p-4 rounded-2xl bg-card border border-border shadow-soft hover:shadow-premium transition">
+      <div className="text-2xl mb-1">{icon}</div>
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-xl font-black text-primary mt-0.5">{value}</div>
     </div>
   );
 }

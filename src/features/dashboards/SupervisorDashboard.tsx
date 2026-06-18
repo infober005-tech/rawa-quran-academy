@@ -5,6 +5,8 @@ import { useI18n } from "@/lib/i18n";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { RecordingsPanel } from "@/features/recordings/RecordingsPanel";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import { EmptyState } from "@/components/EmptyState";
 
 export function SupervisorDashboard() {
   const { user } = useAuth();
@@ -28,7 +30,11 @@ export function SupervisorDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-primary">{t("common.supervisor")} · {t("dash.attendance")}</h1>
+      <DashboardHeader
+        badge="Halaqa supervisor"
+        title={`${t("common.supervisor")} · ${t("dash.attendance")}`}
+        subtitle="Attendance, session monitoring and student follow-up"
+      />
 
       <div className="grid md:grid-cols-3 gap-4">
         <StatCard icon="🕌" label={t("sup.todays")} value={String(todays.length)} />
@@ -63,7 +69,15 @@ export function SupervisorDashboard() {
             </div>
           </div>
         ))}
-        {(!halaqas || halaqas.length === 0) && <div className="md:col-span-3 p-10 text-center text-muted-foreground border border-dashed rounded-2xl">{t("dash.no_halaqa")}</div>}
+        {(!halaqas || halaqas.length === 0) && (
+          <div className="md:col-span-3">
+            <EmptyState
+              variant="halaqas"
+              title="No halaqas assigned"
+              description="You haven't been assigned to a halaqa yet. The director will link supervised halaqas to your account."
+            />
+          </div>
+        )}
       </div>
       {halaqaId && <AttendanceSheet halaqaId={halaqaId} />}
       {notesId && <NotesModal halaqaId={notesId} onClose={() => setNotesId(null)} />}

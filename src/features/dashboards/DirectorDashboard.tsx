@@ -4,7 +4,8 @@ import { useI18n } from "@/lib/i18n";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Legend } from "recharts";
-import { LogoPremium3D } from "@/components/LogoPremium3D";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import { EmptyState } from "@/components/EmptyState";
 
 export function DirectorDashboard() {
   const { t } = useI18n();
@@ -18,8 +19,15 @@ export function DirectorDashboard() {
         supabase.from("user_roles").select("user_id", { count: "exact", head: true }).eq("role", "teacher"),
         supabase.from("user_roles").select("user_id", { count: "exact", head: true }).eq("role", "halaqa_supervisor"),
         supabase.from("halaqas").select("id", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("payments").select("id", { count: "exact", head: true }).eq("status", "pending"),
       ]);
-      return { students: counts[0].count ?? 0, teachers: counts[1].count ?? 0, supervisors: counts[2].count ?? 0, halaqas: counts[3].count ?? 0 };
+      return {
+        students: counts[0].count ?? 0,
+        teachers: counts[1].count ?? 0,
+        supervisors: counts[2].count ?? 0,
+        halaqas: counts[3].count ?? 0,
+        pendingPayments: counts[4].count ?? 0,
+      };
     },
   });
 
@@ -73,32 +81,61 @@ export function DirectorDashboard() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const { data: upcomingEvents } = useQuery({
+    queryKey: ["dir-upcoming-events"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("events")
+        .select("id, title, date")
+        .eq("status", "published")
+        .gte("date", new Date().toISOString())
+        .order("date", { ascending: true })
+        .limit(5);
+      return data ?? [];
+    },
+  });
+
+  const { data: liveHalaqas } = useQuery({
+    queryKey: ["dir-live"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("halaqas")
+        .select("id, name")
+        .eq("live_session_active", true)
+        .limit(5);
+      return data ?? [];
+    },
+  });
+
   return (
     <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-card to-gold/10 px-5 py-4 shadow-soft">
-        <div className="flex items-center gap-4 min-w-0">
-          <LogoPremium3D size="sm" halo />
-          <div className="min-w-0">
-            <h1 className="text-2xl md:text-3xl font-bold text-primary truncate">
-              {t("nav.admin")} · {t("nav.dashboard")}
-            </h1>
-            <p className="text-xs text-muted-foreground truncate">رواء — أكاديمية القرآن الكريم</p>
-          </div>
-        </div>
+      <DashboardHeader
+        badge="Director · Control center"
+        title={`${t("nav.admin")} · ${t("nav.dashboard")}`}
+        subtitle="رواء — أكاديمية القرآن الكريم"
+        actions={
+          liveHalaqas && liveHalaqas.length > 0 ? (
+            <span className="px-3 py-1.5 rounded-full bg-green-500/20 text-green-600 text-xs font-bold animate-pulse">
+              ● {liveHalaqas.length} LIVE
+            </span>
+          ) : null
+        }
+      />
+
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <Link to="/admin" className="p-4 rounded-2xl bg-gradient-royal text-primary-foreground shadow-glow text-center font-semibold text-sm hover:opacity-90 transition">👥 Users</Link>
+        <Link to="/halaqas" className="p-4 rounded-2xl glass-card text-primary text-center font-semibold text-sm hover:shadow-glow transition">🕌 Halaqas</Link>
+        <Link to="/events" className="p-4 rounded-2xl glass-card text-primary text-center font-semibold text-sm hover:shadow-glow transition">🎉 Events</Link>
+        <Link to="/admin" className="p-4 rounded-2xl glass-card text-primary text-center font-semibold text-sm hover:shadow-glow transition">💳 Payments</Link>
+        <Link to="/notifications" className="p-4 rounded-2xl glass-card text-primary text-center font-semibold text-sm hover:shadow-glow transition">🔔 Notify</Link>
       </div>
 
-      <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3">
-        <Link to="/admin" className="p-4 rounded-2xl bg-gradient-royal text-primary-foreground shadow-glow text-center font-semibold text-sm hover:opacity-90">👥 Users & Roles</Link>
-        <Link to="/admin" className="p-4 rounded-2xl bg-card border border-border text-primary text-center font-semibold text-sm hover:bg-muted">🕌 Halaqas</Link>
-        <Link to="/admin" className="p-4 rounded-2xl bg-card border border-border text-primary text-center font-semibold text-sm hover:bg-muted">🎉 Events</Link>
-        <Link to="/admin" className="p-4 rounded-2xl bg-card border border-border text-primary text-center font-semibold text-sm hover:bg-muted">📅 Calendar</Link>
-      </div>
-
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
         <Stat icon="🎓" label={t("common.students")} value={String(stats?.students ?? 0)} />
         <Stat icon="👨‍🏫" label={t("common.teacher")} value={String(stats?.teachers ?? 0)} />
         <Stat icon="👁️" label={t("common.supervisor")} value={String(stats?.supervisors ?? 0)} />
         <Stat icon="🕌" label={t("nav.halaqas")} value={String(stats?.halaqas ?? 0)} />
+        <Stat icon="💳" label="Pending pay" value={String(stats?.pendingPayments ?? 0)} accent />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4">
@@ -161,13 +198,48 @@ export function DirectorDashboard() {
               </div>
             </div>
           ))}
-          {(!pending || pending.length === 0) && <div className="py-6 text-center text-muted-foreground text-sm">—</div>}
+          {(!pending || pending.length === 0) && (
+            <EmptyState
+              compact
+              variant="students"
+              title="No pending students"
+              description="All caught up — new registrations will appear here for review."
+            />
+          )}
         </div>
+      </div>
+
+      <div className="p-6 rounded-2xl bg-card border border-border shadow-soft">
+        <h2 className="text-xl font-bold text-primary mb-4">📅 Upcoming events</h2>
+        {upcomingEvents && upcomingEvents.length > 0 ? (
+          <div className="divide-y divide-border">
+            {upcomingEvents.map((e) => (
+              <Link key={e.id} to="/events" className="py-3 flex items-center justify-between gap-3 hover:bg-muted/30 rounded-xl px-2 transition">
+                <div className="font-semibold text-primary text-sm truncate">{e.title}</div>
+                <div className="text-xs text-muted-foreground shrink-0">{new Date(e.date).toLocaleDateString()}</div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            compact
+            variant="events"
+            title="No upcoming events"
+            description="Publish an event from the admin panel — it will surface here for everyone."
+            action={<Link to="/admin" className="px-4 py-2 rounded-full bg-gradient-royal text-primary-foreground text-xs font-semibold shadow-glow">+ Create event</Link>}
+          />
+        )}
       </div>
     </div>
   );
 }
 
-function Stat({ icon, label, value }: { icon: string; label: string; value: string }) {
-  return <div className="p-5 rounded-2xl bg-card border border-border shadow-soft"><div className="text-3xl mb-2">{icon}</div><div className="text-xs text-muted-foreground">{label}</div><div className="text-2xl font-bold text-primary">{value}</div></div>;
+function Stat({ icon, label, value, accent }: { icon: string; label: string; value: string; accent?: boolean }) {
+  return (
+    <div className={`p-4 md:p-5 rounded-2xl border shadow-soft transition hover:shadow-premium ${accent ? "border-gold/40 bg-gradient-to-br from-gold/15 to-card" : "border-border bg-card"}`}>
+      <div className="text-2xl md:text-3xl mb-1.5">{icon}</div>
+      <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider">{label}</div>
+      <div className={`text-xl md:text-2xl font-black mt-0.5 ${accent ? "text-gold-foreground" : "text-primary"}`}>{value}</div>
+    </div>
+  );
 }

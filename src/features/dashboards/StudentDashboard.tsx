@@ -7,6 +7,8 @@ import { SubscriptionPanel } from "@/features/subscription/SubscriptionPanel";
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { RecordingsPanel } from "@/features/recordings/RecordingsPanel";
 import { AIInsightsPanel } from "@/features/insights/AIInsightsPanel";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import { EmptyState } from "@/components/EmptyState";
 
 export function StudentDashboard() {
   const { user, profile } = useAuth();
@@ -57,7 +59,7 @@ export function StudentDashboard() {
     queryKey: ["my-events", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase.from("events").select("*").eq("status", "published").gte("start_at", new Date().toISOString()).order("start_at", { ascending: true }).limit(5);
+      const { data } = await supabase.from("events").select("*").eq("status", "published").gte("date", new Date().toISOString()).order("date", { ascending: true }).limit(5);
       return data ?? [];
     },
   });
@@ -76,7 +78,16 @@ export function StudentDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-primary">{t("dash.welcome")}، {profile?.full_name} 🌙</h1>
+      <DashboardHeader
+        badge="Student · رحلة القرآن"
+        title={`${t("dash.welcome")}، ${profile?.full_name ?? ""}`}
+        subtitle={halaqa?.name ? `${halaqa.name} · ${halaqa.level ?? ""}` : "رواء — أكاديمية القرآن الكريم"}
+        actions={
+          halaqa?.live_session_active ? (
+            <span className="px-3 py-1.5 rounded-full bg-green-500/20 text-green-600 text-xs font-bold animate-pulse">● LIVE NOW</span>
+          ) : null
+        }
+      />
 
       <SubscriptionPanel />
 
@@ -116,7 +127,11 @@ export function StudentDashboard() {
           )}
         </div>
       ) : (
-        <div className="p-10 rounded-2xl bg-card border border-dashed border-border text-center text-muted-foreground">{t("dash.no_halaqa")}</div>
+        <EmptyState
+          variant="halaqas"
+          title={t("dash.no_halaqa")}
+          description="You're not in a halaqa yet. The director will assign you to one — you'll see your teacher, schedule and live session button here."
+        />
       )}
 
       {chartData.length > 0 && (
@@ -149,7 +164,9 @@ export function StudentDashboard() {
                 {h.description && <div className="text-xs text-muted-foreground mt-1">{h.description}</div>}
               </div>
             ))}
-            {(!homework || homework.length === 0) && <div className="py-4 text-center text-muted-foreground text-sm">—</div>}
+            {(!homework || homework.length === 0) && (
+              <EmptyState compact variant="homework" title="No homework yet" description="Assignments from your teacher will appear here." />
+            )}
           </div>
         </div>
         <div className="p-6 rounded-2xl bg-card border border-border shadow-soft">
@@ -158,10 +175,12 @@ export function StudentDashboard() {
             {upcoming?.map((e: any) => (
               <div key={e.id} className="py-2.5">
                 <div className="font-semibold text-sm">{e.title}</div>
-                <div className="text-xs text-muted-foreground">{new Date(e.start_at).toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground">{new Date(e.date).toLocaleString()}</div>
               </div>
             ))}
-            {(!upcoming || upcoming.length === 0) && <div className="py-4 text-center text-muted-foreground text-sm">—</div>}
+            {(!upcoming || upcoming.length === 0) && (
+              <EmptyState compact variant="events" title="No upcoming events" description="Watch this space — events and ceremonies will be announced here." />
+            )}
           </div>
         </div>
       </div>
