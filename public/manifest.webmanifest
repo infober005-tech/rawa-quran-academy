@@ -1,0 +1,15 @@
+{
+  "name": "رواء — أكاديمية القرآن الكريم",
+  "short_name": "Rawa",
+  "description": "منصة رواء للحلقات القرآنية الإلكترونية والتصحيح المباشر للتلاوة والتجويد والحفظ.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F8F6FB",
+  "theme_color": "#6A4C93",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "any", "type": "image/x-icon" }
+  ]
+}

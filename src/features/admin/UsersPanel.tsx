@@ -58,7 +58,7 @@ export function UsersPanel() {
               <td className="p-3 text-xs">{u.email}</td>
               <td className="p-3 text-xs">{u.gender ?? "—"}</td>
               <td className="p-3">
-                <select value={u.status} onChange={(e) => setStatus.mutate({ id: u.id, status: e.target.value as "pending_review" | "approved" | "rejected" | "suspended" })} className="px-2 py-1 rounded-lg border border-input bg-background text-xs">
+                <select aria-label={`Status for ${u.full_name ?? u.email}`} value={u.status} onChange={(e) => setStatus.mutate({ id: u.id, status: e.target.value as "pending_review" | "approved" | "rejected" | "suspended" })} className="px-2 py-1.5 min-h-9 rounded-lg border border-input bg-background text-xs">
                   <option value="pending_review">pending_review</option>
                   <option value="approved">approved</option>
                   <option value="rejected">rejected</option>
@@ -66,7 +66,7 @@ export function UsersPanel() {
                 </select>
               </td>
               <td className="p-3">
-                <select value={u.roles[0] ?? "student"} onChange={(e) => setRole.mutate({ userId: u.id, role: e.target.value as AppRole })} className="px-2 py-1 rounded-lg border border-input bg-background text-xs">
+                <select aria-label={`Role for ${u.full_name ?? u.email}`} value={u.roles[0] ?? "student"} onChange={(e) => setRole.mutate({ userId: u.id, role: e.target.value as AppRole })} className="px-2 py-1.5 min-h-9 rounded-lg border border-input bg-background text-xs">
                   {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
               </td>
