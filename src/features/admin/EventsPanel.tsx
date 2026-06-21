@@ -107,14 +107,14 @@ export function EventsPanel() {
                 {e.registration_required && <div className="text-xs text-gold mt-1">🎟️ {regs?.[e.id] ?? 0}{e.max_participants ? ` / ${e.max_participants}` : ""}</div>}
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                <select value={e.status} onChange={(ev) => setStatus.mutate({ id: e.id, status: ev.target.value as EventRow["status"] })} className="px-2 py-1 rounded-lg border border-input bg-background text-xs">
+                <select aria-label={`Status for ${e.title}`} value={e.status} onChange={(ev) => setStatus.mutate({ id: e.id, status: ev.target.value as EventRow["status"] })} className="px-2 py-1.5 min-h-9 rounded-lg border border-input bg-background text-xs">
                   <option value="draft">draft</option>
                   <option value="published">published</option>
                   <option value="cancelled">cancelled</option>
                   <option value="completed">completed</option>
                 </select>
-                <button onClick={() => { setEditing(e); setShowForm(true); }} className="px-3 py-1 rounded-full text-xs bg-muted">{t("common.edit")}</button>
-                <button onClick={() => { if (confirm("Delete?")) del.mutate(e.id); }} className="px-3 py-1 rounded-full text-xs bg-destructive/10 text-destructive">{t("common.delete")}</button>
+                <button aria-label={`${t("common.edit")} ${e.title}`} onClick={() => { setEditing(e); setShowForm(true); }} className="px-3 py-1.5 min-h-9 rounded-full text-xs bg-muted hover:bg-muted/70">{t("common.edit")}</button>
+                <button aria-label={`${t("common.delete")} ${e.title}`} onClick={() => { if (confirm("Delete?")) del.mutate(e.id); }} className="px-3 py-1.5 min-h-9 rounded-full text-xs bg-destructive/10 text-destructive hover:bg-destructive/20">{t("common.delete")}</button>
               </div>
             </div>
           </div>

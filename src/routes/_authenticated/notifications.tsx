@@ -4,6 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { DashboardShell } from "@/components/DashboardShell";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import { EmptyState } from "@/components/EmptyState";
+import { Bell, CheckCheck } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
   component: NotificationsPage,
@@ -11,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/notifications")({
 
 function NotificationsPage() {
   const { user } = useAuth();
-  const { t } = useI18n();
+  const { t, dir } = useI18n();
   const qc = useQueryClient();
   const { data } = useQuery({
     queryKey: ["notifs", user?.id],
@@ -25,23 +28,66 @@ function NotificationsPage() {
     mutationFn: async (id: string) => { await supabase.from("notifications").update({ is_read: true }).eq("id", id); },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notifs"] }),
   });
+  const markAllRead = useMutation({
+    mutationFn: async () => {
+      await supabase.from("notifications").update({ is_read: true }).eq("user_id", user!.id).eq("is_read", false);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifs"] }),
+  });
+  const unread = (data ?? []).filter((n) => !n.is_read).length;
 
   return (
     <DashboardShell>
-      <h1 className="text-3xl font-bold text-primary mb-6">{t("nav.notifications")}</h1>
-      <div className="space-y-2">
-        {data?.map((n) => (
-          <div key={n.id} onClick={() => !n.is_read && markRead.mutate(n.id)} className={`p-4 rounded-2xl border cursor-pointer transition ${n.is_read ? "bg-card border-border" : "bg-gold/5 border-gold/30"}`}>
-            <div className="flex justify-between items-start gap-3">
-              <div>
-                <div className="font-semibold text-primary">{n.title}</div>
-                {n.content && <div className="text-sm text-muted-foreground mt-1">{n.content}</div>}
+      <div className="space-y-6">
+        <DashboardHeader
+          title={t("nav.notifications")}
+          subtitle={unread > 0 ? (dir === "rtl" ? `${unread} غير مقروءة` : `${unread} unread`) : (dir === "rtl" ? "كل شيء محدث" : "All caught up")}
+          badge="Inbox"
+          actions={unread > 0 ? (
+            <button
+              onClick={() => markAllRead.mutate()}
+              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-royal px-4 py-2 text-xs font-semibold text-primary-foreground shadow-glow min-h-11"
+              aria-label={dir === "rtl" ? "تعليم الكل كمقروء" : "Mark all as read"}
+            >
+              <CheckCheck className="h-4 w-4" aria-hidden />
+              <span className="hidden sm:inline">{dir === "rtl" ? "تعليم الكل" : "Mark all read"}</span>
+            </button>
+          ) : undefined}
+        />
+        <div className="grid gap-2 max-w-3xl">
+          {data?.map((n) => (
+            <button
+              key={n.id}
+              type="button"
+              onClick={() => !n.is_read && markRead.mutate(n.id)}
+              className={`text-start w-full p-4 rounded-2xl border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                n.is_read
+                  ? "bg-card/60 border-border hover:bg-card"
+                  : "bg-gold/5 border-gold/40 shadow-soft hover:border-gold"
+              }`}
+            >
+              <div className="flex justify-between items-start gap-3">
+                <div className="flex items-start gap-3 min-w-0">
+                  <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${n.is_read ? "bg-muted text-muted-foreground" : "bg-gradient-gold text-white shadow-gold"}`}>
+                    <Bell className="h-4 w-4" aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <div className="font-semibold text-primary">{n.title}</div>
+                    {n.content && <div className="text-sm text-muted-foreground mt-1 break-words">{n.content}</div>}
+                  </div>
+                </div>
+                <time className="text-[11px] text-muted-foreground shrink-0">{new Date(n.created_at).toLocaleDateString()}</time>
               </div>
-              <div className="text-xs text-muted-foreground shrink-0">{new Date(n.created_at).toLocaleDateString()}</div>
-            </div>
-          </div>
-        ))}
-        {(!data || data.length === 0) && <div className="p-10 text-center text-muted-foreground border border-dashed rounded-2xl">—</div>}
+            </button>
+          ))}
+          {(!data || data.length === 0) && (
+            <EmptyState
+              variant="notifications"
+              title={dir === "rtl" ? "لا توجد إشعارات بعد" : "No notifications yet"}
+              description={dir === "rtl" ? "ستظهر هنا تحديثات الحلقات، الفعاليات، والتقييمات." : "Halaqa updates, events, and evaluations will appear here."}
+            />
+          )}
+        </div>
       </div>
     </DashboardShell>
   );

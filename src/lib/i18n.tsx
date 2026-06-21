@@ -448,12 +448,15 @@ export function useI18n() {
 export function LangSwitcher() {
   const { lang, setLang } = useI18n();
   return (
-    <div className="inline-flex rounded-full border border-border bg-card/60 p-0.5 text-xs">
+    <div role="group" aria-label="Language" className="inline-flex rounded-full border border-border bg-card/60 p-0.5 text-xs">
       {(["ar", "fr", "en"] as Lang[]).map((l) => (
         <button
           key={l}
+          type="button"
           onClick={() => setLang(l)}
-          className={`px-3 py-1 rounded-full transition ${lang === l ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+          aria-pressed={lang === l}
+          aria-label={l === "ar" ? "العربية" : l === "fr" ? "Français" : "English"}
+          className={`px-3 py-1.5 min-h-9 min-w-9 rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${lang === l ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
         >
           {l.toUpperCase()}
         </button>
