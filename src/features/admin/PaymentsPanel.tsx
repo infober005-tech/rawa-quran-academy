@@ -66,6 +66,37 @@ export function PaymentsPanel() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const extendSub = useMutation({
+    mutationFn: async (sub: SubRow) => {
+      const newEnd = new Date(Math.max(new Date(sub.end_date).getTime(), Date.now()) + 30 * 86400000).toISOString();
+      const { error } = await supabase
+        .from("subscriptions")
+        .update({ end_date: newEnd, status: "active" })
+        .eq("id", sub.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-subscriptions-all"] });
+      toast.success("تم تمديد الاشتراك");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const cancelSub = useMutation({
+    mutationFn: async (sub: SubRow) => {
+      const { error } = await supabase
+        .from("subscriptions")
+        .update({ status: "cancelled" })
+        .eq("id", sub.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-subscriptions-all"] });
+      toast.success("تم إلغاء الاشتراك");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const filtered = (payments ?? []).filter((p) => {
     if (methodFilter !== "all" && p.payment_method !== methodFilter) return false;
     if (!search) return true;
