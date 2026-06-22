@@ -188,6 +188,68 @@ export function PaymentsPanel() {
           </tbody>
         </table>
       </div>
+
+      <div className="rounded-2xl border border-border bg-card overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-muted/40 flex items-center justify-between">
+          <h3 className="font-bold text-primary text-sm">إدارة الاشتراكات</h3>
+          <span className="text-xs text-muted-foreground">{(subs ?? []).length} سجل</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/30 text-xs">
+              <tr>
+                <th className="text-right p-3">الطالب</th>
+                <th className="text-right p-3">الحالة</th>
+                <th className="text-right p-3">يبدأ</th>
+                <th className="text-right p-3">ينتهي</th>
+                <th className="text-right p-3">إجراءات</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {(subs ?? []).slice(0, 30).map((s) => {
+                const expired = new Date(s.end_date) < new Date();
+                return (
+                  <tr key={s.id} className="hover:bg-muted/30">
+                    <td className="p-3 font-mono text-xs">{s.student_id.slice(0, 8)}…</td>
+                    <td className="p-3">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                        s.status === "active" && !expired ? "bg-green-500/15 text-green-700 dark:text-green-400" :
+                        s.status === "cancelled" ? "bg-muted text-muted-foreground" :
+                        "bg-red-500/15 text-red-700 dark:text-red-400"
+                      }`}>{expired && s.status === "active" ? "expired" : s.status}</span>
+                    </td>
+                    <td className="p-3 text-xs">{new Date(s.start_date).toLocaleDateString("ar")}</td>
+                    <td className="p-3 text-xs">{new Date(s.end_date).toLocaleDateString("ar")}</td>
+                    <td className="p-3">
+                      <div className="flex gap-1.5 flex-wrap">
+                        <button
+                          onClick={() => extendSub.mutate(s)}
+                          disabled={extendSub.isPending}
+                          className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold disabled:opacity-50"
+                        >
+                          تمديد 30 يوم
+                        </button>
+                        {s.status === "active" && (
+                          <button
+                            onClick={() => { if (confirm("إلغاء الاشتراك؟")) cancelSub.mutate(s); }}
+                            disabled={cancelSub.isPending}
+                            className="px-3 py-1 rounded-full bg-red-600 text-white text-xs font-bold disabled:opacity-50"
+                          >
+                            إلغاء
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {(!subs || subs.length === 0) && (
+                <tr><td colSpan={5} className="text-center text-muted-foreground py-8">لا توجد اشتراكات</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
