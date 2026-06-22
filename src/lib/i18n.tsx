@@ -43,6 +43,11 @@ export function useI18n() {
   return ctx;
 }
 
+// Alias matching common i18n libraries
+export function useTranslation() {
+  return useI18n();
+}
+
 export function LangSwitcher() {
   const { lang, setLang } = useI18n();
   return (
