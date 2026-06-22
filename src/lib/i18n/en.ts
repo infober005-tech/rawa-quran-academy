@@ -133,5 +133,14 @@ const dict = {
     "gs.report.progress": "Student progress report",
     "gs.report.teachers": "Teacher performance report",
     "gs.report.supervisors": "Supervisor performance report",
+    "sub.active": "Subscription active",
+    "sub.expired": "Subscription expired",
+    "sub.days_left": "days left",
+    "sub.renew": "Renew",
+    "sub.manage": "Subscription management",
+    "sub.extend_30": "Extend 30 days",
+    "sub.cancel": "Cancel",
+    "sub.extended": "Subscription extended",
+    "sub.cancelled": "Subscription cancelled",
 };
 export default dict;

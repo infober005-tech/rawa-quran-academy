@@ -133,5 +133,14 @@ const dict = {
     "gs.report.progress": "تقرير تقدم الطلاب",
     "gs.report.teachers": "تقرير أداء المعلمين",
     "gs.report.supervisors": "تقرير أداء المشرفين",
+    "sub.active": "اشتراكك فعّال",
+    "sub.expired": "انتهى اشتراكك",
+    "sub.days_left": "يوم متبقٍ",
+    "sub.renew": "تجديد الاشتراك",
+    "sub.manage": "إدارة الاشتراكات",
+    "sub.extend_30": "تمديد 30 يوم",
+    "sub.cancel": "إلغاء",
+    "sub.extended": "تم تمديد الاشتراك",
+    "sub.cancelled": "تم إلغاء الاشتراك",
 };
 export default dict;
