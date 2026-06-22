@@ -1,8 +1,13 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import ar from "./i18n/ar";
+import fr from "./i18n/fr";
+import en from "./i18n/en";
 
 export type Lang = "ar" | "fr" | "en";
 
-const DICT: Record<Lang, Record<string, string>> = {
+const DICT: Record<Lang, Record<string, string>> = { ar, fr, en };
+
+const _LEGACY_DICT_DISABLED = {
   ar: {
     "app.name": "رواء",
     "app.tagline": "منزِل الإتقان · لارتواء الجنان",
