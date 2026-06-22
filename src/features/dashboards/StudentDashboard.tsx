@@ -9,6 +9,7 @@ import { RecordingsPanel } from "@/features/recordings/RecordingsPanel";
 import { AIInsightsPanel } from "@/features/insights/AIInsightsPanel";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { EmptyState } from "@/components/EmptyState";
+import { SubscriptionStatusBanner } from "@/components/SubscriptionStatusBanner";
 
 export function StudentDashboard() {
   const { user, profile } = useAuth();
@@ -88,6 +89,8 @@ export function StudentDashboard() {
           ) : null
         }
       />
+
+      <SubscriptionStatusBanner />
 
       <SubscriptionPanel />
 
