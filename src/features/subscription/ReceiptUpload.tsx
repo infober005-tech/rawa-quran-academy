@@ -80,7 +80,7 @@ export function ReceiptUpload({ qrPayload, onSubmitted }: { qrPayload: QrPayload
         receipt_sha256: receiptHash,
         payment_ref: qrPayload?.ref ?? null,
         qr_token: qrPayload?.token ?? null,
-        qr_payload: qrPayload ? (qrPayload as unknown as Record<string, unknown>) : null,
+        qr_payload: qrPayload ? JSON.parse(JSON.stringify(qrPayload)) : null,
         qr_expires_at: qrPayload?.expiresAt ?? null,
       });
       if (error) throw error;
