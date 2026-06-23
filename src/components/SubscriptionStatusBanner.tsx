@@ -22,6 +22,9 @@ export function SubscriptionStatusBanner() {
         <span className="text-xs text-muted-foreground">
           {daysRemaining} {t("sub.days_left")}
         </span>
+        <Link to="/payment-status" className="text-[11px] underline text-green-700 dark:text-green-400">
+          {t("sub.status_link") || "تفاصيل الحالة"}
+        </Link>
       </div>
     );
   }
@@ -35,12 +38,17 @@ export function SubscriptionStatusBanner() {
         <span aria-hidden>⛔</span>
         <span>{t("sub.expired")}</span>
       </div>
-      <Link
-        to="/subscribe"
-        className="inline-flex items-center gap-1 rounded-full bg-gradient-royal px-4 py-1.5 text-xs font-bold text-primary-foreground shadow-soft hover:scale-[1.02] transition"
-      >
-        {t("sub.renew")} ←
-      </Link>
+      <div className="flex items-center gap-2">
+        <Link to="/payment-status" className="text-[11px] underline text-red-700 dark:text-red-400">
+          {t("sub.status_link") || "تفاصيل الحالة"}
+        </Link>
+        <Link
+          to="/subscribe"
+          className="inline-flex items-center gap-1 rounded-full bg-gradient-royal px-4 py-1.5 text-xs font-bold text-primary-foreground shadow-soft hover:scale-[1.02] transition"
+        >
+          {t("sub.renew")} ←
+        </Link>
+      </div>
     </div>
   );
 }

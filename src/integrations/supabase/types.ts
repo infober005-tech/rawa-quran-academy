@@ -176,6 +176,36 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          metadata: Json
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          metadata?: Json
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          metadata?: Json
+        }
+        Relationships: []
+      }
       conversation_members: {
         Row: {
           conversation_id: string
@@ -767,14 +797,20 @@ export type Database = {
           admin_notes: string | null
           amount: number
           approved_at: string | null
+          client_ip: string | null
           created_at: string
           email: string
           full_name: string
           id: string
           payment_date: string
           payment_method: Database["public"]["Enums"]["payment_method"]
+          payment_ref: string | null
           phone: string | null
+          qr_expires_at: string | null
+          qr_payload: Json | null
+          qr_token: string | null
           receipt_file_url: string
+          receipt_sha256: string | null
           rejected_at: string | null
           reviewed_by: string | null
           status: Database["public"]["Enums"]["payment_status"]
@@ -786,14 +822,20 @@ export type Database = {
           admin_notes?: string | null
           amount: number
           approved_at?: string | null
+          client_ip?: string | null
           created_at?: string
           email: string
           full_name: string
           id?: string
           payment_date: string
           payment_method?: Database["public"]["Enums"]["payment_method"]
+          payment_ref?: string | null
           phone?: string | null
+          qr_expires_at?: string | null
+          qr_payload?: Json | null
+          qr_token?: string | null
           receipt_file_url: string
+          receipt_sha256?: string | null
           rejected_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
@@ -805,14 +847,20 @@ export type Database = {
           admin_notes?: string | null
           amount?: number
           approved_at?: string | null
+          client_ip?: string | null
           created_at?: string
           email?: string
           full_name?: string
           id?: string
           payment_date?: string
           payment_method?: Database["public"]["Enums"]["payment_method"]
+          payment_ref?: string | null
           phone?: string | null
+          qr_expires_at?: string | null
+          qr_payload?: Json | null
+          qr_token?: string | null
           receipt_file_url?: string
+          receipt_sha256?: string | null
           rejected_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
@@ -1145,6 +1193,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_submit_payment: { Args: { _user_id: string }; Returns: boolean }
       has_active_subscription: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {

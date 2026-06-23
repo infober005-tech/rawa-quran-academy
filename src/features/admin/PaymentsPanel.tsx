@@ -12,6 +12,7 @@ type PaymentRowT = {
   transaction_number: string; payment_date: string; receipt_file_url: string;
   status: string; admin_notes: string | null; created_at: string;
   payment_method?: "edahabia" | "baridimob" | null;
+  payment_ref?: string | null;
 };
 
 type SubRow = { id: string; student_id: string; status: string; start_date: string; end_date: string; created_at: string };
@@ -176,6 +177,7 @@ export function PaymentsPanel() {
               <th className="text-right p-3">الطالب</th>
               <th className="text-right p-3">المبلغ</th>
               <th className="text-right p-3">الطريقة</th>
+              <th className="text-right p-3">مرجع QR</th>
               <th className="text-right p-3">رقم العملية</th>
               <th className="text-right p-3">التاريخ</th>
               <th className="text-right p-3">الوصل</th>
@@ -184,7 +186,7 @@ export function PaymentsPanel() {
           </thead>
           <tbody className="divide-y divide-border">
             {filtered.map((p) => <PaymentRow key={p.id} payment={p} onReview={(status, notes) => review.mutate({ id: p.id, status, notes })} />)}
-            {filtered.length === 0 && <tr><td colSpan={7} className="text-center text-muted-foreground py-8">لا توجد طلبات</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={8} className="text-center text-muted-foreground py-8">لا توجد طلبات</td></tr>}
           </tbody>
         </table>
       </div>
@@ -350,6 +352,7 @@ function PaymentRow({ payment, onReview }: { payment: PaymentRowT; onReview: (st
         </td>
         <td className="p-3 font-mono font-bold text-gold">{payment.amount} DZD</td>
         <td className="p-3 text-xs">{METHOD_LABEL[payment.payment_method ?? "edahabia"] ?? "—"}</td>
+        <td className="p-3 font-mono text-[11px] text-muted-foreground" title={payment.payment_ref ?? ""}>{payment.payment_ref ? payment.payment_ref.slice(0, 22) + "…" : "—"}</td>
         <td className="p-3 font-mono">{payment.transaction_number}</td>
         <td className="p-3 text-xs">{new Date(payment.payment_date).toLocaleDateString("ar")}</td>
         <td className="p-3"><button onClick={openReceipt} className="text-primary underline text-xs">عرض</button></td>

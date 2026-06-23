@@ -6,6 +6,8 @@ import { Link } from "@tanstack/react-router";
 import { usePaymentSettings, useMyPayments, useSubscription, PAYMENT_METHODS } from "@/hooks/use-subscription";
 import { ReceiptUpload } from "./ReceiptUpload";
 import { downloadPaymentInstructionsPDF } from "@/lib/payment-pdf";
+import { useAuth } from "@/hooks/use-auth";
+import { buildPaymentRef, buildQrToken, type QrPayload } from "@/lib/qr-payment";
 
 const STEP_LABELS = [
   "تفاصيل الاشتراك",
@@ -19,15 +21,30 @@ export function PaymentPage() {
   const { data: settings } = usePaymentSettings();
   const { data: payments } = useMyPayments();
   const { isActive, subscription } = useSubscription();
+  const { user } = useAuth();
   const [manualStep, setManualStep] = useState<number | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
 
   const lastPayment = payments?.[0];
 
-  const qrText = settings
-    ? `RAWA QURAN ACADEMY\nCCP: ${settings.ccp_number}${settings.ccp_key ? " · Clé " + settings.ccp_key : ""}\nName: ${settings.account_holder}\nAmount: ${settings.price_dzd} ${settings.currency}\nRef: RAWA-SUB-${(settings.subscription_duration_days ?? 30)}D`
-    : "";
+  // Per-attempt signed QR payload — unique reference + random token, 30-min expiry.
+  const qrPayload = useMemo<QrPayload | null>(() => {
+    if (!settings || !user) return null;
+    return {
+      v: 1,
+      ref: buildPaymentRef(user.id),
+      token: buildQrToken(),
+      studentId: user.id,
+      amount: Number(settings.price_dzd),
+      currency: settings.currency,
+      ccp: settings.ccp_number,
+      ccpKey: settings.ccp_key,
+      holder: settings.account_holder,
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+    };
+  }, [settings, user]);
+  const qrText = qrPayload ? JSON.stringify(qrPayload) : "";
 
   useEffect(() => {
     if (!qrText) return;
@@ -45,7 +62,7 @@ export function PaymentPage() {
   const copyAll = () => {
     if (!settings) return;
     copy(
-      `اشتراك رواء\nCCP: ${settings.ccp_number}${settings.ccp_key ? " · المفتاح: " + settings.ccp_key : ""}\nاسم المستفيد: ${settings.account_holder}\nالمبلغ: ${settings.price_dzd} ${settings.currency}\nطرق الدفع المقبولة: Edahabia / BaridiMob\nمرجع: RAWA-SUB-${settings.subscription_duration_days ?? 30}D`
+      `اشتراك رواء\nCCP: ${settings.ccp_number}${settings.ccp_key ? " · المفتاح: " + settings.ccp_key : ""}\nاسم المستفيد: ${settings.account_holder}\nالمبلغ: ${settings.price_dzd} ${settings.currency}\nطرق الدفع المقبولة: Edahabia / BaridiMob\nمرجع المعاملة: ${qrPayload?.ref ?? "—"}`
     );
   };
 
@@ -87,6 +104,7 @@ export function PaymentPage() {
                 settings={settings}
                 canvasRef={canvasRef}
                 qrDataUrl={qrDataUrl}
+                paymentRef={qrPayload?.ref ?? ""}
                 onCopy={copy}
                 onCopyAll={copyAll}
                 onNext={() => goto(3)}
@@ -97,6 +115,7 @@ export function PaymentPage() {
               <StepUpload
                 hasPending={lastPayment?.status === "pending"}
                 rejected={lastPayment?.status === "rejected" ? lastPayment.admin_notes ?? null : null}
+                qrPayload={qrPayload}
                 onSubmitted={() => { setManualStep(null); goto(4); }}
                 onBack={() => goto(2)}
               />
@@ -177,10 +196,11 @@ function StepDetails({ settings, onNext }: { settings: Settings; onNext: () => v
   );
 }
 
-function StepInstructions({ settings, canvasRef, qrDataUrl, onCopy, onCopyAll, onNext, onBack }: {
+function StepInstructions({ settings, canvasRef, qrDataUrl, paymentRef, onCopy, onCopyAll, onNext, onBack }: {
   settings: Settings;
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   qrDataUrl: string;
+  paymentRef: string;
   onCopy: (t: string) => void;
   onCopyAll: () => void;
   onNext: () => void;
@@ -203,7 +223,7 @@ function StepInstructions({ settings, canvasRef, qrDataUrl, onCopy, onCopyAll, o
           <Row label="رقم CCP" value={settings?.ccp_number ?? ""} onCopy={() => onCopy(settings!.ccp_number!)} />
           {settings?.ccp_key && <Row label="المفتاح" value={settings.ccp_key} onCopy={() => onCopy(settings.ccp_key!)} />}
           <Row label="اسم المستفيد" value={settings?.account_holder ?? ""} onCopy={() => onCopy(settings!.account_holder!)} />
-          <Row label="المرجع" value={`RAWA-SUB-${settings?.subscription_duration_days ?? 30}D`} onCopy={() => onCopy(`RAWA-SUB-${settings?.subscription_duration_days ?? 30}D`)} />
+          <Row label="مرجع المعاملة" value={paymentRef || "—"} onCopy={() => paymentRef && onCopy(paymentRef)} />
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={onCopyAll} className="flex-1 min-w-[160px] py-2.5 rounded-full bg-gradient-royal text-primary-foreground font-bold text-sm">📋 نسخ كل المعلومات</button>
@@ -213,10 +233,11 @@ function StepInstructions({ settings, canvasRef, qrDataUrl, onCopy, onCopyAll, o
 
       <div className="p-7 rounded-3xl bg-card border border-border shadow-soft text-center space-y-3">
         <h3 className="font-bold text-primary text-lg">رمز QR الذكي</h3>
-        <p className="text-xs text-muted-foreground">يحتوي على رقم CCP، اسم المستفيد، ومرجع الاشتراك.</p>
+        <p className="text-xs text-muted-foreground">رمز فريد لهذه المحاولة · صالح 30 دقيقة · يحتوي على المرجع والمبلغ.</p>
         <div className="inline-block p-3 rounded-2xl bg-white border-2 border-gold/40 shadow-glow">
           <canvas ref={canvasRef} />
         </div>
+        {paymentRef && <div className="font-mono text-[10px] text-muted-foreground break-all px-2">{paymentRef}</div>}
         <div className="flex gap-2 pt-2">
           <button onClick={onBack} className="flex-1 py-2.5 rounded-full bg-muted text-foreground text-sm font-semibold">→ رجوع</button>
           <button onClick={onNext} className="flex-1 py-2.5 rounded-full bg-gradient-royal text-primary-foreground font-bold text-sm">متابعة ←</button>
@@ -226,7 +247,7 @@ function StepInstructions({ settings, canvasRef, qrDataUrl, onCopy, onCopyAll, o
   );
 }
 
-function StepUpload({ hasPending, rejected, onSubmitted, onBack }: { hasPending: boolean; rejected: string | null; onSubmitted: () => void; onBack: () => void }) {
+function StepUpload({ hasPending, rejected, qrPayload, onSubmitted, onBack }: { hasPending: boolean; rejected: string | null; qrPayload: QrPayload | null; onSubmitted: () => void; onBack: () => void }) {
   if (hasPending) {
     return (
       <div className="p-8 rounded-3xl border border-amber-500/30 bg-amber-500/5 text-center space-y-3">
@@ -243,7 +264,7 @@ function StepUpload({ hasPending, rejected, onSubmitted, onBack }: { hasPending:
           <strong>تم رفض الطلب السابق:</strong> {rejected}
         </div>
       )}
-      <ReceiptUpload onSubmitted={onSubmitted} />
+      <ReceiptUpload qrPayload={qrPayload} onSubmitted={onSubmitted} />
       <button onClick={onBack} className="text-sm text-muted-foreground underline">→ رجوع إلى التعليمات</button>
     </div>
   );
