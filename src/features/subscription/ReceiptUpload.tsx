@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { PAYMENT_METHODS, type PaymentMethod } from "@/hooks/use-subscription";
 import { compressImageFile } from "@/lib/payment-pdf";
+import { sha256Hex, checkRateLimit, notifyWhatsApp, type QrPayload } from "@/lib/qr-payment";
 
 const schema = z.object({
   full_name: z.string().trim().min(2).max(120),
@@ -18,7 +19,7 @@ const schema = z.object({
   payment_date: z.string().min(8),
 });
 
-export function ReceiptUpload({ onSubmitted }: { onSubmitted: () => void }) {
+export function ReceiptUpload({ qrPayload, onSubmitted }: { qrPayload: QrPayload | null; onSubmitted: () => void }) {
   const { user, profile } = useAuth();
   const qc = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
@@ -43,6 +44,9 @@ export function ReceiptUpload({ onSubmitted }: { onSubmitted: () => void }) {
   const submit = useMutation({
     mutationFn: async (form: FormData) => {
       if (!file) throw new Error("يرجى إرفاق صورة الوصل");
+      // Rate limit: max one attempt / 60s
+      const allowed = await checkRateLimit(user!.id);
+      if (!allowed) throw new Error("لقد أرسلت طلبًا قبل قليل. يرجى الانتظار دقيقة قبل المحاولة مجددًا.");
       const data = schema.parse({
         full_name: form.get("full_name"),
         email: form.get("email"),
@@ -53,6 +57,15 @@ export function ReceiptUpload({ onSubmitted }: { onSubmitted: () => void }) {
       });
       setProgress(10);
       const compressed = await compressImageFile(file);
+      // Duplicate-receipt protection via SHA-256 of compressed bytes
+      const receiptHash = await sha256Hex(compressed);
+      const { data: dup } = await supabase
+        .from("payments")
+        .select("id")
+        .eq("receipt_sha256", receiptHash)
+        .limit(1)
+        .maybeSingle();
+      if (dup) throw new Error("هذا الوصل تم رفعه مسبقًا. يرجى إرفاق وصل دفع جديد.");
       const ext = compressed.name.split(".").pop() ?? "bin";
       const path = `${user!.id}/${crypto.randomUUID()}.${ext}`;
       setProgress(30);
@@ -64,8 +77,15 @@ export function ReceiptUpload({ onSubmitted }: { onSubmitted: () => void }) {
         ...data,
         payment_method: method,
         receipt_file_url: path,
+        receipt_sha256: receiptHash,
+        payment_ref: qrPayload?.ref ?? null,
+        qr_token: qrPayload?.token ?? null,
+        qr_payload: qrPayload ? (qrPayload as unknown as Record<string, unknown>) : null,
+        qr_expires_at: qrPayload?.expiresAt ?? null,
       });
       if (error) throw error;
+      // Stub: optional WhatsApp notification (no-op until provider wired)
+      void notifyWhatsApp({ to: data.phone, template: "payment_submitted", data: { ref: qrPayload?.ref, amount: data.amount } });
       setProgress(100);
     },
     onSuccess: () => {
