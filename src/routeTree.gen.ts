@@ -19,6 +19,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSubscribeRouteImport } from './routes/_authenticated/subscribe'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedPaymentStatusRouteImport } from './routes/_authenticated/payment-status'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedHalaqasRouteImport } from './routes/_authenticated/halaqas'
 import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated/events'
@@ -74,6 +75,12 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedPaymentStatusRoute =
+  AuthenticatedPaymentStatusRouteImport.update({
+    id: '/payment-status',
+    path: '/payment-status',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedNotificationsRoute =
   AuthenticatedNotificationsRouteImport.update({
     id: '/notifications',
@@ -114,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/events': typeof AuthenticatedEventsRoute
   '/halaqas': typeof AuthenticatedHalaqasRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/payment-status': typeof AuthenticatedPaymentStatusRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/subscribe': typeof AuthenticatedSubscribeRoute
 }
@@ -130,6 +138,7 @@ export interface FileRoutesByTo {
   '/events': typeof AuthenticatedEventsRoute
   '/halaqas': typeof AuthenticatedHalaqasRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/payment-status': typeof AuthenticatedPaymentStatusRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/subscribe': typeof AuthenticatedSubscribeRoute
 }
@@ -148,6 +157,7 @@ export interface FileRoutesById {
   '/_authenticated/events': typeof AuthenticatedEventsRoute
   '/_authenticated/halaqas': typeof AuthenticatedHalaqasRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/payment-status': typeof AuthenticatedPaymentStatusRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/subscribe': typeof AuthenticatedSubscribeRoute
 }
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/halaqas'
     | '/notifications'
+    | '/payment-status'
     | '/settings'
     | '/subscribe'
   fileRoutesByTo: FileRoutesByTo
@@ -182,6 +193,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/halaqas'
     | '/notifications'
+    | '/payment-status'
     | '/settings'
     | '/subscribe'
   id:
@@ -199,6 +211,7 @@ export interface FileRouteTypes {
     | '/_authenticated/events'
     | '/_authenticated/halaqas'
     | '/_authenticated/notifications'
+    | '/_authenticated/payment-status'
     | '/_authenticated/settings'
     | '/_authenticated/subscribe'
   fileRoutesById: FileRoutesById
@@ -286,6 +299,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/payment-status': {
+      id: '/_authenticated/payment-status'
+      path: '/payment-status'
+      fullPath: '/payment-status'
+      preLoaderRoute: typeof AuthenticatedPaymentStatusRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/notifications': {
       id: '/_authenticated/notifications'
       path: '/notifications'
@@ -330,6 +350,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedEventsRoute: typeof AuthenticatedEventsRoute
   AuthenticatedHalaqasRoute: typeof AuthenticatedHalaqasRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedPaymentStatusRoute: typeof AuthenticatedPaymentStatusRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSubscribeRoute: typeof AuthenticatedSubscribeRoute
 }
@@ -340,6 +361,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedEventsRoute: AuthenticatedEventsRoute,
   AuthenticatedHalaqasRoute: AuthenticatedHalaqasRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedPaymentStatusRoute: AuthenticatedPaymentStatusRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSubscribeRoute: AuthenticatedSubscribeRoute,
 }
