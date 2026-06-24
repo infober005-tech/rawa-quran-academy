@@ -261,51 +261,15 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
           </div>
         </div>
       </div>
-      {/* Welcome card with student / halaqa / teacher / supervisor */}
-      <div className="rounded-3xl border border-border bg-card/60 backdrop-blur-xl p-6 shadow-soft">
-        <div className="grid lg:grid-cols-[auto_1fr_auto] items-center gap-6">
-          <div className="flex items-center gap-4 min-w-0">
-            <div className="relative shrink-0">
-              <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-gold via-primary to-gold opacity-70 blur" />
-              {child.avatar_url ? (
-                <img
-                  src={child.avatar_url}
-                  alt={child.full_name ?? ""}
-                  className="relative h-20 w-20 rounded-full object-cover border-2 border-background"
-                />
-              ) : (
-                <div className="relative h-20 w-20 rounded-full bg-gradient-royal text-primary-foreground grid place-items-center text-2xl font-black border-2 border-background">
-                  {(child.full_name ?? "?").charAt(0)}
-                </div>
-              )}
-            </div>
-            <div className="min-w-0">
-              <div className="text-xs text-muted-foreground">الطالب</div>
-              <h2 className="text-xl font-black text-primary truncate">{child.full_name}</h2>
-              <div className="text-xs text-muted-foreground mt-0.5 truncate">
-                ولي الأمر: <span className="text-foreground font-semibold">{parentName}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <InfoChip label="الحلقة" value={halaqa?.name ?? "—"} icon="🕌" />
-            <InfoChip label="المعلم" value={halaqa?.teacher?.full_name ?? "—"} icon="👤" />
-            <InfoChip label="المشرف" value={halaqa?.supervisor?.full_name ?? "—"} icon="🛡️" />
-          </div>
-
-          {/* Live status */}
-          <LiveStatus halaqa={halaqa} />
-        </div>
-      </div>
-
-      {/* 4 stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon="✅" label="الحضور" value={`${stats.rate}%`} ring={stats.rate} tone="emerald" trend={monthly.map((m) => m.present)} />
-        <StatCard icon="📖" label="الحفظ المكتمل" value={`${stats.memAvg}%`} ring={stats.memAvg} tone="gold" trend={(evals ?? []).slice(0, 6).map((e) => e.memorization_score ?? 0).reverse()} />
-        <StatCard icon="⭐" label="التقييم العام" value={`${stats.overall}%`} ring={stats.overall} tone="violet" trend={(evals ?? []).slice(0, 6).map((e) => ((e.tajweed_score ?? 0) + (e.memorization_score ?? 0)) / 2).reverse()} />
-        <StatCard icon="🕌" label="عدد الحلقات" value={`${stats.totalSessions}`} ring={Math.min(100, stats.totalSessions * 4)} tone="rose" trend={monthly.map((m) => m.present + m.late + m.absent)} />
-      </div>
+      <PremiumHeroCard
+        child={child}
+        parentName={parentName}
+        halaqa={halaqa}
+        stats={stats}
+        lastSessionDate={att?.[0]?.date ?? null}
+        lastEval={evals?.[0] ?? null}
+        lastNote={notes?.[0] ?? null}
+      />
 
       {/* Memorization + Attendance chart */}
       <div className="grid lg:grid-cols-2 gap-6">
