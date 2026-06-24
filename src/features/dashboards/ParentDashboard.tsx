@@ -719,3 +719,294 @@ function QuickAction({ icon, label }: { icon: string; label: string }) {
     </Link>
   );
 }
+
+// ===== Premium hero card =====
+
+type Eval = {
+  id: string;
+  created_at: string;
+  memorization_score: number | null;
+  tajweed_score: number | null;
+  fluency_score: number | null;
+  participation_score: number | null;
+  notes: string | null;
+};
+
+type NoteRow = { id: string; created_at: string; note: string | null };
+
+function PremiumHeroCard({
+  child,
+  parentName,
+  halaqa,
+  stats,
+  lastSessionDate,
+  lastEval,
+  lastNote,
+}: {
+  child: Child;
+  parentName: string;
+  halaqa: HalaqaInfo | null | undefined;
+  stats: { rate: number; memAvg: number; overall: number; totalSessions: number };
+  lastSessionDate: string | null;
+  lastEval: Eval | null;
+  lastNote: NoteRow | null;
+}) {
+  const fmt = (d?: string | null) =>
+    d ? new Date(d).toLocaleDateString("ar", { day: "numeric", month: "long" }) : "—";
+
+  const lastEvalScore = lastEval
+    ? Math.round(
+        [
+          lastEval.memorization_score,
+          lastEval.tajweed_score,
+          lastEval.fluency_score,
+          lastEval.participation_score,
+        ]
+          .filter((s): s is number => typeof s === "number")
+          .reduce((a, b, _, arr) => a + b / arr.length, 0),
+      )
+    : null;
+
+  const ringR = 58;
+  const ringC = 2 * Math.PI * ringR;
+  const ringOff = ringC - (Math.min(100, Math.max(0, stats.memAvg)) / 100) * ringC;
+
+  return (
+    <div className="group relative overflow-hidden rounded-[24px] border border-gold/30 bg-gradient-to-br from-[#1a0b3d] via-primary to-[#2a1560] p-6 md:p-8 shadow-[0_20px_60px_-15px_rgba(80,40,180,0.55)]">
+      {/* Gradient background orbs */}
+      <div className="pointer-events-none absolute -top-32 -right-32 h-80 w-80 rounded-full bg-gold/25 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-fuchsia-500/20 blur-3xl" />
+      <div className="pointer-events-none absolute top-1/2 left-1/3 h-40 w-40 rounded-full bg-gold/10 blur-2xl animate-pulse" />
+
+      {/* Islamic geometric pattern overlay */}
+      <svg
+        className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.07]"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <pattern id="islamic-grid" width="60" height="60" patternUnits="userSpaceOnUse">
+            <path
+              d="M30 0 L60 30 L30 60 L0 30 Z M30 10 L50 30 L30 50 L10 30 Z"
+              fill="none"
+              stroke="#FFD27A"
+              strokeWidth="0.8"
+            />
+            <circle cx="30" cy="30" r="3" fill="#FFD27A" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#islamic-grid)" />
+      </svg>
+
+      {/* Floating glow particles */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        {[...Array(6)].map((_, i) => (
+          <span
+            key={i}
+            className="absolute h-1.5 w-1.5 rounded-full bg-gold/70 shadow-[0_0_12px_rgba(255,210,122,0.9)] animate-pulse"
+            style={{
+              top: `${15 + i * 13}%`,
+              left: `${(i * 17 + 8) % 95}%`,
+              animationDelay: `${i * 0.4}s`,
+              animationDuration: `${2.5 + (i % 3)}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="relative z-10 space-y-6">
+        {/* === Top: student info === */}
+        <div className="grid gap-5 md:grid-cols-[auto_1fr_auto] md:items-center">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="relative shrink-0">
+              <div className="absolute -inset-1.5 rounded-full bg-gradient-to-tr from-gold via-fuchsia-400 to-gold opacity-90 blur-md animate-pulse" />
+              <div className="absolute -inset-0.5 rounded-full bg-gradient-to-tr from-gold to-amber-300" />
+              {child.avatar_url ? (
+                <img
+                  src={child.avatar_url}
+                  alt={child.full_name ?? ""}
+                  className="relative h-24 w-24 md:h-28 md:w-28 rounded-full object-cover border-[3px] border-[#1a0b3d]"
+                />
+              ) : (
+                <div className="relative h-24 w-24 md:h-28 md:w-28 rounded-full bg-gradient-to-br from-primary via-fuchsia-700 to-primary text-white grid place-items-center text-3xl font-black border-[3px] border-[#1a0b3d]">
+                  {(child.full_name ?? "?").charAt(0)}
+                </div>
+              )}
+              <span className="absolute -bottom-1 -left-1 h-6 w-6 rounded-full bg-gold text-primary grid place-items-center text-[11px] font-black shadow-lg border-2 border-[#1a0b3d]">
+                ★
+              </span>
+            </div>
+            <div className="min-w-0">
+              <div className="text-[10px] uppercase tracking-[0.3em] text-gold/90 font-bold">
+                طالب أكاديمية رواء
+              </div>
+              <h2 className="text-2xl md:text-3xl font-black text-white truncate mt-1 drop-shadow">
+                {child.full_name}
+              </h2>
+              <div className="text-xs text-white/70 mt-1 truncate">
+                ولي الأمر: <span className="text-gold font-semibold">{parentName}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2.5">
+            <HeroChip icon="🕌" label="الحلقة" value={halaqa?.name ?? "—"} />
+            <HeroChip icon="👤" label="المعلم" value={halaqa?.teacher?.full_name ?? "—"} />
+            <HeroChip icon="🛡️" label="المشرف" value={halaqa?.supervisor?.full_name ?? "—"} />
+          </div>
+
+          <LiveStatus halaqa={halaqa} />
+        </div>
+
+        <div className="h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+
+        {/* === Stats + Progress ring === */}
+        <div className="grid gap-5 lg:grid-cols-[1fr_auto]">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <HeroStat icon="✅" label="نسبة الحضور" value={`${stats.rate}%`} accent="from-emerald-400 to-emerald-600" />
+            <HeroStat icon="📖" label="الحفظ الأسبوعي" value={`${stats.memAvg}%`} accent="from-gold to-amber-500" />
+            <HeroStat icon="🕌" label="عدد الحلقات" value={`${stats.totalSessions}`} accent="from-fuchsia-400 to-fuchsia-600" />
+            <HeroStat
+              icon="⭐"
+              label="آخر تقييم"
+              value={lastEvalScore != null ? `${lastEvalScore}%` : "—"}
+              accent="from-sky-400 to-indigo-500"
+            />
+          </div>
+
+          <div className="flex items-center justify-center lg:border-s lg:border-gold/20 lg:ps-6">
+            <div className="relative h-36 w-36">
+              <svg viewBox="0 0 140 140" className="h-full w-full -rotate-90">
+                <defs>
+                  <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#FFD27A" />
+                    <stop offset="100%" stopColor="#E879F9" />
+                  </linearGradient>
+                </defs>
+                <circle cx="70" cy="70" r={ringR} stroke="rgba(255,255,255,0.12)" strokeWidth="10" fill="none" />
+                <circle
+                  cx="70"
+                  cy="70"
+                  r={ringR}
+                  stroke="url(#ringGrad)"
+                  strokeWidth="10"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={ringC}
+                  strokeDashoffset={ringOff}
+                  style={{ transition: "stroke-dashoffset 1.2s ease", filter: "drop-shadow(0 0 8px rgba(255,210,122,0.6))" }}
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <div className="text-3xl font-black text-white">{stats.memAvg}%</div>
+                <div className="text-[10px] text-gold/90 font-bold tracking-wider mt-0.5">التقدم في الحفظ</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* === Timeline === */}
+        <div className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-5">
+          <h4 className="text-sm font-bold text-gold mb-4 flex items-center gap-2">
+            <span>🕰️</span> الخط الزمني للنشاط
+          </h4>
+          <div className="relative grid gap-4 md:grid-cols-3">
+            <TimelineItem icon="📚" label="آخر حصة" value={fmt(lastSessionDate)} dotClass="bg-emerald-400" />
+            <TimelineItem
+              icon="📝"
+              label="آخر واجب"
+              value={lastNote ? fmt(lastNote.created_at) : "—"}
+              dotClass="bg-gold"
+            />
+            <TimelineItem
+              icon="⭐"
+              label="آخر تقييم"
+              value={lastEval ? fmt(lastEval.created_at) : "—"}
+              dotClass="bg-fuchsia-400"
+            />
+          </div>
+        </div>
+
+        {/* === Quick actions === */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <HeroAction icon="✅" label="متابعة الحضور" to="/dashboard" />
+          <HeroAction icon="📊" label="التقارير" to="/dashboard" />
+          <HeroAction icon="✉️" label="التواصل مع المعلم" to="/notifications" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HeroChip({ icon, label, value }: { icon: string; label: string; value: string }) {
+  return (
+    <div className="px-3 py-2.5 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 hover:border-gold/40 transition min-w-0">
+      <div className="flex items-center gap-1.5">
+        <span className="text-sm">{icon}</span>
+        <span className="text-[10px] uppercase tracking-wider text-gold/80 font-bold">{label}</span>
+      </div>
+      <div className="text-xs font-bold text-white truncate mt-1">{value}</div>
+    </div>
+  );
+}
+
+function HeroStat({
+  icon,
+  label,
+  value,
+  accent,
+}: {
+  icon: string;
+  label: string;
+  value: string;
+  accent: string;
+}) {
+  return (
+    <div className="group/stat relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-4 hover:border-gold/50 hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(255,210,122,0.5)] transition-all duration-300">
+      <div className={`absolute -top-10 -right-10 h-24 w-24 rounded-full bg-gradient-to-br ${accent} opacity-20 blur-2xl group-hover/stat:opacity-40 transition`} />
+      <div className="relative">
+        <div className={`inline-grid place-items-center h-9 w-9 rounded-xl bg-gradient-to-br ${accent} text-white text-base shadow-lg`}>
+          {icon}
+        </div>
+        <div className="text-[10px] uppercase tracking-wider text-white/60 font-bold mt-3">{label}</div>
+        <div className="text-2xl font-black text-white mt-1">{value}</div>
+      </div>
+    </div>
+  );
+}
+
+function TimelineItem({
+  icon,
+  label,
+  value,
+  dotClass,
+}: {
+  icon: string;
+  label: string;
+  value: string;
+  dotClass: string;
+}) {
+  return (
+    <div className="relative flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:border-gold/40 transition">
+      <div className={`mt-1 h-3 w-3 rounded-full ${dotClass} shadow-[0_0_10px_currentColor] shrink-0`} />
+      <div className="min-w-0 flex-1">
+        <div className="text-[10px] uppercase tracking-wider text-white/60 font-bold flex items-center gap-1">
+          <span>{icon}</span> {label}
+        </div>
+        <div className="text-sm font-bold text-white mt-0.5 truncate">{value}</div>
+      </div>
+    </div>
+  );
+}
+
+function HeroAction({ icon, label, to }: { icon: string; label: string; to: string }) {
+  return (
+    <Link
+      to={to}
+      className="group/act relative overflow-hidden flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl bg-gradient-to-br from-gold via-amber-400 to-gold text-primary font-bold text-sm shadow-[0_8px_24px_-8px_rgba(255,210,122,0.7)] hover:shadow-[0_12px_32px_-8px_rgba(255,210,122,0.9)] hover:-translate-y-0.5 transition-all"
+    >
+      <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/40 to-white/0 -translate-x-full group-hover/act:translate-x-full transition-transform duration-700" />
+      <span className="relative text-lg">{icon}</span>
+      <span className="relative">{label}</span>
+    </Link>
+  );
+}
