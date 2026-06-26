@@ -96,30 +96,13 @@ export function ParentDashboard() {
       </div>
 
       {!children || children.length === 0 ? (
-        <PremiumHeroCard
-          child={{ id: "demo", full_name: "أحمد بن علي", email: null, gender: "male", avatar_url: null }}
-          parentName={profile?.full_name ?? "محمد"}
-          halaqa={{
-            id: "demo-halaqa",
-            name: "حلقة التجويد المتقدمة",
-            level: "متوسط",
-            schedule: "السبت والأربعاء",
-            schedule_days: ["Saturday", "Wednesday"],
-            start_time: "17:00",
-            end_time: "19:00",
-            meeting_provider: "zoom",
-            meeting_link: "https://zoom.us/j/demo",
-            live_session_active: true,
-            current_surah: "سورة الكهف",
-            target_surah: "سورة مريم",
-            teacher: { full_name: "الأستاذ خالد بن سعيد", avatar_url: null },
-            supervisor: { full_name: "الأستاذة فاطمة الزهراء" },
-          }}
-          stats={{ rate: 92, memAvg: 85, overall: 88, totalSessions: 24 }}
-          lastSessionDate={new Date().toISOString()}
-          lastEval={{ id: "e1", created_at: new Date().toISOString(), memorization_score: 88, tajweed_score: 90, fluency_score: 85, participation_score: 92, notes: "أداء ممتاز في الحفظ والتلاوة" }}
-          lastNote={{ id: "n1", created_at: new Date().toISOString(), note: "تحسن ملحوظ في مخارج الحروف هذا الأسبوع" }}
-        />
+        <div className="p-12 rounded-3xl bg-card border border-dashed border-gold/30 text-center">
+          <div className="text-5xl mb-3">🔗</div>
+          <h2 className="text-lg font-bold text-primary mb-1">لم يتم ربط أي طالب بحسابك بعد</h2>
+          <p className="text-sm text-muted-foreground">
+            يرجى التواصل مع إدارة الأكاديمية لربط حساب ابنك بحسابك.
+          </p>
+        </div>
       ) : (
         selected && <ChildPanel child={selected} parentName={profile?.full_name ?? ""} />
       )}
