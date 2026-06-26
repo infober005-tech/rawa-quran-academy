@@ -109,7 +109,7 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
   const [form, setForm] = useState({
     full_name: "", parent_name: "", email: "", phone: "",
     password: "", confirm: "", gender: "male", age: "",
-    country: "", city: "", quran_level: "beginner", preferred_schedule: "",
+    country: "", city: "", quran_level: "beginner",
   });
   const [busy, setBusy] = useState(false);
 
@@ -134,7 +134,6 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
           country: form.country,
           city: form.city,
           quran_level: form.quran_level,
-          preferred_schedule: form.preferred_schedule,
           language: lang,
         },
       },
@@ -173,7 +172,6 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
             <option value="advanced">{t("auth.level.advanced")}</option>
           </select>
         </Field>
-        <Field label={t("auth.schedule")}><input value={form.preferred_schedule} onChange={(e) => set("preferred_schedule", e.target.value)} placeholder="e.g. Mon/Wed 7pm" className={inputCls} /></Field>
         <Field label={t("auth.password")}><input type="password" required minLength={8} value={form.password} onChange={(e) => set("password", e.target.value)} className={inputCls} /></Field>
         <Field label={t("auth.confirm_password")}><input type="password" required value={form.confirm} onChange={(e) => set("confirm", e.target.value)} className={inputCls} /></Field>
       </div>
