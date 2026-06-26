@@ -7,11 +7,13 @@ import { useSubscription } from "@/hooks/use-subscription";
 export function SubscriptionGate({ children }: { children: ReactNode }) {
   const { primaryRole, loading } = useAuth();
   // Only students are gated. Staff, parents, and directors always have full access.
-  const isStudent = primaryRole === "student";
-  const { isActive, subscription, loading: subLoading } = useSubscription(isStudent ? undefined : "__skip__");
-
   if (loading) return <div className="py-20 text-center text-muted-foreground">…</div>;
-  if (!isStudent) return <>{children}</>;
+  if (primaryRole !== "student") return <>{children}</>;
+  return <StudentGate>{children}</StudentGate>;
+}
+
+function StudentGate({ children }: { children: ReactNode }) {
+  const { isActive, subscription, loading: subLoading } = useSubscription();
   if (subLoading) return <div className="py-20 text-center text-muted-foreground">…</div>;
   if (isActive) return <>{children}</>;
 
