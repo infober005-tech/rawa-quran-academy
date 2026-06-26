@@ -29,7 +29,6 @@ const dict = {
     "auth.level.beginner": "Beginner",
     "auth.level.intermediate": "Intermediate",
     "auth.level.advanced": "Advanced",
-    "auth.schedule": "Preferred schedule",
     "auth.forgot": "Forgot password?",
     "auth.google": "Continue with Google",
     "auth.or": "or",

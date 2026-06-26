@@ -4,7 +4,7 @@ import { motion, useInView, useScroll, useTransform, animate } from "framer-moti
 import {
   BookOpen, Mic, GraduationCap, CalendarCheck, BarChart3, Sparkles,
   UserPlus, ShieldCheck, Users, PlayCircle, Star, ChevronDown,
-  Mail, Phone, MapPin, Facebook, Instagram, Youtube, Twitter,
+  Mail, Phone, Facebook, Instagram,
 } from "lucide-react";
 import logoAsset from "@/assets/rawa-logo.png.asset.json";
 import { LogoPremium3D } from "@/components/LogoPremium3D";
@@ -697,10 +697,20 @@ function Footer() {
           <p className="text-sm text-muted-foreground leading-relaxed max-w-md">
             منصة رواء للحلقات القرآنية الإلكترونية والتصحيح المباشر للتلاوة بإشراف نخبة من المعلمين.
           </p>
-          <div className="flex gap-3 pt-2">
-            {[Facebook, Instagram, Youtube, Twitter].map((Icon, i) => (
-              <a key={i} href="#" className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center text-primary hover:bg-primary hover:text-primary-foreground transition" aria-label="social">
-                <Icon className="w-4 h-4" />
+          <div className="flex justify-center md:justify-start gap-4 pt-2">
+            {[
+              { Icon: Facebook, label: "Facebook", href: "https://www.facebook.com/share/1btqEw8Tfa/" },
+              { Icon: Instagram, label: "Instagram", href: "https://www.instagram.com/rewa_merouana05?igsh=b3puazMxc3J0OG9h" },
+            ].map(({ Icon, label, href }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                className="group relative w-[46px] h-[46px] md:w-[52px] md:h-[52px] rounded-full flex items-center justify-center text-white border-2 border-[#D4AF37] bg-gradient-to-br from-[#6A4C93] to-[#8D6BB3] shadow-soft transition-all duration-300 hover:scale-[1.12] hover:shadow-[0_0_24px_rgba(212,175,55,0.55)] backdrop-blur"
+              >
+                <Icon className="w-5 h-5 md:w-[22px] md:h-[22px]" />
               </a>
             ))}
           </div>
@@ -719,7 +729,6 @@ function Footer() {
           <ul className="space-y-3 text-sm text-muted-foreground">
             <li className="flex items-center gap-2"><Mail className="w-4 h-4 text-gold" /> info@rawa-academy.com</li>
             <li className="flex items-center gap-2"><Phone className="w-4 h-4 text-gold" /> +966 50 000 0000</li>
-            <li className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gold" /> الرياض، المملكة العربية السعودية</li>
           </ul>
         </div>
       </div>

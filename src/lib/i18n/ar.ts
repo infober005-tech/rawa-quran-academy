@@ -29,7 +29,6 @@ const dict = {
     "auth.level.beginner": "مبتدئ",
     "auth.level.intermediate": "متوسط",
     "auth.level.advanced": "متقدم",
-    "auth.schedule": "الوقت المفضل",
     "auth.forgot": "نسيت كلمة المرور؟",
     "auth.google": "المتابعة باستخدام Google",
     "auth.or": "أو",
