@@ -41,16 +41,7 @@ function DashboardRouter() {
   return (
     <DashboardShell>
       <LazyDashboard>
-        {primaryRole === "director" && <DirectorDashboard />}
-        {primaryRole === "general_supervisor" && <GeneralSupervisorDashboard />}
-        {primaryRole === "halaqa_supervisor" && <SupervisorDashboard />}
-        {primaryRole === "teacher" && <TeacherDashboard />}
-        {primaryRole === "student" && (
-          <SubscriptionGate>
-            <StudentDashboard />
-          </SubscriptionGate>
-        )}
-        {primaryRole === "parent" && <ParentDashboard />}
+        <ParentDashboard />
       </LazyDashboard>
     </DashboardShell>
   );
