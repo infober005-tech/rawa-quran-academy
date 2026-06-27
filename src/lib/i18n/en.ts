@@ -30,6 +30,7 @@ const dict = {
     "auth.level.intermediate": "Intermediate",
     "auth.level.advanced": "Advanced",
     "auth.forgot": "Forgot password?",
+    "auth.remember_me": "Remember me",
     "auth.google": "Continue with Google",
     "auth.or": "or",
     "auth.remember": "Remember me",

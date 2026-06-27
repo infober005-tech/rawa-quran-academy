@@ -78,6 +78,7 @@ function LoginForm({ onForgot }: { onForgot: () => void }) {
   const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
 
@@ -87,16 +88,42 @@ function LoginForm({ onForgot }: { onForgot: () => void }) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
     if (error) { toast.error(error.message); return; }
-    void navigate({ to: "/dashboard" });
+    // Persist or clear session based on Remember-me. Default Supabase config already persists;
+    // when unchecked, drop the persisted session after the tab closes by switching storage.
+    try {
+      if (!remember && typeof window !== "undefined") {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          // Move tokens to sessionStorage so they don't survive tab close.
+          const keys = Object.keys(window.localStorage).filter((k) => k.startsWith("sb-"));
+          for (const k of keys) {
+            const v = window.localStorage.getItem(k);
+            if (v) { window.sessionStorage.setItem(k, v); window.localStorage.removeItem(k); }
+          }
+        }
+      }
+    } catch { /* ignore */ }
+    // Give the browser a tick to offer password saving before navigating away.
+    setTimeout(() => { void navigate({ to: "/dashboard" }); }, 50);
   };
 
   return (
-    <form onSubmit={submit} className="space-y-3">
+    <form onSubmit={submit} className="space-y-3" method="post" action="#" autoComplete="on">
       <GoogleBtn />
       <div className="flex items-center gap-3 my-2"><div className="flex-1 h-px bg-border" /><span className="text-xs text-muted-foreground">{t("auth.or")}</span><div className="flex-1 h-px bg-border" /></div>
-      <Field label={t("auth.email")}><input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} autoComplete="email" /></Field>
-      <Field label={t("auth.password")}><input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className={inputCls} autoComplete="current-password" /></Field>
-      <button type="button" onClick={onForgot} className="text-xs text-primary hover:underline">{t("auth.forgot")}</button>
+      <Field label={t("auth.email")}>
+        <input id="login-email" name="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} autoComplete="username" autoCapitalize="off" autoCorrect="off" spellCheck={false} />
+      </Field>
+      <Field label={t("auth.password")}>
+        <input id="login-password" name="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className={inputCls} autoComplete="current-password" />
+      </Field>
+      <div className="flex items-center justify-between">
+        <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+          <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-4 w-4 rounded border-input accent-primary" />
+          {t("auth.remember_me")}
+        </label>
+        <button type="button" onClick={onForgot} className="text-xs text-primary hover:underline">{t("auth.forgot")}</button>
+      </div>
       <button disabled={busy} className="w-full py-2.5 rounded-xl bg-gradient-royal text-primary-foreground font-semibold shadow-glow disabled:opacity-60">
         {busy ? t("common.loading") : t("auth.login")}
       </button>
@@ -148,14 +175,14 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-3">
+    <form onSubmit={submit} className="space-y-3" method="post" action="#" autoComplete="on">
       <GoogleBtn />
       <div className="flex items-center gap-3 my-2"><div className="flex-1 h-px bg-border" /><span className="text-xs text-muted-foreground">{t("auth.or")}</span><div className="flex-1 h-px bg-border" /></div>
       <div className="grid grid-cols-2 gap-3">
-        <Field label={t("auth.full_name")}><input required value={form.full_name} onChange={(e) => set("full_name", e.target.value)} className={inputCls} /></Field>
-        <Field label={t("auth.parent_name")}><input value={form.parent_name} onChange={(e) => set("parent_name", e.target.value)} className={inputCls} /></Field>
-        <Field label={t("auth.email")}><input type="email" required value={form.email} onChange={(e) => set("email", e.target.value)} className={inputCls} /></Field>
-        <Field label={t("auth.phone")}><input value={form.phone} onChange={(e) => set("phone", e.target.value)} className={inputCls} /></Field>
+        <Field label={t("auth.full_name")}><input name="name" autoComplete="name" required value={form.full_name} onChange={(e) => set("full_name", e.target.value)} className={inputCls} /></Field>
+        <Field label={t("auth.parent_name")}><input name="parent_name" autoComplete="off" value={form.parent_name} onChange={(e) => set("parent_name", e.target.value)} className={inputCls} /></Field>
+        <Field label={t("auth.email")}><input name="email" type="email" autoComplete="email" required value={form.email} onChange={(e) => set("email", e.target.value)} className={inputCls} /></Field>
+        <Field label={t("auth.phone")}><input name="tel" type="tel" autoComplete="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} className={inputCls} /></Field>
         <Field label={t("auth.gender")}>
           <select value={form.gender} onChange={(e) => set("gender", e.target.value)} className={inputCls}>
             <option value="male">{t("auth.male")}</option>
@@ -163,8 +190,8 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
           </select>
         </Field>
         <Field label={t("auth.age")}><input type="number" min={3} max={120} value={form.age} onChange={(e) => set("age", e.target.value)} className={inputCls} /></Field>
-        <Field label={t("auth.country")}><input value={form.country} onChange={(e) => set("country", e.target.value)} className={inputCls} /></Field>
-        <Field label={t("auth.city")}><input value={form.city} onChange={(e) => set("city", e.target.value)} className={inputCls} /></Field>
+        <Field label={t("auth.country")}><input autoComplete="country-name" value={form.country} onChange={(e) => set("country", e.target.value)} className={inputCls} /></Field>
+        <Field label={t("auth.city")}><input autoComplete="address-level2" value={form.city} onChange={(e) => set("city", e.target.value)} className={inputCls} /></Field>
         <Field label={t("auth.quran_level")}>
           <select value={form.quran_level} onChange={(e) => set("quran_level", e.target.value)} className={inputCls}>
             <option value="beginner">{t("auth.level.beginner")}</option>
@@ -172,8 +199,8 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
             <option value="advanced">{t("auth.level.advanced")}</option>
           </select>
         </Field>
-        <Field label={t("auth.password")}><input type="password" required minLength={8} value={form.password} onChange={(e) => set("password", e.target.value)} className={inputCls} /></Field>
-        <Field label={t("auth.confirm_password")}><input type="password" required value={form.confirm} onChange={(e) => set("confirm", e.target.value)} className={inputCls} /></Field>
+        <Field label={t("auth.password")}><input name="new-password" type="password" required minLength={8} value={form.password} onChange={(e) => set("password", e.target.value)} className={inputCls} autoComplete="new-password" /></Field>
+        <Field label={t("auth.confirm_password")}><input name="confirm-password" type="password" required value={form.confirm} onChange={(e) => set("confirm", e.target.value)} className={inputCls} autoComplete="new-password" /></Field>
       </div>
       <button disabled={busy} className="w-full py-2.5 rounded-xl bg-gradient-royal text-primary-foreground font-semibold shadow-glow disabled:opacity-60 mt-2">
         {busy ? t("common.loading") : t("auth.register")}
