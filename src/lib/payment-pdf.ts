@@ -94,10 +94,10 @@ async function ensureArabicFont(): Promise<void> {
   document.head.appendChild(link);
   // Best-effort wait for the font to load
   try {
-    // @ts-expect-error fonts API
-    if (document.fonts?.load) {
-      await document.fonts.load("700 16px Cairo");
-      await document.fonts.ready;
+    const fonts = (document as Document & { fonts?: { load: (s: string) => Promise<unknown>; ready: Promise<unknown> } }).fonts;
+    if (fonts?.load) {
+      await fonts.load("700 16px Cairo");
+      await fonts.ready;
     } else {
       await new Promise((r) => setTimeout(r, 400));
     }
