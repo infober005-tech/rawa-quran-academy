@@ -30,6 +30,7 @@ const dict = {
     "auth.level.intermediate": "متوسط",
     "auth.level.advanced": "متقدم",
     "auth.forgot": "نسيت كلمة المرور؟",
+    "auth.remember_me": "تذكرني",
     "auth.google": "المتابعة باستخدام Google",
     "auth.or": "أو",
     "auth.remember": "تذكرني",
