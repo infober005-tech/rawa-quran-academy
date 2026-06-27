@@ -699,8 +699,8 @@ function Footer() {
           </p>
           <div className="flex justify-center md:justify-start gap-4 pt-2">
             {[
-              { Icon: Facebook, label: "Facebook", href: "https://www.facebook.com/share/1btqEw8Tfa/" },
-              { Icon: Instagram, label: "Instagram", href: "https://www.instagram.com/rewa_merouana05?igsh=b3puazMxc3J0OG9h" },
+              { Icon: Facebook, label: "Facebook", href: "https://www.facebook.com/profile.php?id=61555009123201" },
+              { Icon: Instagram, label: "Instagram", href: "https://www.instagram.com/rewa_merouana05/" },
             ].map(({ Icon, label, href }) => (
               <a
                 key={label}
