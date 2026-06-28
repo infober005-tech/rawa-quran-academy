@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Navigate } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,10 +10,17 @@ import { DashboardHeader } from "@/components/DashboardHeader";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/payment-status")({
-  component: PaymentStatusPage,
+  component: PaymentStatusGate,
 });
 
 type StatusKey = "pending" | "approved" | "rejected" | "expired" | "none";
+
+function PaymentStatusGate() {
+  const { primaryRole, loading } = useAuth();
+  if (loading) return null;
+  if (primaryRole !== "student") return <Navigate to="/dashboard" />;
+  return <PaymentStatusPage />;
+}
 
 function PaymentStatusPage() {
   const { user } = useAuth();
