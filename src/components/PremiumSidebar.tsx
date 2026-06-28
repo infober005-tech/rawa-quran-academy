@@ -15,19 +15,23 @@ type NavItem = { to: string; label: string; icon: React.ComponentType<{ classNam
 
 export function usePremiumNav(): NavItem[] {
   const { t, dir } = useI18n();
-  const { can } = useAuth();
+  const { can, primaryRole } = useAuth();
   return useMemo(() => {
     const items: NavItem[] = [
       { to: "/dashboard", label: t("nav.dashboard"), icon: Home },
       { to: "/halaqas", label: t("nav.halaqas"), icon: BookOpen },
       { to: "/events", label: t("nav.events"), icon: Calendar },
-      { to: "/subscribe", label: dir === "rtl" ? "الاشتراك" : "Subscription", icon: CreditCard },
+    ];
+    if (primaryRole === "student") {
+      items.push({ to: "/subscribe", label: dir === "rtl" ? "الاشتراك" : "Subscription", icon: CreditCard });
+    }
+    items.push(
       { to: "/notifications", label: t("nav.notifications"), icon: Bell },
       { to: "/settings", label: t("nav.settings"), icon: Settings },
-    ];
+    );
     if (can("admin.access")) items.push({ to: "/admin", label: t("nav.admin"), icon: ShieldCheck });
     return items;
-  }, [t, dir, can]);
+  }, [t, dir, can, primaryRole]);
 }
 
 function NavList({
