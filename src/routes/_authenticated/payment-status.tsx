@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Navigate } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,7 +16,9 @@ export const Route = createFileRoute("/_authenticated/payment-status")({
 type StatusKey = "pending" | "approved" | "rejected" | "expired" | "none";
 
 function PaymentStatusPage() {
-  const { user } = useAuth();
+  const { user, primaryRole, loading } = useAuth();
+  if (loading) return null;
+  if (primaryRole !== "student") return <Navigate to="/dashboard" />;
   const qc = useQueryClient();
   const { data: payments } = useMyPayments();
   const { subscription, isActive, daysRemaining } = useSubscription();
