@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
+import logoAsset from "@/assets/rawa-logo.png.asset.json";
 
 type SettingsLike = {
   subscription_name_ar: string | null;
@@ -13,71 +14,101 @@ type SettingsLike = {
 };
 
 const ARABIC_PDF_FILENAME = "تعليمات_الدفع_رواء.pdf";
+const PLATFORM_URL = "https://rawa-quran-academy.lovable.app";
 
-function buildArabicInvoiceHTML(settings: SettingsLike, qrDataUrl?: string): string {
+function buildPaymentRow(label: string, value: string, accent = false): string {
+  return `<div style="display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-bottom:1px dashed #ece5f7;">
+    <span style="color:#7a6a91; font-weight:600;">${label}</span>
+    <span style="font-weight:${accent ? 800 : 700}; color:${accent ? "#D4AF37" : "#3a2a55"}; ${accent ? "font-size:17px;" : ""}">${value}</span>
+  </div>`;
+}
+
+function buildArabicInvoiceHTML(settings: SettingsLike, qrDataUrl?: string, paymentRef?: string): string {
   const price = `${settings.price_dzd ?? "—"} ${settings.currency ?? "DZD"}`;
-  const ccpKeyRow = settings.ccp_key
-    ? `<div class="row"><span class="lbl">المفتاح</span><span class="val">${settings.ccp_key}</span></div>`
-    : "";
-  const qrBlock = qrDataUrl
-    ? `<div class="qr"><img src="${qrDataUrl}" alt="QR" /><div class="qr-cap">امسح الرمز لنسخ بيانات الدفع</div></div>`
-    : "";
+  const logoUrl = logoAsset.url;
   return `
   <div id="rawa-pdf-root" dir="rtl" lang="ar" style="
-    width: 794px; min-height: 1123px; background:#ffffff; color:#1a1a1a;
+    width: 794px; min-height: 1123px; background:#ffffff; color:#1a1a1a; position:relative; overflow:hidden;
     font-family: 'Cairo','Tajawal','Noto Sans Arabic','Segoe UI',Tahoma,sans-serif;
     padding: 0; margin: 0; box-sizing: border-box;">
-    <div style="background: linear-gradient(135deg,#D4AF37 0%, #E8C75B 100%); padding: 36px 48px; text-align:center; color:#3a2a55;">
-      <div style="font-size: 14px; letter-spacing: 6px; font-weight:700;">RAWA · رواء</div>
-      <h1 style="margin:8px 0 4px; font-size: 30px; font-weight: 900; color:#3a2a55;">تعليمات دفع الاشتراك</h1>
-      <div style="font-size: 14px; color:#3a2a55; opacity:.85;">منصة رواء لتعليم القرآن الكريم</div>
+    <!-- Watermark -->
+    <img src="${logoUrl}" alt="" crossorigin="anonymous" style="
+      position:absolute; top:50%; left:50%; width:560px; height:560px;
+      transform: translate(-50%, -50%); opacity:0.06; pointer-events:none; z-index:0;
+      object-fit:contain;" />
+
+    <!-- Header -->
+    <div style="position:relative; z-index:1; background: linear-gradient(135deg,#5A436F 0%, #7A5A95 60%, #D4AF37 100%); padding: 28px 48px 24px; text-align:center; color:#fff;">
+      <img src="${logoUrl}" alt="Rawa" crossorigin="anonymous" style="width:88px; height:88px; border-radius:50%; border:3px solid #D4AF37; box-shadow:0 6px 18px rgba(0,0,0,.25); background:#fff; object-fit:cover; margin-bottom:10px;" />
+      <div style="font-size: 12px; letter-spacing: 6px; font-weight:700; opacity:.9;">RAWA · رواء</div>
+      <h1 style="margin:6px 0 2px; font-size: 26px; font-weight: 900;">منصة رواء للقرآن الكريم</h1>
+      <div style="font-size: 15px; opacity:.92;">تعليمات الدفع</div>
+      <div style="height:3px; width:120px; margin:14px auto 0; background:#D4AF37; border-radius:2px;"></div>
     </div>
 
-    <div style="padding: 32px 48px; display:flex; gap:24px; align-items:flex-start;">
+    <div style="position:relative; z-index:1; padding: 28px 48px 16px; display:flex; gap:24px; align-items:flex-start;">
       <div style="flex:1; min-width:0;">
-        <h2 style="color:#5A436F; font-size:20px; margin:0 0 12px; border-right:4px solid #D4AF37; padding-right:10px;">بيانات الدفع</h2>
-        <div style="background:#faf7ff; border:1px solid #ece5f7; border-radius:14px; padding:18px 20px; font-size:15px; line-height:2;">
-          <div class="row" style="display:flex; justify-content:space-between; gap:12px;"><span class="lbl" style="color:#7a6a91; font-weight:600;">رقم الحساب البريدي الجاري (CCP)</span><span class="val" style="font-weight:700; color:#3a2a55;">${settings.ccp_number ?? "—"}</span></div>
-          ${ccpKeyRow.replace('class="row"', 'class="row" style="display:flex; justify-content:space-between; gap:12px;"').replace('class="lbl"', 'class="lbl" style="color:#7a6a91; font-weight:600;"').replace('class="val"', 'class="val" style="font-weight:700; color:#3a2a55;"')}
-          <div class="row" style="display:flex; justify-content:space-between; gap:12px;"><span class="lbl" style="color:#7a6a91; font-weight:600;">اسم صاحب الحساب</span><span class="val" style="font-weight:700; color:#3a2a55;">${settings.account_holder ?? "—"}</span></div>
-          <div class="row" style="display:flex; justify-content:space-between; gap:12px;"><span class="lbl" style="color:#7a6a91; font-weight:600;">المبلغ الواجب دفعه</span><span class="val" style="font-weight:800; color:#D4AF37; font-size:17px;">${price}</span></div>
-          <div class="row" style="display:flex; justify-content:space-between; gap:12px;"><span class="lbl" style="color:#7a6a91; font-weight:600;">مدة الاشتراك</span><span class="val" style="font-weight:700; color:#3a2a55;">${settings.subscription_duration_days ?? 30} يومًا</span></div>
-          <div style="margin-top:10px; color:#7a6a91; font-weight:600;">طريقة الدفع:</div>
-          <ul style="margin:4px 0 0; padding-right:20px; color:#3a2a55;">
-            <li>البطاقة الذهبية</li>
-            <li>بريدي موب</li>
-          </ul>
+        <h2 style="color:#5A436F; font-size:18px; margin:0 0 10px; border-right:4px solid #D4AF37; padding-right:10px;">بيانات الدفع</h2>
+        <div style="background:#faf7ff; border:1px solid #ece5f7; border-radius:14px; padding:14px 18px; font-size:14px; line-height:1.9;">
+          <div style="padding:6px 0; border-bottom:1px dashed #ece5f7; color:#7a6a91; font-weight:600;">طريقة الدفع: <span style="color:#3a2a55; font-weight:700;">البطاقة الذهبية / بريدي موب</span></div>
+          ${buildPaymentRow("رقم CCP", settings.ccp_number ?? "—")}
+          ${settings.ccp_key ? buildPaymentRow("المفتاح", settings.ccp_key) : ""}
+          ${buildPaymentRow("اسم المستفيد", settings.account_holder ?? "—")}
+          ${buildPaymentRow("المبلغ", price, true)}
+          ${paymentRef ? buildPaymentRow("رقم المرجع", paymentRef) : ""}
+          ${buildPaymentRow("مدة الاشتراك", `${settings.subscription_duration_days ?? 30} يومًا`)}
         </div>
       </div>
-      ${qrBlock ? `<div style="width:200px; text-align:center;">
+      ${qrDataUrl ? `<div style="width:210px; text-align:center;">
         <div style="display:inline-block; padding:10px; background:#fff; border:2px solid #D4AF37; border-radius:14px;">
-          <img src="${qrDataUrl}" alt="QR" style="width:180px; height:180px; display:block;" />
+          <img src="${qrDataUrl}" alt="QR" style="width:188px; height:188px; display:block;" />
         </div>
         <div style="font-size:11px; color:#7a6a91; margin-top:8px;">امسح الرمز لنسخ بيانات الدفع</div>
       </div>` : ""}
     </div>
 
-    <div style="padding: 0 48px 24px;">
-      <h2 style="color:#5A436F; font-size:20px; margin:0 0 12px; border-right:4px solid #D4AF37; padding-right:10px;">خطوات الدفع</h2>
-      <ol style="font-size:15px; line-height:2; color:#1a1a1a; padding-right:24px; margin:0;">
-        <li>قم بتحويل مبلغ الاشتراك.</li>
-        <li>احتفظ بوصل الدفع.</li>
-        <li>ارجع إلى المنصة.</li>
-        <li>ارفع صورة الوصل.</li>
-        <li>انتظر مراجعة الإدارة.</li>
+    <div style="position:relative; z-index:1; padding: 0 48px 16px;">
+      <h2 style="color:#5A436F; font-size:18px; margin:0 0 10px; border-right:4px solid #D4AF37; padding-right:10px;">خطوات الدفع</h2>
+      <ol style="font-size:14px; line-height:1.9; color:#1a1a1a; padding-right:24px; margin:0;">
+        <li>قم بتحويل مبلغ الاشتراك عبر البطاقة الذهبية أو بريدي موب.</li>
+        <li>احتفظ بوصل الدفع ورقم المرجع.</li>
+        <li>ارجع إلى المنصة وارفع صورة الوصل.</li>
+        <li>انتظر مراجعة الإدارة (عادة خلال 24 ساعة).</li>
         <li>سيتم تفعيل اشتراكك مباشرة بعد الموافقة.</li>
       </ol>
     </div>
 
-    <div style="padding: 0 48px 24px;">
-      <div style="background:#fff8e1; border:1px solid #f1d98a; border-right:4px solid #D4AF37; border-radius:12px; padding:14px 18px;">
-        <div style="font-weight:800; color:#5A436F; margin-bottom:4px;">ملاحظة</div>
-        <div style="font-size:14px; color:#3a2a55; line-height:1.9;">يرجى كتابة رقم المرجع الموجود في رمز QR عند الدفع إن أمكن.</div>
+    <div style="position:relative; z-index:1; padding: 0 48px 16px;">
+      <div style="background:#fff8e1; border:1px solid #f1d98a; border-right:4px solid #D4AF37; border-radius:12px; padding:12px 16px;">
+        <div style="font-weight:800; color:#5A436F; margin-bottom:4px;">ملاحظات مهمة</div>
+        <ul style="font-size:13px; color:#3a2a55; line-height:1.9; margin:0; padding-right:18px;">
+          <li>ضع الوصل بعد التحويل.</li>
+          <li>احتفظ برقم المرجع.</li>
+          <li>لا تتم مراجعة الدفع إلا بعد رفع الوصل.</li>
+        </ul>
       </div>
     </div>
 
-    <div style="margin-top:auto; padding: 18px 48px; border-top:2px solid #D4AF37; text-align:center; color:#7a6a91; font-size:12px;">
-      <div style="font-weight:700; color:#5A436F;">منصة رواء لتعليم القرآن الكريم</div>
+    <!-- Signature + Stamp -->
+    <div style="position:relative; z-index:1; padding: 8px 48px 16px; display:flex; gap:24px; align-items:center; justify-content:space-between;">
+      <div style="flex:1;">
+        <div style="color:#7a6a91; font-size:12px; margin-bottom:6px;">التوقيع الإلكتروني</div>
+        <div style="font-family:'Cairo'; font-style:italic; font-weight:700; color:#5A436F; font-size:18px; border-bottom:2px solid #D4AF37; display:inline-block; padding:2px 8px 6px;">إدارة منصة رواء للقرآن الكريم</div>
+      </div>
+      <div style="width:130px; height:130px; position:relative; display:flex; align-items:center; justify-content:center;">
+        <div style="position:absolute; inset:0; border-radius:50%; border:4px double #D4AF37; transform:rotate(-12deg);"></div>
+        <div style="position:absolute; inset:10px; border-radius:50%; border:2px solid #D4AF37; transform:rotate(-12deg);"></div>
+        <div style="text-align:center; transform:rotate(-12deg); color:#8a6a1f; font-weight:900;">
+          <div style="font-size:10px; letter-spacing:2px;">RAWA · رواء</div>
+          <div style="font-size:14px; margin-top:2px;">معتمد</div>
+          <div style="font-size:9px; margin-top:2px;">OFFICIAL</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="position:relative; z-index:1; margin-top:auto; padding: 14px 48px; border-top:2px solid #D4AF37; text-align:center; color:#7a6a91; font-size:11px;">
+      <div style="font-weight:700; color:#5A436F;">© Rawa Quran Academy · منصة رواء للقرآن الكريم</div>
+      <div style="margin-top:2px;"><a href="${PLATFORM_URL}" style="color:#5A436F; text-decoration:none;">${PLATFORM_URL}</a></div>
       <div>جميع الحقوق محفوظة © 2026</div>
     </div>
   </div>`;
@@ -104,7 +135,7 @@ async function ensureArabicFont(): Promise<void> {
   } catch { /* ignore */ }
 }
 
-export async function downloadPaymentInstructionsPDF(settings: SettingsLike, qrDataUrl?: string) {
+export async function downloadPaymentInstructionsPDF(settings: SettingsLike, qrDataUrl?: string, paymentRef?: string) {
   await ensureArabicFont();
 
   const host = document.createElement("div");
@@ -112,12 +143,12 @@ export async function downloadPaymentInstructionsPDF(settings: SettingsLike, qrD
   host.style.left = "-10000px";
   host.style.top = "0";
   host.style.width = "794px";
-  host.innerHTML = buildArabicInvoiceHTML(settings, qrDataUrl);
+  host.innerHTML = buildArabicInvoiceHTML(settings, qrDataUrl, paymentRef);
   document.body.appendChild(host);
 
   try {
     const node = host.querySelector("#rawa-pdf-root") as HTMLElement;
-    const canvas = await html2canvas(node, { scale: 2, backgroundColor: "#ffffff", useCORS: true, logging: false });
+    const canvas = await html2canvas(node, { scale: 3, backgroundColor: "#ffffff", useCORS: true, allowTaint: true, logging: false });
     const imgData = canvas.toDataURL("image/jpeg", 0.95);
 
     const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait" });
