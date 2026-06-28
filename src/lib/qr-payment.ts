@@ -11,6 +11,8 @@ export type QrPayload = {
   ccpKey?: string | null;
   holder: string;
   expiresAt: string;
+  method?: string;
+  platform?: string;
 };
 
 /** Generate a unique transaction reference. */
