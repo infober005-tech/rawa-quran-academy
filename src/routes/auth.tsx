@@ -11,6 +11,11 @@ const WEAK_PWD_PATTERNS = /pwned|leaked|compromis|breach|weak[_ ]?password|havei
 function isWeakPasswordError(msg: string | undefined) {
   return !!msg && WEAK_PWD_PATTERNS.test(msg);
 }
+const EMAIL_UNCONFIRMED_PATTERNS = /email not confirmed|email_not_confirmed|not confirmed|confirm your email/i;
+function isEmailUnconfirmedError(msg: string | undefined) {
+  return !!msg && EMAIL_UNCONFIRMED_PATTERNS.test(msg);
+}
+const RESEND_COOLDOWN_KEY = "rawa:resend_activation_at";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "تسجيل الدخول · رواء" }] }),
@@ -80,14 +85,40 @@ function LoginForm({ onForgot }: { onForgot: () => void }) {
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [resendBusy, setResendBusy] = useState(false);
+  const [showResend, setShowResend] = useState(false);
   const navigate = useNavigate();
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setBusy(false);
+      if (isEmailUnconfirmedError(error.message)) {
+        toast.error(t("auth.email_not_confirmed"), { duration: 6000 });
+        setShowResend(true);
+      } else {
+        toast.error(error.message);
+      }
+      return;
+    }
+    // Email confirmed → check approval status. If still pending, sign out and inform.
+    try {
+      const { data: u } = await supabase.auth.getUser();
+      const uid = u.user?.id;
+      if (uid) {
+        const { data: p } = await supabase.from("profiles").select("status").eq("id", uid).maybeSingle();
+        const status = (p as { status?: string } | null)?.status;
+        if (status && status !== "approved") {
+          await supabase.auth.signOut();
+          setBusy(false);
+          toast.message(t("auth.email_confirmed_pending_admin"), { duration: 7000 });
+          return;
+        }
+      }
+    } catch (err) { console.warn("status check failed", err); }
     setBusy(false);
-    if (error) { toast.error(error.message); return; }
     // Persist or clear session based on Remember-me. Default Supabase config already persists;
     // when unchecked, drop the persisted session after the tab closes by switching storage.
     try {
@@ -105,6 +136,28 @@ function LoginForm({ onForgot }: { onForgot: () => void }) {
     } catch { /* ignore */ }
     // Give the browser a tick to offer password saving before navigating away.
     setTimeout(() => { void navigate({ to: "/dashboard" }); }, 50);
+  };
+
+  const resendActivation = async () => {
+    if (!email) { toast.error(t("auth.email")); return; }
+    const last = Number(window.localStorage.getItem(RESEND_COOLDOWN_KEY) ?? 0);
+    if (last && Date.now() - last < 60_000) {
+      toast.message(t("auth.resend_wait"));
+      return;
+    }
+    setResendBusy(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email,
+        options: { emailRedirectTo: `${window.location.origin}/auth` },
+      });
+      if (error) { toast.error(error.message); return; }
+      window.localStorage.setItem(RESEND_COOLDOWN_KEY, String(Date.now()));
+      toast.success(t("auth.resend_sent"));
+    } finally {
+      setResendBusy(false);
+    }
   };
 
   return (
@@ -126,6 +179,14 @@ function LoginForm({ onForgot }: { onForgot: () => void }) {
       </div>
       <button disabled={busy} className="w-full py-2.5 rounded-xl bg-gradient-royal text-primary-foreground font-semibold shadow-glow disabled:opacity-60">
         {busy ? t("common.loading") : t("auth.login")}
+      </button>
+      <button
+        type="button"
+        onClick={resendActivation}
+        disabled={resendBusy}
+        className={`w-full text-xs ${showResend ? "text-primary" : "text-muted-foreground"} hover:underline disabled:opacity-60`}
+      >
+        {resendBusy ? t("common.loading") : `✉ ${t("auth.resend_activation")}`}
       </button>
     </form>
   );
@@ -151,7 +212,7 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
       email: form.email,
       password: form.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
+        emailRedirectTo: `${window.location.origin}/auth`,
         data: {
           full_name: form.full_name,
           parent_name: form.parent_name,
@@ -170,7 +231,7 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
       toast.error(isWeakPasswordError(error.message) ? t("auth.weak_password") : error.message);
       return;
     }
-    toast.success(t("auth.pending_approval"), { duration: 8000 });
+    toast.success(t("auth.signup_confirm_sent"), { duration: 9000 });
     onDone();
   };
 
