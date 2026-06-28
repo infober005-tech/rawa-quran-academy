@@ -42,6 +42,8 @@ export function PaymentPage() {
       ccpKey: settings.ccp_key,
       holder: settings.account_holder,
       expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+      method: "Edahabia / BaridiMob",
+      platform: "Rawa Quran Academy",
     };
   }, [settings, user]);
   const qrText = qrPayload ? JSON.stringify(qrPayload) : "";
@@ -54,9 +56,26 @@ export function PaymentPage() {
     QRCode.toDataURL(qrText, { width: 480, margin: 1, color: { dark: "#5A436F", light: "#ffffff" } }).then(setQrDataUrl).catch(() => {});
   }, [qrText]);
 
-  const copy = (text: string, msg = "تم نسخ المعلومات بنجاح") => {
-    navigator.clipboard.writeText(text);
-    toast.success(msg);
+  const copy = async (text: string, msg = "تم النسخ بنجاح") => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      toast.success(msg);
+    } catch (err) {
+      console.error("clipboard error", err);
+      toast.error("تعذر النسخ");
+    }
   };
 
   const copyAll = () => {
@@ -226,8 +245,21 @@ function StepInstructions({ settings, canvasRef, qrDataUrl, paymentRef, onCopy, 
           <Row label="مرجع المعاملة" value={paymentRef || "—"} onCopy={() => paymentRef && onCopy(paymentRef)} />
         </div>
         <div className="flex flex-wrap gap-2">
-          <button onClick={onCopyAll} className="flex-1 min-w-[160px] py-2.5 rounded-full bg-gradient-royal text-primary-foreground font-bold text-sm">📋 نسخ كل المعلومات</button>
-          <button onClick={() => settings && downloadPaymentInstructionsPDF(settings, qrDataUrl)} className="flex-1 min-w-[160px] py-2.5 rounded-full border-2 border-gold text-primary font-bold text-sm hover:bg-gold/10 transition">⬇ تنزيل التعليمات PDF</button>
+          <button type="button" onClick={onCopyAll} className="flex-1 min-w-[160px] py-2.5 rounded-full bg-gradient-royal text-primary-foreground font-bold text-sm">📋 نسخ كل المعلومات</button>
+          <button
+            type="button"
+            onClick={async () => {
+              if (!settings) return;
+              try {
+                await downloadPaymentInstructionsPDF(settings, qrDataUrl, paymentRef);
+                toast.success("تم إنشاء ملف PDF بنجاح");
+              } catch (err) {
+                console.error("pdf error", err);
+                toast.error("تعذر إنشاء ملف PDF");
+              }
+            }}
+            className="flex-1 min-w-[160px] py-2.5 rounded-full border-2 border-gold text-primary font-bold text-sm hover:bg-gold/10 transition"
+          >⬇ تنزيل التعليمات PDF</button>
         </div>
       </div>
 
