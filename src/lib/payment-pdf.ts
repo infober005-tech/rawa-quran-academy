@@ -16,6 +16,43 @@ type SettingsLike = {
 const ARABIC_PDF_FILENAME = "تعليمات_الدفع_رواء.pdf";
 const PLATFORM_URL = "https://rawa-quran-academy.lovable.app";
 
+// Transparent 1x1 PNG fallback so html2canvas never aborts on a broken <img>.
+const BLANK_PNG =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkAAIAAAoAAv/lxKUAAAAASUVORK5CYII=";
+
+async function imageToDataUrl(url: string): Promise<string> {
+  try {
+    const res = await fetch(url, { mode: "cors", credentials: "omit" });
+    if (!res.ok) throw new Error(`logo fetch ${res.status}`);
+    const blob = await res.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result));
+      r.onerror = () => reject(r.error);
+      r.readAsDataURL(blob);
+    });
+  } catch (err) {
+    console.warn("[pdf] logo load failed, using blank fallback", err);
+    return BLANK_PNG;
+  }
+}
+
+async function waitForImages(root: HTMLElement): Promise<void> {
+  const imgs = Array.from(root.querySelectorAll("img"));
+  await Promise.all(
+    imgs.map(
+      (img) =>
+        new Promise<void>((resolve) => {
+          if (img.complete && img.naturalWidth > 0) return resolve();
+          img.addEventListener("load", () => resolve(), { once: true });
+          img.addEventListener("error", () => resolve(), { once: true });
+          // hard timeout so a single broken image never blocks the PDF
+          setTimeout(() => resolve(), 4000);
+        }),
+    ),
+  );
+}
+
 function buildPaymentRow(label: string, value: string, accent = false): string {
   return `<div style="display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-bottom:1px dashed #ece5f7;">
     <span style="color:#7a6a91; font-weight:600;">${label}</span>
@@ -23,23 +60,23 @@ function buildPaymentRow(label: string, value: string, accent = false): string {
   </div>`;
 }
 
-function buildArabicInvoiceHTML(settings: SettingsLike, qrDataUrl?: string, paymentRef?: string): string {
+function buildArabicInvoiceHTML(settings: SettingsLike, logoSrc: string, qrDataUrl?: string, paymentRef?: string): string {
   const price = `${settings.price_dzd ?? "—"} ${settings.currency ?? "DZD"}`;
-  const logoUrl = logoAsset.url;
+  const logoUrl = logoSrc;
   return `
   <div id="rawa-pdf-root" dir="rtl" lang="ar" style="
     width: 794px; min-height: 1123px; background:#ffffff; color:#1a1a1a; position:relative; overflow:hidden;
     font-family: 'Cairo','Tajawal','Noto Sans Arabic','Segoe UI',Tahoma,sans-serif;
     padding: 0; margin: 0; box-sizing: border-box;">
     <!-- Watermark -->
-    <img src="${logoUrl}" alt="" crossorigin="anonymous" style="
+    <img src="${logoUrl}" alt="" style="
       position:absolute; top:50%; left:50%; width:560px; height:560px;
       transform: translate(-50%, -50%); opacity:0.06; pointer-events:none; z-index:0;
       object-fit:contain;" />
 
     <!-- Header -->
     <div style="position:relative; z-index:1; background: linear-gradient(135deg,#5A436F 0%, #7A5A95 60%, #D4AF37 100%); padding: 28px 48px 24px; text-align:center; color:#fff;">
-      <img src="${logoUrl}" alt="Rawa" crossorigin="anonymous" style="width:88px; height:88px; border-radius:50%; border:3px solid #D4AF37; box-shadow:0 6px 18px rgba(0,0,0,.25); background:#fff; object-fit:cover; margin-bottom:10px;" />
+      <img src="${logoUrl}" alt="Rawa" style="width:88px; height:88px; border-radius:50%; border:3px solid #D4AF37; box-shadow:0 6px 18px rgba(0,0,0,.25); background:#fff; object-fit:cover; margin-bottom:10px;" />
       <div style="font-size: 12px; letter-spacing: 6px; font-weight:700; opacity:.9;">RAWA · رواء</div>
       <h1 style="margin:6px 0 2px; font-size: 26px; font-weight: 900;">منصة رواء للقرآن الكريم</h1>
       <div style="font-size: 15px; opacity:.92;">تعليمات الدفع</div>
@@ -136,22 +173,44 @@ async function ensureArabicFont(): Promise<void> {
 }
 
 export async function downloadPaymentInstructionsPDF(settings: SettingsLike, qrDataUrl?: string, paymentRef?: string) {
+  // 1. Fonts (best-effort)
   await ensureArabicFont();
 
+  // 2. Logo → data URL (resilient to network failure)
+  const logoSrc = await imageToDataUrl(logoAsset.url);
+
+  // 3. Render hidden HTML (visibility:hidden, NOT display:none, so layout is computed)
   const host = document.createElement("div");
   host.style.position = "fixed";
-  host.style.left = "-10000px";
+  host.style.left = "-99999px";
   host.style.top = "0";
   host.style.width = "794px";
-  host.innerHTML = buildArabicInvoiceHTML(settings, qrDataUrl, paymentRef);
+  host.style.visibility = "hidden";
+  host.setAttribute("aria-hidden", "true");
+  host.innerHTML = buildArabicInvoiceHTML(settings, logoSrc, qrDataUrl, paymentRef);
   document.body.appendChild(host);
 
   try {
     const node = host.querySelector("#rawa-pdf-root") as HTMLElement;
-    const canvas = await html2canvas(node, { scale: 3, backgroundColor: "#ffffff", useCORS: true, allowTaint: true, logging: false });
+
+    // 4. Wait for images + fonts before snapshot
+    await waitForImages(node);
+    try {
+      const fonts = (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts;
+      if (fonts?.ready) await fonts.ready;
+    } catch { /* ignore */ }
+
+    const canvas = await html2canvas(node, {
+      scale: 3,
+      backgroundColor: "#ffffff",
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      imageTimeout: 4000,
+    });
     const imgData = canvas.toDataURL("image/jpeg", 0.95);
 
-    const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait" });
+    const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait", compress: true });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
     const imgW = pageW;
