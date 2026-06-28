@@ -10,15 +10,20 @@ import { DashboardHeader } from "@/components/DashboardHeader";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/payment-status")({
-  component: PaymentStatusPage,
+  component: PaymentStatusGate,
 });
 
 type StatusKey = "pending" | "approved" | "rejected" | "expired" | "none";
 
-function PaymentStatusPage() {
-  const { user, primaryRole, loading } = useAuth();
+function PaymentStatusGate() {
+  const { primaryRole, loading } = useAuth();
   if (loading) return null;
   if (primaryRole !== "student") return <Navigate to="/dashboard" />;
+  return <PaymentStatusPage />;
+}
+
+function PaymentStatusPage() {
+  const { user } = useAuth();
   const qc = useQueryClient();
   const { data: payments } = useMyPayments();
   const { subscription, isActive, daysRemaining } = useSubscription();
