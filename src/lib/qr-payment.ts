@@ -39,8 +39,15 @@ export async function sha256Hex(file: Blob): Promise<string> {
 
 /** Check the per-user rate limit before allowing a new payment submission. */
 export async function checkRateLimit(userId: string): Promise<boolean> {
-  const { data } = await supabase.rpc("can_submit_payment", { _user_id: userId });
-  return data === true;
+  const since = new Date(Date.now() - 60_000).toISOString();
+  const { data, error } = await supabase
+    .from("payments")
+    .select("id")
+    .eq("student_id", userId)
+    .gte("created_at", since)
+    .limit(1);
+  if (error) return false;
+  return (data?.length ?? 0) === 0;
 }
 
 /** Placeholder WhatsApp webhook — wire to provider when ready. */
