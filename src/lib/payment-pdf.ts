@@ -173,43 +173,104 @@ async function ensureArabicFont(): Promise<void> {
 }
 
 export async function downloadPaymentInstructionsPDF(settings: SettingsLike, qrDataUrl?: string, paymentRef?: string) {
-  // 1. Fonts (best-effort)
-  await ensureArabicFont();
+function buildFallbackPdf(settings: SettingsLike, qrDataUrl?: string, paymentRef?: string, logoDataUrl?: string): jsPDF {
+  console.info("[pdf] Building fallback PDF (text-only via jsPDF)...");
+  const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait", compress: true });
+  const price = `${settings.price_dzd ?? "—"} ${settings.currency ?? "DZD"}`;
 
-  // 2. Logo → data URL (resilient to network failure)
-  const logoSrc = await imageToDataUrl(logoAsset.url);
+  if (logoDataUrl && logoDataUrl !== BLANK_PNG) {
+    try { doc.addImage(logoDataUrl, "PNG", 257, 30, 80, 80); } catch (e) { console.warn("[pdf] fallback logo failed", e); }
+  }
+  doc.setFillColor(90, 67, 111);
+  doc.rect(0, 120, 595, 4, "F");
+  doc.setFontSize(20); doc.setTextColor(90, 67, 111);
+  doc.text("RAWA - Rawa Quran Academy", 297, 150, { align: "center" });
+  doc.setFontSize(13); doc.setTextColor(80, 80, 80);
+  doc.text("Payment Instructions / Instructions de paiement", 297, 172, { align: "center" });
 
-  // 3. Render hidden HTML (visibility:hidden, NOT display:none, so layout is computed)
-  const host = document.createElement("div");
-  host.style.position = "fixed";
-  host.style.left = "-99999px";
-  host.style.top = "0";
-  host.style.width = "794px";
-  host.style.visibility = "hidden";
-  host.setAttribute("aria-hidden", "true");
-  host.innerHTML = buildArabicInvoiceHTML(settings, logoSrc, qrDataUrl, paymentRef);
-  document.body.appendChild(host);
+  let y = 220;
+  doc.setFontSize(12); doc.setTextColor(30, 30, 30);
+  const rows: [string, string][] = [
+    ["Method", "Edahabia / BaridiMob"],
+    ["CCP", settings.ccp_number ?? "—"],
+    ...(settings.ccp_key ? [["Key", settings.ccp_key] as [string, string]] : []),
+    ["Beneficiary", settings.account_holder ?? "—"],
+    ["Amount", price],
+    ...(paymentRef ? [["Reference", paymentRef] as [string, string]] : []),
+    ["Duration", `${settings.subscription_duration_days ?? 30} days`],
+  ];
+  for (const [k, v] of rows) {
+    doc.setTextColor(120, 110, 140); doc.text(`${k}:`, 60, y);
+    doc.setTextColor(30, 30, 30); doc.text(String(v), 200, y);
+    y += 24;
+  }
 
+  if (qrDataUrl) {
+    try { doc.addImage(qrDataUrl, "PNG", 380, 220, 160, 160); }
+    catch (e) { console.warn("[pdf] fallback QR failed", e); }
+  }
+
+  y = Math.max(y, 420);
+  doc.setFontSize(11); doc.setTextColor(90, 67, 111);
+  doc.text("Steps:", 60, y); y += 18;
+  doc.setTextColor(40, 40, 40);
+  [
+    "1. Transfer the amount via Edahabia or BaridiMob.",
+    "2. Keep your payment receipt and reference number.",
+    "3. Return to the platform and upload the receipt image.",
+    "4. Wait for admin review (usually within 24 hours).",
+    "5. Your subscription will be activated upon approval.",
+  ].forEach((line) => { doc.text(line, 60, y); y += 16; });
+
+  doc.setFontSize(10); doc.setTextColor(120, 110, 140);
+  doc.text(`© Rawa Quran Academy — ${PLATFORM_URL}`, 297, 800, { align: "center" });
+  return doc;
+}
+
+export async function downloadPaymentInstructionsPDF(settings: SettingsLike, qrDataUrl?: string, paymentRef?: string) {
+  let logoSrc = BLANK_PNG;
+
+  // Step 1: Fonts
+  console.info("[pdf] Waiting fonts...");
+  try { await ensureArabicFont(); }
+  catch (e) { console.error("PDF ERROR (fonts):", e); }
+
+  // Step 2: Logo
+  console.info("[pdf] Loading logo...");
+  try { logoSrc = await imageToDataUrl(logoAsset.url); }
+  catch (e) { console.error("PDF ERROR (logo):", e); }
+
+  // Step 3+: HTML render attempt
+  let host: HTMLDivElement | null = null;
   try {
-    const node = host.querySelector("#rawa-pdf-root") as HTMLElement;
+    console.info("[pdf] Creating template...");
+    host = document.createElement("div");
+    host.style.cssText = "position:fixed; left:-99999px; top:0; width:794px; visibility:hidden;";
+    host.setAttribute("aria-hidden", "true");
+    host.innerHTML = buildArabicInvoiceHTML(settings, logoSrc, qrDataUrl, paymentRef);
+    document.body.appendChild(host);
+    const node = host.querySelector("#rawa-pdf-root") as HTMLElement | null;
+    if (!node) throw new Error("template root missing");
 
-    // 4. Wait for images + fonts before snapshot
+    console.info("[pdf] Loading QR + images...");
     await waitForImages(node);
     try {
       const fonts = (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts;
       if (fonts?.ready) await fonts.ready;
-    } catch { /* ignore */ }
+    } catch (e) { console.warn("[pdf] fonts.ready failed", e); }
 
+    console.info("[pdf] Rendering canvas (html2canvas)...");
     const canvas = await html2canvas(node, {
-      scale: 3,
+      scale: Math.min(3, window.devicePixelRatio > 1 ? 2.5 : 2),
       backgroundColor: "#ffffff",
       useCORS: true,
       allowTaint: true,
       logging: false,
       imageTimeout: 4000,
     });
-    const imgData = canvas.toDataURL("image/jpeg", 0.95);
 
+    console.info("[pdf] Creating PDF...");
+    const imgData = canvas.toDataURL("image/jpeg", 0.92);
     const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait", compress: true });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
@@ -219,22 +280,30 @@ export async function downloadPaymentInstructionsPDF(settings: SettingsLike, qrD
     if (imgH <= pageH) {
       doc.addImage(imgData, "JPEG", 0, 0, imgW, imgH);
     } else {
-      // Paginate
       let remaining = imgH;
       let position = 0;
       while (remaining > 0) {
         doc.addImage(imgData, "JPEG", 0, position, imgW, imgH);
         remaining -= pageH;
-        if (remaining > 0) {
-          doc.addPage();
-          position -= pageH;
-        }
+        if (remaining > 0) { doc.addPage(); position -= pageH; }
       }
     }
-
+    console.info("[pdf] Saving PDF...");
     doc.save(ARABIC_PDF_FILENAME);
+    return;
+  } catch (error) {
+    console.error("PDF ERROR:", error);
+    // Fallback: always produce a PDF
+    try {
+      const doc = buildFallbackPdf(settings, qrDataUrl, paymentRef, logoSrc);
+      console.info("[pdf] Saving fallback PDF...");
+      doc.save(ARABIC_PDF_FILENAME);
+    } catch (fallbackError) {
+      console.error("PDF ERROR (fallback also failed):", fallbackError);
+      throw fallbackError;
+    }
   } finally {
-    document.body.removeChild(host);
+    if (host && host.parentNode) host.parentNode.removeChild(host);
   }
 }
 
