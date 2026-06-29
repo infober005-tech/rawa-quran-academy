@@ -172,7 +172,6 @@ async function ensureArabicFont(): Promise<void> {
   } catch { /* ignore */ }
 }
 
-export async function downloadPaymentInstructionsPDF(settings: SettingsLike, qrDataUrl?: string, paymentRef?: string) {
 function buildFallbackPdf(settings: SettingsLike, qrDataUrl?: string, paymentRef?: string, logoDataUrl?: string): jsPDF {
   console.info("[pdf] Building fallback PDF (text-only via jsPDF)...");
   const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait", compress: true });
