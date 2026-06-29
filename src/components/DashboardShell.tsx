@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n, LangSwitcher } from "@/lib/i18n";
 import { useNotificationToasts } from "@/hooks/useNotificationToasts";
 import { PremiumSidebar, MobileSidebar } from "@/components/PremiumSidebar";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import type { ReactNode } from "react";
 
 export function DashboardShell({ children }: { children: ReactNode }) {
@@ -38,8 +39,10 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 p-4 lg:p-8 max-w-7xl w-full mx-auto">{children}</main>
+        <main className="flex-1 p-4 lg:p-8 max-w-7xl w-full mx-auto pb-24 lg:pb-8">{children}</main>
       </div>
+
+      <MobileBottomNav onSignOut={handleSignOut} />
     </div>
   );
 }
