@@ -1193,31 +1193,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      can_submit_payment: { Args: { _user_id: string }; Returns: boolean }
-      has_active_subscription: { Args: { _user_id: string }; Returns: boolean }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
-      in_halaqa: {
-        Args: { _halaqa_id: string; _user_id: string }
-        Returns: boolean
-      }
-      is_conversation_member: {
-        Args: { _conversation_id: string; _user_id: string }
-        Returns: boolean
-      }
-      is_parent_of: {
-        Args: { _parent_id: string; _student_id: string }
-        Returns: boolean
-      }
-      primary_role: {
-        Args: { _user_id: string }
-        Returns: Database["public"]["Enums"]["app_role"]
-      }
       process_subscription_reminders: { Args: never; Returns: undefined }
     }
     Enums: {

@@ -16,13 +16,22 @@ export const generateStudentInsights = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
 
     // Authorization
-    const [{ data: isDir }, { data: isGen }, { data: isParent }, { data: ownHalaqas }, { data: profile }] = await Promise.all([
-      supabase.rpc("has_role", { _user_id: userId, _role: "director" }),
-      supabase.rpc("has_role", { _user_id: userId, _role: "general_supervisor" }),
-      supabase.rpc("is_parent_of", { _parent_id: userId, _student_id: data.studentId }),
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [{ data: roles }, { data: parentLink }, { data: ownHalaqas }, { data: profile }] = await Promise.all([
+      supabaseAdmin.from("user_roles").select("role").eq("user_id", userId),
+      supabaseAdmin
+        .from("parent_links")
+        .select("student_user_id")
+        .eq("parent_user_id", userId)
+        .eq("student_user_id", data.studentId)
+        .maybeSingle(),
       supabase.from("halaqas").select("id").or(`teacher_id.eq.${userId},supervisor_id.eq.${userId}`),
       supabase.from("profiles").select("id, full_name").eq("id", data.studentId).maybeSingle(),
     ]);
+    const roleSet = new Set((roles ?? []).map((r) => r.role));
+    const isDir = roleSet.has("director");
+    const isGen = roleSet.has("general_supervisor");
+    const isParent = !!parentLink;
     const isSelf = userId === data.studentId;
     let allowed = isDir || isGen || isParent || isSelf;
     if (!allowed && ownHalaqas?.length) {
