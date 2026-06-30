@@ -51,7 +51,7 @@ export function PaymentPage() {
   useEffect(() => {
     if (!qrText) return;
     if (canvasRef.current) {
-      QRCode.toCanvas(canvasRef.current, qrText, { width: 220, margin: 1, color: { dark: "#5A436F", light: "#ffffff" } });
+      QRCode.toCanvas(canvasRef.current, qrText, { width: 320, margin: 1, color: { dark: "#5A436F", light: "#ffffff" } });
     }
     QRCode.toDataURL(qrText, { width: 480, margin: 1, color: { dark: "#5A436F", light: "#ffffff" } }).then(setQrDataUrl).catch(() => {});
   }, [qrText]);
@@ -267,10 +267,10 @@ function StepInstructions({ settings, canvasRef, qrDataUrl, paymentRef, onCopy, 
         <h3 className="font-bold text-primary text-lg">رمز QR الذكي</h3>
         <p className="text-xs text-muted-foreground">رمز فريد لهذه المحاولة · صالح 30 دقيقة · يحتوي على المرجع والمبلغ.</p>
         <div className="inline-block p-3 rounded-2xl bg-white border-2 border-gold/40 shadow-glow">
-          <canvas ref={canvasRef} />
+          <canvas ref={canvasRef} className="block w-[220px] sm:w-[260px] md:w-[320px] h-auto max-w-full" />
         </div>
         {paymentRef && <div className="font-mono text-[10px] text-muted-foreground break-all px-2">{paymentRef}</div>}
-        <div className="flex gap-2 pt-2">
+        <div className="flex flex-col sm:flex-row gap-2 pt-2 stack-actions">
           <button onClick={onBack} className="flex-1 py-2.5 rounded-full bg-muted text-foreground text-sm font-semibold">→ رجوع</button>
           <button onClick={onNext} className="flex-1 py-2.5 rounded-full bg-gradient-royal text-primary-foreground font-bold text-sm">متابعة ←</button>
         </div>
