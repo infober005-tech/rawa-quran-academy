@@ -293,7 +293,7 @@ function ForgotForm({ onBack }: { onBack: () => void }) {
   );
 }
 
-const inputCls = "w-full px-3 py-2 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40";
+const inputCls = "w-full h-12 md:h-11 px-4 py-2 rounded-xl border border-input bg-background text-foreground text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary/40";
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">

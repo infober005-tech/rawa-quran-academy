@@ -180,6 +180,9 @@
   /* Fluid headings */
   h1 { font-size: clamp(1.5rem, 4.5vw, 2.25rem); }
   h2 { font-size: clamp(1.25rem, 3.5vw, 1.75rem); }
+  h3 { font-size: clamp(1.05rem, 2.6vw, 1.35rem); line-height: 1.25; }
+  p, li, span, label { overflow-wrap: anywhere; }
+  img, video { max-width: 100%; height: auto; }
 
   [dir="ltr"] body {
     font-family: var(--font-sans);
@@ -270,3 +273,13 @@
 
 /* iOS safe-area helper for bottom navigation */
 .safe-pb { padding-bottom: env(safe-area-inset-bottom, 0); }
+
+/* Mobile-first refinements */
+@media (max-width: 767px) {
+  .stack-actions > button,
+  .stack-actions > a { width: 100%; }
+  [role="dialog"] h2,
+  [role="alertdialog"] h2 { font-size: 1.15rem; }
+}
+
+button, a, [role="button"] { touch-action: manipulation; }
