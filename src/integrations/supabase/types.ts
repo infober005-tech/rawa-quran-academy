@@ -520,6 +520,8 @@ export type Database = {
           description: string | null
           end_time: string | null
           gender: Database["public"]["Enums"]["gender_type"]
+          halaqa_date: string | null
+          halaqa_day: number | null
           id: string
           level: Database["public"]["Enums"]["quran_level"]
           live_session_active: boolean
@@ -544,6 +546,8 @@ export type Database = {
           description?: string | null
           end_time?: string | null
           gender: Database["public"]["Enums"]["gender_type"]
+          halaqa_date?: string | null
+          halaqa_day?: number | null
           id?: string
           level: Database["public"]["Enums"]["quran_level"]
           live_session_active?: boolean
@@ -568,6 +572,8 @@ export type Database = {
           description?: string | null
           end_time?: string | null
           gender?: Database["public"]["Enums"]["gender_type"]
+          halaqa_date?: string | null
+          halaqa_day?: number | null
           id?: string
           level?: Database["public"]["Enums"]["quran_level"]
           live_session_active?: boolean
