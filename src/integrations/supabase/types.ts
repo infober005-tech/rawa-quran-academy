@@ -1207,7 +1207,7 @@ export type Database = {
       attendance_status: "present" | "absent" | "late"
       conversation_kind: "direct" | "group" | "halaqa"
       gender_type: "male" | "female"
-      halaqa_status: "active" | "archived" | "inactive"
+      halaqa_status: "active" | "archived" | "inactive" | "draft" | "published"
       payment_method: "edahabia" | "baridimob"
       payment_status: "pending" | "approved" | "rejected"
       quran_level: "beginner" | "intermediate" | "advanced"
@@ -1362,7 +1362,7 @@ export const Constants = {
       attendance_status: ["present", "absent", "late"],
       conversation_kind: ["direct", "group", "halaqa"],
       gender_type: ["male", "female"],
-      halaqa_status: ["active", "archived", "inactive"],
+      halaqa_status: ["active", "archived", "inactive", "draft", "published"],
       payment_method: ["edahabia", "baridimob"],
       payment_status: ["pending", "approved", "rejected"],
       quran_level: ["beginner", "intermediate", "advanced"],
