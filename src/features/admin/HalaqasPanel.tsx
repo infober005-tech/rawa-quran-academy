@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { ar as arLocale, fr as frLocale, enUS as enLocale } from "date-fns/locale";
-import { Calendar as CalendarIcon, Search, Users2, Video, ChevronDown, ChevronUp, X, Check } from "lucide-react";
+import { Calendar as CalendarIcon, Search, Users2, Video, ChevronDown, ChevronUp, Check } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
