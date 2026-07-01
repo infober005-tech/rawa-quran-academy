@@ -520,6 +520,8 @@ export type Database = {
           description: string | null
           end_time: string | null
           gender: Database["public"]["Enums"]["gender_type"]
+          halaqa_date: string | null
+          halaqa_day: number | null
           id: string
           level: Database["public"]["Enums"]["quran_level"]
           live_session_active: boolean
@@ -544,6 +546,8 @@ export type Database = {
           description?: string | null
           end_time?: string | null
           gender: Database["public"]["Enums"]["gender_type"]
+          halaqa_date?: string | null
+          halaqa_day?: number | null
           id?: string
           level: Database["public"]["Enums"]["quran_level"]
           live_session_active?: boolean
@@ -568,6 +572,8 @@ export type Database = {
           description?: string | null
           end_time?: string | null
           gender?: Database["public"]["Enums"]["gender_type"]
+          halaqa_date?: string | null
+          halaqa_day?: number | null
           id?: string
           level?: Database["public"]["Enums"]["quran_level"]
           live_session_active?: boolean
@@ -1207,7 +1213,7 @@ export type Database = {
       attendance_status: "present" | "absent" | "late"
       conversation_kind: "direct" | "group" | "halaqa"
       gender_type: "male" | "female"
-      halaqa_status: "active" | "archived" | "inactive"
+      halaqa_status: "active" | "archived" | "inactive" | "draft" | "published"
       payment_method: "edahabia" | "baridimob"
       payment_status: "pending" | "approved" | "rejected"
       quran_level: "beginner" | "intermediate" | "advanced"
@@ -1362,7 +1368,7 @@ export const Constants = {
       attendance_status: ["present", "absent", "late"],
       conversation_kind: ["direct", "group", "halaqa"],
       gender_type: ["male", "female"],
-      halaqa_status: ["active", "archived", "inactive"],
+      halaqa_status: ["active", "archived", "inactive", "draft", "published"],
       payment_method: ["edahabia", "baridimob"],
       payment_status: ["pending", "approved", "rejected"],
       quran_level: ["beginner", "intermediate", "advanced"],
