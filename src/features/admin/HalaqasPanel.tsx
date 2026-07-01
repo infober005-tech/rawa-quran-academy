@@ -76,7 +76,7 @@ function useLocale() {
   return lang === "ar" ? arLocale : lang === "fr" ? frLocale : enLocale;
 }
 
-function fmtDate(dateISO: string | null, locale: Locale): string {
+function fmtDate(dateISO: string | null, locale: ReturnType<typeof useLocale>): string {
   if (!dateISO) return "—";
   try { return format(parseISO(dateISO), "d MMMM yyyy", { locale }); } catch { return dateISO; }
 }
@@ -848,5 +848,4 @@ function HalaqaStudents({ halaqa }: { halaqa: Halaqa }) {
   );
 }
 
-// Silence unused-import lint (X used only conditionally in dev)
-void X;
+export default HalaqasPanel;
