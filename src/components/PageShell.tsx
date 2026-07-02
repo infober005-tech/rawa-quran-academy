@@ -15,7 +15,7 @@ export function PageShell({
 }: {
   className?: string;
   children: React.ReactNode;
-  as?: React.ElementType;
+  as?: "div" | "section" | "main" | "article";
   /** Wider container (dashboards / analytics). Default is content-friendly. */
   wide?: boolean;
 }) {
