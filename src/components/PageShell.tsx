@@ -10,17 +10,15 @@ import { cn } from "@/lib/utils";
 export function PageShell({
   className,
   children,
-  as: Tag = "div",
   wide,
 }: {
   className?: string;
   children: React.ReactNode;
-  as?: "div" | "section" | "main" | "article";
   /** Wider container (dashboards / analytics). Default is content-friendly. */
   wide?: boolean;
 }) {
   return (
-    <Tag
+    <div
       className={cn(
         "mx-auto w-full px-4 sm:px-6 lg:px-8",
         "pb-[max(env(safe-area-inset-bottom),1.5rem)]",
@@ -29,7 +27,7 @@ export function PageShell({
       )}
     >
       {children}
-    </Tag>
+    </div>
   );
 }
 
