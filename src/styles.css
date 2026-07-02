@@ -280,6 +280,21 @@
   .stack-actions > a { width: 100%; }
   [role="dialog"] h2,
   [role="alertdialog"] h2 { font-size: 1.15rem; }
+
+  /* Ensure any raw <table> author leaks stay usable */
+  .responsive-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Larger tap targets on interactive form controls */
+  input, select, textarea, [role="combobox"], [role="switch"] { min-height: 44px; }
+  [role="tab"] { min-height: 40px; }
 }
 
 button, a, [role="button"] { touch-action: manipulation; }
+
+/* Hide scrollbars on horizontally scrolling chip / tab rails */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Safe-area helpers */
+.safe-pt { padding-top: env(safe-area-inset-top, 0); }
+.safe-px { padding-left: env(safe-area-inset-left, 0); padding-right: env(safe-area-inset-right, 0); }
