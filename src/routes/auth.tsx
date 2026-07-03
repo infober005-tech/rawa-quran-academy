@@ -239,18 +239,18 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
     <form onSubmit={submit} className="space-y-3" method="post" action="#" autoComplete="on">
       <GoogleBtn />
       <div className="flex items-center gap-3 my-2"><div className="flex-1 h-px bg-border" /><span className="text-xs text-muted-foreground">{t("auth.or")}</span><div className="flex-1 h-px bg-border" /></div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Field label={t("auth.full_name")}><input name="name" autoComplete="name" required value={form.full_name} onChange={(e) => set("full_name", e.target.value)} className={inputCls} /></Field>
         <Field label={t("auth.parent_name")}><input name="parent_name" autoComplete="off" value={form.parent_name} onChange={(e) => set("parent_name", e.target.value)} className={inputCls} /></Field>
-        <Field label={t("auth.email")}><input name="email" type="email" autoComplete="email" required value={form.email} onChange={(e) => set("email", e.target.value)} className={inputCls} /></Field>
-        <Field label={t("auth.phone")}><input name="tel" type="tel" autoComplete="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} className={inputCls} /></Field>
+        <Field label={t("auth.email")}><input name="email" type="email" inputMode="email" autoComplete="email" required value={form.email} onChange={(e) => set("email", e.target.value)} className={inputCls} /></Field>
+        <Field label={t("auth.phone")}><input name="tel" type="tel" inputMode="tel" autoComplete="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} className={inputCls} /></Field>
         <Field label={t("auth.gender")}>
           <select value={form.gender} onChange={(e) => set("gender", e.target.value)} className={inputCls}>
             <option value="male">{t("auth.male")}</option>
             <option value="female">{t("auth.female")}</option>
           </select>
         </Field>
-        <Field label={t("auth.age")}><input type="number" min={3} max={120} value={form.age} onChange={(e) => set("age", e.target.value)} className={inputCls} /></Field>
+        <Field label={t("auth.age")}><input type="number" inputMode="numeric" min={3} max={120} value={form.age} onChange={(e) => set("age", e.target.value)} className={inputCls} /></Field>
         <Field label={t("auth.country")}><input autoComplete="country-name" value={form.country} onChange={(e) => set("country", e.target.value)} className={inputCls} /></Field>
         <Field label={t("auth.city")}><input autoComplete="address-level2" value={form.city} onChange={(e) => set("city", e.target.value)} className={inputCls} /></Field>
         <Field label={t("auth.quran_level")}>

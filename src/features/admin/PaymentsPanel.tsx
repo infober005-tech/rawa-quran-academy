@@ -152,21 +152,21 @@ export function PaymentsPanel() {
         </ChartCard>
       </div>
 
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex gap-1 p-1 bg-muted rounded-full text-sm">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div className="flex gap-1 p-1 bg-muted rounded-full text-sm overflow-x-auto no-scrollbar">
           {(["pending", "approved", "rejected"] as Tab[]).map((s) => (
-            <button key={s} onClick={() => setTab(s)} className={`px-4 py-1.5 rounded-full ${tab === s ? "bg-gradient-royal text-primary-foreground" : "text-muted-foreground"}`}>
+            <button key={s} onClick={() => setTab(s)} className={`shrink-0 px-4 py-1.5 rounded-full ${tab === s ? "bg-gradient-royal text-primary-foreground" : "text-muted-foreground"}`}>
               {s === "pending" ? "قيد المراجعة" : s === "approved" ? "موافق عليها" : "مرفوضة"}
             </button>
           ))}
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <select value={methodFilter} onChange={(e) => setMethodFilter(e.target.value as typeof methodFilter)} className="px-3 py-2 rounded-full border border-border bg-background text-sm">
+        <div className="flex gap-2 flex-wrap md:flex-nowrap">
+          <select value={methodFilter} onChange={(e) => setMethodFilter(e.target.value as typeof methodFilter)} className="flex-1 md:flex-none px-3 py-2 min-h-11 rounded-full border border-border bg-background text-sm">
             <option value="all">كل الطرق</option>
             <option value="edahabia">Edahabia</option>
             <option value="baridimob">BaridiMob</option>
           </select>
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="بحث (اسم، بريد، رقم العملية)…" className="px-4 py-2 rounded-full border border-border bg-background text-sm w-72 max-w-full" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="بحث (اسم، بريد، رقم العملية)…" className="w-full md:w-72 max-w-full px-4 py-2 min-h-11 rounded-full border border-border bg-background text-sm" />
         </div>
       </div>
 
