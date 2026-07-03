@@ -33,7 +33,7 @@ function ResetPasswordPage() {
   };
 
   return (
-    <div dir={dir} className="min-h-screen bg-hero islamic-pattern flex items-center justify-center p-4">
+    <div dir={dir} className="min-h-dvh bg-hero islamic-pattern flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-card border border-border rounded-3xl p-8 shadow-soft">
         <Link to="/" className="flex flex-col items-center justify-center gap-2 mb-6">
           <LogoPremium3D size="md" intro />
