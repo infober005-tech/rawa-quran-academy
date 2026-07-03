@@ -19,7 +19,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div dir={dir} className="min-h-screen bg-hero text-foreground flex">
+    <div dir={dir} className="min-h-dvh bg-hero text-foreground flex">
       <PremiumSidebar onSignOut={handleSignOut} />
 
       <div className="flex-1 min-w-0 flex flex-col">
