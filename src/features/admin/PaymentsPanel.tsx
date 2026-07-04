@@ -484,15 +484,8 @@ function computeStats(payments: Array<{ status: string; amount: number; created_
 
 function PaymentRow({ payment, onReview }: { payment: PaymentRowT; onReview: (status: "approved" | "rejected", notes?: string) => void }) {
   const [showReceipt, setShowReceipt] = useState(false);
-  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const [showReject, setShowReject] = useState(false);
   const [notes, setNotes] = useState("");
-  const [zoom, setZoom] = useState(1);
-
-  const openReceipt = async () => {
-    const { data } = await supabase.storage.from("payment-receipts").createSignedUrl(payment.receipt_file_url, 60 * 10);
-    if (data?.signedUrl) { setReceiptUrl(data.signedUrl); setShowReceipt(true); setZoom(1); }
-  };
 
   return (
     <>
@@ -506,7 +499,16 @@ function PaymentRow({ payment, onReview }: { payment: PaymentRowT; onReview: (st
         <td className="p-3 font-mono text-[11px] text-muted-foreground" title={payment.payment_ref ?? ""}>{payment.payment_ref ? payment.payment_ref.slice(0, 22) + "…" : "—"}</td>
         <td className="p-3 font-mono">{payment.transaction_number}</td>
         <td className="p-3 text-xs">{new Date(payment.payment_date).toLocaleDateString("ar")}</td>
-        <td className="p-3"><button onClick={openReceipt} className="text-primary underline text-xs">عرض</button></td>
+        <td className="p-3">
+          <button
+            type="button"
+            onClick={() => setShowReceipt(true)}
+            className="text-primary underline text-xs min-h-11 px-2"
+            aria-label="معاينة الوصل"
+          >
+            معاينة الوصل
+          </button>
+        </td>
         <td className="p-3">
           {payment.status === "pending" ? (
             <div className="flex gap-1.5">
@@ -518,32 +520,12 @@ function PaymentRow({ payment, onReview }: { payment: PaymentRowT; onReview: (st
           )}
         </td>
       </tr>
-      {showReceipt && receiptUrl && (
-        <tr><td colSpan={7}>
-          <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-6" onClick={() => setShowReceipt(false)}>
-            <div className="bg-card rounded-2xl p-4 max-w-4xl max-h-[90vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
-              {receiptUrl.toLowerCase().includes(".pdf") ? (
-                <iframe src={receiptUrl} className="w-[80vw] h-[80vh] rounded-xl" />
-              ) : (
-                <div className="overflow-auto max-h-[80vh]">
-                  <img src={receiptUrl} alt="" style={{ transform: `scale(${zoom})`, transformOrigin: "top center" }} className="max-w-full rounded-xl transition-transform" />
-                </div>
-              )}
-              <div className="mt-3 flex gap-2 justify-end flex-wrap">
-                {!receiptUrl.toLowerCase().includes(".pdf") && (
-                  <div className="flex items-center gap-1 mr-auto">
-                    <button onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))} className="px-3 py-2 rounded-full bg-muted text-xs font-bold">−</button>
-                    <span className="text-xs font-mono px-2">{Math.round(zoom * 100)}%</span>
-                    <button onClick={() => setZoom((z) => Math.min(4, z + 0.25))} className="px-3 py-2 rounded-full bg-muted text-xs font-bold">+</button>
-                  </div>
-                )}
-                <a href={receiptUrl} download className="px-4 py-2 rounded-full bg-gradient-royal text-primary-foreground text-xs font-bold">تنزيل</a>
-                <button onClick={() => setShowReceipt(false)} className="px-4 py-2 rounded-full bg-muted text-xs">إغلاق</button>
-              </div>
-            </div>
-          </div>
-        </td></tr>
-      )}
+      <ReceiptPreviewDialog
+        open={showReceipt}
+        onOpenChange={setShowReceipt}
+        receiptPath={payment.receipt_file_url}
+        title={`وصل · ${payment.full_name}`}
+      />
       {showReject && (
         <tr><td colSpan={7}>
           <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-6" onClick={() => setShowReject(false)}>
