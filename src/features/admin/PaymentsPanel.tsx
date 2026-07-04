@@ -104,7 +104,7 @@ export function PaymentsPanel() {
   });
 
   const extendSub = useMutation({
-    mutationFn: async (sub: SubRow) => {
+    mutationFn: async (sub: SubEnrichedRow) => {
       const newEnd = new Date(Math.max(new Date(sub.end_date).getTime(), Date.now()) + 30 * 86400000).toISOString();
       const { error } = await supabase
         .from("subscriptions")
@@ -120,7 +120,7 @@ export function PaymentsPanel() {
   });
 
   const cancelSub = useMutation({
-    mutationFn: async (sub: SubRow) => {
+    mutationFn: async (sub: SubEnrichedRow) => {
       const { error } = await supabase
         .from("subscriptions")
         .update({ status: "cancelled" })
