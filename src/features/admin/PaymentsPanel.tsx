@@ -32,6 +32,9 @@ export function PaymentsPanel() {
   const [tab, setTab] = useState<Tab>("pending");
   const [search, setSearch] = useState("");
   const [methodFilter, setMethodFilter] = useState<"all" | "edahabia" | "baridimob">("all");
+  const [subSearch, setSubSearch] = useState("");
+  const [subSort, setSubSort] = useState<SortKey>("start");
+  const [subSortDir, setSubSortDir] = useState<"asc" | "desc">("desc");
   const qc = useQueryClient();
 
   const { data: payments } = useQuery({
