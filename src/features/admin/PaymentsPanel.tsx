@@ -57,24 +57,35 @@ export function PaymentsPanel() {
   const { data: subs } = useQuery({
     queryKey: ["admin-subscriptions-all"],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data: subsData } = await supabase
         .from("subscriptions")
-        .select(
-          "id,student_id,status,start_date,end_date,created_at,profiles:profiles!subscriptions_student_id_fkey(full_name,email),payments:payments!subscriptions_payment_id_fkey(payment_ref)",
-        )
+        .select("id,student_id,status,start_date,end_date,created_at,payment_id")
         .order("created_at", { ascending: false });
-      const rows = (data ?? []) as unknown as Array<
-        SubRow & {
-          profiles?: { full_name: string | null; email: string | null } | null;
-          payments?: { payment_ref: string | null } | null;
-        }
-      >;
-      return rows.map<SubEnrichedRow>((r) => ({
-        ...r,
-        full_name: r.profiles?.full_name ?? null,
-        email: r.profiles?.email ?? null,
-        payment_ref: r.payments?.payment_ref ?? null,
-      }));
+      const rows = (subsData ?? []) as Array<SubRow & { payment_id: string | null }>;
+      const studentIds = Array.from(new Set(rows.map((r) => r.student_id)));
+      const paymentIds = Array.from(
+        new Set(rows.map((r) => r.payment_id).filter((v): v is string => !!v)),
+      );
+      const [profilesRes, paymentsRes] = await Promise.all([
+        studentIds.length
+          ? supabase.from("profiles").select("id,full_name,email").in("id", studentIds)
+          : Promise.resolve({ data: [] as { id: string; full_name: string | null; email: string | null }[] }),
+        paymentIds.length
+          ? supabase.from("payments").select("id,payment_ref").in("id", paymentIds)
+          : Promise.resolve({ data: [] as { id: string; payment_ref: string | null }[] }),
+      ]);
+      const profileMap = new Map((profilesRes.data ?? []).map((p) => [p.id, p]));
+      const paymentMap = new Map((paymentsRes.data ?? []).map((p) => [p.id, p]));
+      return rows.map<SubEnrichedRow>((r) => {
+        const prof = profileMap.get(r.student_id);
+        const pay = r.payment_id ? paymentMap.get(r.payment_id) : undefined;
+        return {
+          ...r,
+          full_name: prof?.full_name ?? null,
+          email: prof?.email ?? null,
+          payment_ref: pay?.payment_ref ?? null,
+        };
+      });
     },
   });
 
