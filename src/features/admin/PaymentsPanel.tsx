@@ -259,15 +259,47 @@ export function PaymentsPanel() {
       </div>
 
       <div className="rounded-2xl border border-border bg-card overflow-hidden">
-        <div className="px-4 py-3 border-b border-border bg-muted/40 flex items-center justify-between">
+        <div className="px-4 py-3 border-b border-border bg-muted/40 flex items-center justify-between flex-wrap gap-3">
           <h3 className="font-bold text-primary text-sm">إدارة الاشتراكات</h3>
-          <span className="text-xs text-muted-foreground">{(subs ?? []).length} سجل</span>
+          <span className="text-xs text-muted-foreground">{displaySubs.length} / {(subs ?? []).length} سجل</span>
         </div>
-        <div className="overflow-x-auto">
+        <div className="px-4 py-3 border-b border-border flex flex-col md:flex-row md:items-center gap-2">
+          <input
+            value={subSearch}
+            onChange={(e) => setSubSearch(e.target.value)}
+            placeholder="بحث (اسم، بريد، مرجع الدفع)…"
+            className="flex-1 px-4 py-2 min-h-11 rounded-full border border-border bg-background text-sm"
+            aria-label="بحث في الاشتراكات"
+          />
+          <select
+            value={subSort}
+            onChange={(e) => setSubSort(e.target.value as SortKey)}
+            className="px-3 py-2 min-h-11 rounded-full border border-border bg-background text-sm"
+            aria-label="ترتيب حسب"
+          >
+            <option value="name">الاسم</option>
+            <option value="start">تاريخ البدء</option>
+            <option value="end">تاريخ الانتهاء</option>
+            <option value="status">الحالة</option>
+          </select>
+          <button
+            type="button"
+            onClick={() => setSubSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+            className="px-3 py-2 min-h-11 rounded-full border border-border bg-background text-sm"
+            aria-label="عكس الاتجاه"
+          >
+            {subSortDir === "asc" ? "↑" : "↓"}
+          </button>
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-muted/30 text-xs">
               <tr>
                 <th className="text-right p-3">الطالب</th>
+                <th className="text-right p-3">البريد</th>
+                <th className="text-right p-3">مرجع الدفع</th>
                 <th className="text-right p-3">الحالة</th>
                 <th className="text-right p-3">يبدأ</th>
                 <th className="text-right p-3">ينتهي</th>
@@ -275,11 +307,14 @@ export function PaymentsPanel() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {(subs ?? []).slice(0, 30).map((s) => {
+              {displaySubs.slice(0, 100).map((s) => {
                 const expired = new Date(s.end_date) < new Date();
+                const name = s.full_name || s.email || "Unknown Student";
                 return (
                   <tr key={s.id} className="hover:bg-muted/30">
-                    <td className="p-3 font-mono text-xs">{s.student_id.slice(0, 8)}…</td>
+                    <td className="p-3 font-semibold text-primary">{name}</td>
+                    <td className="p-3 text-xs text-muted-foreground">{s.email ?? "—"}</td>
+                    <td className="p-3 font-mono text-[11px] text-muted-foreground">{s.payment_ref ?? "—"}</td>
                     <td className="p-3">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                         s.status === "active" && !expired ? "bg-green-500/15 text-green-700 dark:text-green-400" :
@@ -312,11 +347,60 @@ export function PaymentsPanel() {
                   </tr>
                 );
               })}
-              {(!subs || subs.length === 0) && (
-                <tr><td colSpan={5} className="text-center text-muted-foreground py-8">لا توجد اشتراكات</td></tr>
+              {displaySubs.length === 0 && (
+                <tr><td colSpan={7} className="text-center text-muted-foreground py-8">لا توجد اشتراكات</td></tr>
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile card list */}
+        <div className="md:hidden divide-y divide-border">
+          {displaySubs.slice(0, 100).map((s) => {
+            const expired = new Date(s.end_date) < new Date();
+            const name = s.full_name || s.email || "Unknown Student";
+            return (
+              <div key={s.id} className="p-4 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="font-semibold text-primary truncate">{name}</div>
+                    {s.email && <div className="text-xs text-muted-foreground truncate">{s.email}</div>}
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                    s.status === "active" && !expired ? "bg-green-500/15 text-green-700 dark:text-green-400" :
+                    s.status === "cancelled" ? "bg-muted text-muted-foreground" :
+                    "bg-red-500/15 text-red-700 dark:text-red-400"
+                  }`}>{expired && s.status === "active" ? "expired" : s.status}</span>
+                </div>
+                <div className="text-[11px] text-muted-foreground font-mono break-all">{s.payment_ref ?? "—"}</div>
+                <div className="flex justify-between text-[11px] text-muted-foreground">
+                  <span>يبدأ: {new Date(s.start_date).toLocaleDateString("ar")}</span>
+                  <span>ينتهي: {new Date(s.end_date).toLocaleDateString("ar")}</span>
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={() => extendSub.mutate(s)}
+                    disabled={extendSub.isPending}
+                    className="flex-1 min-h-11 px-3 rounded-full bg-primary text-primary-foreground text-xs font-bold disabled:opacity-50"
+                  >
+                    تمديد 30 يوم
+                  </button>
+                  {s.status === "active" && (
+                    <button
+                      onClick={() => { if (confirm("إلغاء الاشتراك؟")) cancelSub.mutate(s); }}
+                      disabled={cancelSub.isPending}
+                      className="flex-1 min-h-11 px-3 rounded-full bg-red-600 text-white text-xs font-bold disabled:opacity-50"
+                    >
+                      إلغاء
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          {displaySubs.length === 0 && (
+            <div className="text-center text-muted-foreground py-8 text-sm">لا توجد اشتراكات</div>
+          )}
         </div>
       </div>
     </div>
