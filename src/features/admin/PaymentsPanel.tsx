@@ -146,6 +146,34 @@ export function PaymentsPanel() {
 
   const stats = useMemo(() => computeStats(allPayments ?? [], subs ?? []), [allPayments, subs]);
 
+  const displaySubs = useMemo<SubEnrichedRow[]>(() => {
+    const rows = subs ?? [];
+    const q = subSearch.trim().toLowerCase();
+    const filtered = q
+      ? rows.filter(
+          (s) =>
+            (s.full_name ?? "").toLowerCase().includes(q) ||
+            (s.email ?? "").toLowerCase().includes(q) ||
+            (s.payment_ref ?? "").toLowerCase().includes(q),
+        )
+      : rows;
+    const dir = subSortDir === "asc" ? 1 : -1;
+    const sorted = [...filtered].sort((a, b) => {
+      switch (subSort) {
+        case "name":
+          return ((a.full_name ?? a.email ?? "") > (b.full_name ?? b.email ?? "") ? 1 : -1) * dir;
+        case "status":
+          return (a.status > b.status ? 1 : -1) * dir;
+        case "end":
+          return (new Date(a.end_date).getTime() - new Date(b.end_date).getTime()) * dir;
+        case "start":
+        default:
+          return (new Date(a.start_date).getTime() - new Date(b.start_date).getTime()) * dir;
+      }
+    });
+    return sorted;
+  }, [subs, subSearch, subSort, subSortDir]);
+
   return (
     <div className="space-y-6">
       <div>
