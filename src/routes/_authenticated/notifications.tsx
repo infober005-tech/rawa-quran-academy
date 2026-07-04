@@ -48,7 +48,7 @@ function NotificationsPage() {
   }) => {
     if (!n.is_read) markRead.mutate(n.id);
     const target = resolveNotificationRoute(n, primaryRole);
-    void navigate({ to: target });
+    void navigate({ to: target as "/dashboard" });
   };
 
   return (
