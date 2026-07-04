@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
 import { useSubscription, useMyPayments } from "@/hooks/use-subscription";
 import { useState } from "react";
+import { ReceiptPreviewDialog } from "@/components/ReceiptPreviewDialog";
 
 const STATUS_BADGE: Record<string, string> = {
   active: "bg-green-500/20 text-green-600",
@@ -70,11 +70,7 @@ function Stat({ label, value, highlight }: { label: string; value: string; highl
 }
 
 function PaymentRow({ payment }: { payment: { id: string; amount: number; created_at: string; status: string; receipt_file_url: string; transaction_number: string } }) {
-  const [url, setUrl] = useState<string | null>(null);
-  const view = async () => {
-    const { data } = await supabase.storage.from("payment-receipts").createSignedUrl(payment.receipt_file_url, 60 * 10);
-    if (data?.signedUrl) { setUrl(data.signedUrl); window.open(data.signedUrl, "_blank"); }
-  };
+  const [open, setOpen] = useState(false);
   return (
     <div className="py-2 flex items-center justify-between gap-3 flex-wrap text-xs">
       <div>
@@ -83,7 +79,20 @@ function PaymentRow({ payment }: { payment: { id: string; amount: number; create
       </div>
       <div className="flex items-center gap-2">
         <span className={`px-2 py-0.5 rounded-full font-bold ${STATUS_BADGE[payment.status]}`}>{payment.status}</span>
-        <button onClick={view} className="text-primary underline">عرض الوصل</button>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="text-primary underline min-h-11 px-2"
+          aria-label="معاينة الوصل"
+        >
+          معاينة الوصل
+        </button>
+        <ReceiptPreviewDialog
+          open={open}
+          onOpenChange={setOpen}
+          receiptPath={payment.receipt_file_url}
+          title={`وصل · #${payment.transaction_number}`}
+        />
       </div>
     </div>
   );
