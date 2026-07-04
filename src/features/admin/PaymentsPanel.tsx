@@ -57,8 +57,24 @@ export function PaymentsPanel() {
   const { data: subs } = useQuery({
     queryKey: ["admin-subscriptions-all"],
     queryFn: async () => {
-      const { data } = await supabase.from("subscriptions").select("id,student_id,status,start_date,end_date,created_at").order("created_at", { ascending: false });
-      return (data ?? []) as SubRow[];
+      const { data } = await supabase
+        .from("subscriptions")
+        .select(
+          "id,student_id,status,start_date,end_date,created_at,profiles:profiles!subscriptions_student_id_fkey(full_name,email),payments:payments!subscriptions_payment_id_fkey(payment_ref)",
+        )
+        .order("created_at", { ascending: false });
+      const rows = (data ?? []) as unknown as Array<
+        SubRow & {
+          profiles?: { full_name: string | null; email: string | null } | null;
+          payments?: { payment_ref: string | null } | null;
+        }
+      >;
+      return rows.map<SubEnrichedRow>((r) => ({
+        ...r,
+        full_name: r.profiles?.full_name ?? null,
+        email: r.profiles?.email ?? null,
+        payment_ref: r.payments?.payment_ref ?? null,
+      }));
     },
   });
 
