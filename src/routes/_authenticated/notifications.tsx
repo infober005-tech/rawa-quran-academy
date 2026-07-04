@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardShell } from "@/components/DashboardShell";
 import { useAuth } from "@/hooks/use-auth";
@@ -7,15 +8,17 @@ import { useI18n } from "@/lib/i18n";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { Bell, CheckCheck } from "lucide-react";
+import { resolveNotificationRoute } from "@/lib/notification-routing";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
   component: NotificationsPage,
 });
 
 function NotificationsPage() {
-  const { user } = useAuth();
+  const { user, primaryRole } = useAuth();
   const { t, dir } = useI18n();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const { data } = useQuery({
     queryKey: ["notifs", user?.id],
     enabled: !!user,
@@ -35,6 +38,18 @@ function NotificationsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notifs"] }),
   });
   const unread = (data ?? []).filter((n) => !n.is_read).length;
+
+  const openNotification = (n: {
+    id: string;
+    title: string | null;
+    content: string | null;
+    link: string | null;
+    is_read: boolean;
+  }) => {
+    if (!n.is_read) markRead.mutate(n.id);
+    const target = resolveNotificationRoute(n, primaryRole);
+    void navigate({ to: target as "/dashboard" });
+  };
 
   return (
     <DashboardShell>
@@ -59,7 +74,7 @@ function NotificationsPage() {
             <button
               key={n.id}
               type="button"
-              onClick={() => !n.is_read && markRead.mutate(n.id)}
+              onClick={() => openNotification(n)}
               className={`text-start w-full p-4 rounded-2xl border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 n.is_read
                   ? "bg-card/60 border-border hover:bg-card"
