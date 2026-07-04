@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { ReceiptPreviewDialog } from "@/components/ReceiptPreviewDialog";
 
 type Tab = "pending" | "approved" | "rejected";
 
@@ -16,6 +17,14 @@ type PaymentRowT = {
 };
 
 type SubRow = { id: string; student_id: string; status: string; start_date: string; end_date: string; created_at: string };
+
+type SubEnrichedRow = SubRow & {
+  full_name: string | null;
+  email: string | null;
+  payment_ref: string | null;
+};
+
+type SortKey = "name" | "start" | "end" | "status";
 
 const METHOD_LABEL: Record<string, string> = { edahabia: "💳 Edahabia", baridimob: "📱 BaridiMob" };
 
