@@ -21,6 +21,21 @@ type Props = {
 // Cache signed URLs per session so re-opens don't refetch.
 const urlCache = new Map<string, { url: string; expiresAt: number }>();
 
+function normalizePath(input: string, bucket: string): { path: string | null; directUrl: string | null } {
+  const raw = input.trim();
+  if (!raw) return { path: null, directUrl: null };
+  if (/^https?:\/\//i.test(raw)) return { path: null, directUrl: raw };
+  // Strip accidental bucket/prefix or leading slashes.
+  let p = raw.replace(/^\/+/, "");
+  const prefixes = [
+    `${bucket}/`,
+    `storage/v1/object/public/${bucket}/`,
+    `storage/v1/object/sign/${bucket}/`,
+  ];
+  for (const pre of prefixes) if (p.startsWith(pre)) p = p.slice(pre.length);
+  return { path: p, directUrl: null };
+}
+
 export function ReceiptPreviewDialog({
   open,
   onOpenChange,
@@ -31,40 +46,69 @@ export function ReceiptPreviewDialog({
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [downloadHref, setDownloadHref] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const load = useCallback(async () => {
     if (!receiptPath) return;
-    const key = `${bucket}:${receiptPath}`;
+    const { path, directUrl } = normalizePath(receiptPath, bucket);
+    if (directUrl) {
+      setUrl(directUrl);
+      setDownloadHref(directUrl);
+      setError(null);
+      return;
+    }
+    if (!path) {
+      setError("لا يوجد مسار للوصل.");
+      return;
+    }
+    const key = `${bucket}:${path}`;
     const cached = urlCache.get(key);
     if (cached && cached.expiresAt > Date.now()) {
       setUrl(cached.url);
+      setDownloadHref(cached.url);
       return;
     }
     setLoading(true);
     setError(null);
     const { data, error: err } = await supabase.storage
       .from(bucket)
-      .createSignedUrl(receiptPath, 60 * 10);
+      .createSignedUrl(path, 60 * 10);
     setLoading(false);
     if (err || !data?.signedUrl) {
-      setError("تعذر تحميل الوصل.");
+      const msg = err?.message ?? "خطأ غير معروف";
+      if (import.meta.env.DEV) console.error("[ReceiptPreview] createSignedUrl failed", { bucket, path, err });
+      setError(`تعذر تحميل الوصل: ${msg}`);
       return;
     }
     urlCache.set(key, { url: data.signedUrl, expiresAt: Date.now() + 60 * 9 * 1000 });
     setUrl(data.signedUrl);
+    setDownloadHref(data.signedUrl);
+    if (import.meta.env.DEV) console.info("[ReceiptPreview] signed URL", data.signedUrl);
   }, [bucket, receiptPath]);
 
   useEffect(() => {
     if (!open) return;
     setZoom(1);
     setRotation(0);
+    setUrl(null);
+    setError(null);
     void load();
   }, [open, load]);
 
-  const isPdf = !!url && /\.pdf(\?|$)/i.test(url.split("?")[0] + (url.includes(".pdf") ? "?" : ""));
-  const isPdfPath = !!receiptPath && /\.pdf$/i.test(receiptPath);
-  const showAsPdf = isPdf || isPdfPath;
+  const extSource = (receiptPath ?? url ?? "").split("?")[0].toLowerCase();
+  const showAsPdf = /\.pdf$/i.test(extSource);
+
+  const onImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    if (import.meta.env.DEV) console.error("[ReceiptPreview] image load failed", url, e);
+    if (url) {
+      fetch(url, { method: "HEAD" })
+        .then((r) => setError(`تعذر عرض الصورة (HTTP ${r.status}).`))
+        .catch((fetchErr) => setError(`تعذر عرض الصورة: ${fetchErr?.message ?? "شبكة"}`));
+    } else {
+      setError("تعذر عرض الصورة.");
+    }
+  };
 
   const containerRef = useRef<HTMLDivElement>(null);
   const lastTap = useRef(0);
@@ -129,6 +173,7 @@ export function ReceiptPreviewDialog({
               src={url}
               alt={title}
               draggable={false}
+              onError={onImgError}
               style={{
                 transform: `scale(${zoom}) rotate(${rotation}deg)`,
                 transformOrigin: "center",
@@ -172,10 +217,10 @@ export function ReceiptPreviewDialog({
             </button>
           </div>
         )}
-        {url && !error && (
+        {(url || downloadHref) && (
           <>
             <a
-              href={url}
+              href={(url || downloadHref) as string}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 h-11 px-4 rounded-full bg-muted hover:bg-muted/70 text-xs font-semibold"
@@ -185,7 +230,7 @@ export function ReceiptPreviewDialog({
               <span className="hidden sm:inline">فتح</span>
             </a>
             <a
-              href={url}
+              href={(downloadHref || url) as string}
               download
               className="inline-flex items-center gap-1.5 h-11 px-4 rounded-full bg-gradient-royal text-primary-foreground text-xs font-bold shadow-glow"
               aria-label="تنزيل"
