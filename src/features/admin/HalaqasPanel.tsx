@@ -425,9 +425,17 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
         const { error } = await supabase.from("halaqas").update(payload).eq("id", initial.id);
         if (error) throw error;
       } else {
-        const { data, error } = await supabase.from("halaqas").insert(payload).select("id").single();
-        if (error) throw error;
-        halaqaId = data!.id;
+        if (import.meta.env.DEV) console.info("[HalaqasPanel] INSERT payload", payload);
+        const { data, error, status } = await supabase.from("halaqas").insert(payload).select("id").single();
+        if (import.meta.env.DEV) console.info("[HalaqasPanel] INSERT result", { data, error, status });
+        if (error) throw new Error(`فشل إنشاء الحلقة: ${error.message}`);
+        if (!data?.id) throw new Error("تعذر قراءة الحلقة بعد الإنشاء — تحقق من صلاحيات القراءة.");
+        halaqaId = data.id;
+        // Read-after-write verification: confirm the row is visible under RLS
+        const verify = await supabase.from("halaqas").select("id, status, teacher_id, supervisor_id").eq("id", halaqaId).maybeSingle();
+        if (import.meta.env.DEV) console.info("[HalaqasPanel] VERIFY row", verify);
+        if (verify.error) throw new Error(`الحلقة أُنشئت لكن لا يمكن قراءتها: ${verify.error.message}`);
+        if (!verify.data) throw new Error("الحلقة أُنشئت لكن حُجبت بواسطة سياسات RLS.");
       }
 
       // Sync students
@@ -448,7 +456,15 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
       }
     },
     onSuccess: () => {
+      // Invalidate every list that shows halaqas so new rows appear everywhere
       qc.invalidateQueries({ queryKey: ["admin-halaqas"] });
+      qc.invalidateQueries({ queryKey: ["halaqas-all"] });
+      qc.invalidateQueries({ queryKey: ["teacher-halaqas"] });
+      qc.invalidateQueries({ queryKey: ["supervisor-halaqas"] });
+      qc.invalidateQueries({ queryKey: ["gs-halaqas"] });
+      qc.invalidateQueries({ queryKey: ["dir-stats"] });
+      qc.invalidateQueries({ queryKey: ["dir-analytics"] });
+      qc.invalidateQueries({ queryKey: ["dir-live"] });
       toast.success("✓ تم الحفظ");
       onClose();
     },
