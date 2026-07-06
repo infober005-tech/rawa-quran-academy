@@ -17,11 +17,16 @@ function HalaqasPage() {
   const { t, dir } = useI18n();
   const { primaryRole } = useAuth();
 
-  const { data } = useQuery({
+  const { data, error, isLoading } = useQuery({
     queryKey: ["halaqas-all", primaryRole],
     queryFn: async () => {
-      const { data } = await supabase.from("halaqas").select("*, teacher:profiles!halaqas_teacher_id_fkey(full_name), supervisor:profiles!halaqas_supervisor_id_fkey(full_name)").order("created_at", { ascending: false });
-      return data ?? [];
+      const res = await supabase
+        .from("halaqas")
+        .select("*, teacher:profiles!halaqas_teacher_id_fkey(full_name), supervisor:profiles!halaqas_supervisor_id_fkey(full_name)")
+        .order("created_at", { ascending: false });
+      if (import.meta.env.DEV) console.info("[HalaqasPage] SELECT", { role: primaryRole, count: res.data?.length, error: res.error });
+      if (res.error) throw res.error;
+      return res.data ?? [];
     },
   });
 
