@@ -39,6 +39,14 @@ function HalaqasPage() {
           badge={dir === "rtl" ? `${data?.length ?? 0} حلقة` : `${data?.length ?? 0} halaqas`}
         />
         <SubscriptionGate>
+          {error && (
+            <div role="alert" className="rounded-2xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+              {dir === "rtl" ? "تعذر تحميل الحلقات: " : "Failed to load halaqas: "}{(error as Error).message}
+            </div>
+          )}
+          {isLoading && (
+            <div className="text-center text-muted-foreground py-10">…</div>
+          )}
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {data?.map((h: any) => (
               <article key={h.id} className="group relative overflow-hidden rounded-3xl border border-border bg-card/70 backdrop-blur-xl p-5 shadow-soft transition hover:border-gold/50 hover:shadow-glow">
