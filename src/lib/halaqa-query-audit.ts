@@ -78,10 +78,10 @@ export async function selectOrThrow<T>(
   context: string,
   table: string,
   select: string,
-  query: PromiseLike<QueryResponse<T>>,
+  query: PromiseLike<any>,
   suffix = "",
 ) {
-  const response = await query;
+  const response = await query as QueryResponse<T>;
   logHalaqaSelect(context, table, select, response, suffix);
   if (response.error) {
     const tableLabel = response.error.code === "42501" ? ` (${table})` : "";
