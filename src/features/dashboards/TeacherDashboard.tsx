@@ -8,6 +8,7 @@ import { SessionCaptureModal } from "./SessionCaptureModal";
 import { RecordingsPanel } from "@/features/recordings/RecordingsPanel";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { EmptyState } from "@/components/EmptyState";
+import { auditEmbeddedHalaqaRelations, selectOrThrow } from "@/lib/halaqa-query-audit";
 
 export function TeacherDashboard() {
   const { user } = useAuth();
@@ -18,8 +19,14 @@ export function TeacherDashboard() {
     queryKey: ["teacher-halaqas", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase.from("halaqas").select("*").eq("teacher_id", user!.id);
-      return data ?? [];
+      await auditEmbeddedHalaqaRelations(supabase, "teacher-halaqas");
+      return await selectOrThrow<any[]>(
+        "teacher-halaqas",
+        "halaqas",
+        "*",
+        supabase.from("halaqas").select("*").eq("teacher_id", user!.id),
+        `where teacher_id = ${user!.id}`,
+      ) ?? [];
     },
   });
 
@@ -162,7 +169,13 @@ function StudentsModal({ halaqaId, onClose }: { halaqaId: string; onClose: () =>
   const { data: students } = useQuery({
     queryKey: ["t-students", halaqaId],
     queryFn: async () => {
-      const { data } = await supabase.from("student_halaqas").select("student:profiles(id, full_name, email, phone, gender, age)").eq("halaqa_id", halaqaId);
+      const data = await selectOrThrow<Array<{ student: any }>>(
+        "teacher-students",
+        "student_halaqas",
+        "student:profiles(id, full_name, email, phone, gender, age)",
+        supabase.from("student_halaqas").select("student:profiles(id, full_name, email, phone, gender, age)").eq("halaqa_id", halaqaId),
+        `where halaqa_id = ${halaqaId}`,
+      );
       return (data ?? []).map((r: any) => r.student);
     },
   });
@@ -243,7 +256,13 @@ function EvaluateHalaqa({ halaqaId, onClose }: { halaqaId: string; onClose: () =
   const { data: students } = useQuery({
     queryKey: ["halaqa-students", halaqaId],
     queryFn: async () => {
-      const { data } = await supabase.from("student_halaqas").select("student:profiles(id, full_name)").eq("halaqa_id", halaqaId);
+      const data = await selectOrThrow<Array<{ student: any }>>(
+        "teacher-evaluation-students",
+        "student_halaqas",
+        "student:profiles(id, full_name)",
+        supabase.from("student_halaqas").select("student:profiles(id, full_name)").eq("halaqa_id", halaqaId),
+        `where halaqa_id = ${halaqaId}`,
+      );
       return (data ?? []).map((r: any) => r.student);
     },
   });
