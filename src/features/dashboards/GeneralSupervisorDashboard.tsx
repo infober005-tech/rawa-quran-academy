@@ -8,6 +8,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { EmptyState } from "@/components/EmptyState";
+import { attachHalaqaPeople, attachStudentCounts, auditEmbeddedHalaqaRelations, selectOrThrow } from "@/lib/halaqa-query-audit";
 
 type Tab = "overview" | "halaqas" | "teachers" | "supervisors" | "analytics" | "reports";
 
@@ -18,8 +19,16 @@ export function GeneralSupervisorDashboard() {
   const { data: halaqas } = useQuery({
     queryKey: ["gs-halaqas"],
     queryFn: async () => {
-      const { data } = await supabase.from("halaqas").select("*, teacher:profiles!halaqas_teacher_id_fkey(id, full_name), supervisor:profiles!halaqas_supervisor_id_fkey(id, full_name), students:student_halaqas(count)").order("created_at", { ascending: false });
-      return data ?? [];
+      await auditEmbeddedHalaqaRelations(supabase, "general-supervisor-halaqas");
+      const data = await selectOrThrow<any[]>(
+        "general-supervisor-halaqas",
+        "halaqas",
+        "*",
+        supabase.from("halaqas").select("*").order("created_at", { ascending: false }),
+        "order by created_at desc",
+      );
+      const withPeople = await attachHalaqaPeople(supabase, "general-supervisor-halaqas", data ?? []);
+      return await attachStudentCounts(supabase, "general-supervisor-halaqas", withPeople);
     },
   });
 
