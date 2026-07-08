@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { RecordingsPanel } from "@/features/recordings/RecordingsPanel";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { EmptyState } from "@/components/EmptyState";
+import { attachStudentCounts, auditEmbeddedHalaqaRelations, selectOrThrow } from "@/lib/halaqa-query-audit";
 
 export function SupervisorDashboard() {
   const { user } = useAuth();
@@ -20,8 +21,15 @@ export function SupervisorDashboard() {
     queryKey: ["sup-halaqas", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase.from("halaqas").select("*, students:student_halaqas(count)").eq("supervisor_id", user!.id);
-      return data ?? [];
+      await auditEmbeddedHalaqaRelations(supabase, "supervisor-halaqas");
+      const data = await selectOrThrow<any[]>(
+        "supervisor-halaqas",
+        "halaqas",
+        "*",
+        supabase.from("halaqas").select("*").eq("supervisor_id", user!.id),
+        `where supervisor_id = ${user!.id}`,
+      );
+      return await attachStudentCounts(supabase, "supervisor-halaqas", data ?? []);
     },
   });
 
