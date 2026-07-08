@@ -78,7 +78,7 @@ export async function selectOrThrow<T>(
   context: string,
   table: string,
   select: string,
-  query: Promise<QueryResponse<T>>,
+  query: PromiseLike<QueryResponse<T>>,
   suffix = "",
 ) {
   const response = await query;
