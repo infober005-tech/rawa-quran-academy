@@ -10,6 +10,7 @@ import { AIInsightsPanel } from "@/features/insights/AIInsightsPanel";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { SubscriptionStatusBanner } from "@/components/SubscriptionStatusBanner";
+import { attachHalaqaPeople, auditEmbeddedHalaqaRelations, selectOrThrow } from "@/lib/halaqa-query-audit";
 
 export function StudentDashboard() {
   const { user, profile } = useAuth();
@@ -20,12 +21,29 @@ export function StudentDashboard() {
     queryKey: ["my-halaqa", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("student_halaqas")
-        .select("halaqa:halaqas(id, name, level, schedule, meeting_link, live_session_active, meeting_provider, teacher:profiles!halaqas_teacher_id_fkey(full_name), supervisor:profiles!halaqas_supervisor_id_fkey(full_name))")
-        .eq("student_id", user!.id)
-        .maybeSingle();
-      return data;
+      await auditEmbeddedHalaqaRelations(supabase, "student-my-halaqa");
+      const membership = await selectOrThrow<{ halaqa_id: string } | null>(
+        "student-my-halaqa",
+        "student_halaqas",
+        "halaqa_id",
+        supabase.from("student_halaqas").select("halaqa_id").eq("student_id", user!.id).maybeSingle(),
+        `where student_id = ${user!.id}`,
+      );
+      if (!membership?.halaqa_id) return null;
+      const halaqa = await selectOrThrow<any | null>(
+        "student-my-halaqa",
+        "halaqas",
+        "id, name, level, schedule, meeting_link, live_session_active, meeting_provider, teacher_id, supervisor_id",
+        supabase
+          .from("halaqas")
+          .select("id, name, level, schedule, meeting_link, live_session_active, meeting_provider, teacher_id, supervisor_id")
+          .eq("id", membership.halaqa_id)
+          .maybeSingle(),
+        `where id = ${membership.halaqa_id}`,
+      );
+      if (!halaqa) return null;
+      const [withPeople] = await attachHalaqaPeople(supabase, "student-my-halaqa", [halaqa]);
+      return { halaqa: withPeople };
     },
   });
 

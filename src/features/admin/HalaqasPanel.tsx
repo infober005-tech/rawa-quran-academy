@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { attachHalaqaPeople, auditEmbeddedHalaqaRelations, selectOrThrow } from "@/lib/halaqa-query-audit";
 
 // Weekday tokens stored in schedule_days (existing convention)
 const DAYS = ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"] as const;
@@ -108,11 +109,15 @@ export function HalaqasPanel() {
   const { data: halaqas } = useQuery({
     queryKey: ["admin-halaqas"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("halaqas")
-        .select("*, teacher:profiles!halaqas_teacher_id_fkey(full_name), supervisor:profiles!halaqas_supervisor_id_fkey(full_name)")
-        .order("created_at", { ascending: false });
-      return (data ?? []) as Halaqa[];
+      await auditEmbeddedHalaqaRelations(supabase, "admin-halaqas");
+      const data = await selectOrThrow<Halaqa[]>(
+        "admin-halaqas",
+        "halaqas",
+        "*",
+        supabase.from("halaqas").select("*").order("created_at", { ascending: false }),
+        "order by created_at desc",
+      );
+      return await attachHalaqaPeople(supabase, "admin-halaqas", data ?? []) as Halaqa[];
     },
   });
 
@@ -838,7 +843,13 @@ function HalaqaStudents({ halaqa }: { halaqa: Halaqa }) {
     queryKey: ["halaqa-students-admin", halaqa.id],
     enabled: open,
     queryFn: async () => {
-      const { data } = await supabase.from("student_halaqas").select("student:profiles(id, full_name)").eq("halaqa_id", halaqa.id);
+      const data = await selectOrThrow<Array<{ student: { id: string; full_name: string } }>>(
+        "admin-halaqa-students",
+        "student_halaqas",
+        "student:profiles(id, full_name)",
+        supabase.from("student_halaqas").select("student:profiles(id, full_name)").eq("halaqa_id", halaqa.id),
+        `where halaqa_id = ${halaqa.id}`,
+      );
       return (data ?? []).map((r: { student: { id: string; full_name: string } }) => r.student);
     },
   });

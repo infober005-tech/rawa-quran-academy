@@ -8,6 +8,7 @@ import { SubscriptionGate } from "@/components/SubscriptionGate";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { BookOpen, User, Eye, CalendarDays, Play } from "lucide-react";
+import { attachHalaqaPeople, auditEmbeddedHalaqaRelations, selectOrThrow } from "@/lib/halaqa-query-audit";
 
 export const Route = createFileRoute("/_authenticated/halaqas")({
   component: HalaqasPage,
@@ -20,13 +21,16 @@ function HalaqasPage() {
   const { data, error, isLoading } = useQuery({
     queryKey: ["halaqas-all", primaryRole],
     queryFn: async () => {
-      const res = await supabase
-        .from("halaqas")
-        .select("*, teacher:profiles!halaqas_teacher_id_fkey(full_name), supervisor:profiles!halaqas_supervisor_id_fkey(full_name)")
-        .order("created_at", { ascending: false });
-      if (import.meta.env.DEV) console.info("[HalaqasPage] SELECT", { role: primaryRole, count: res.data?.length, error: res.error });
-      if (res.error) throw res.error;
-      return res.data ?? [];
+      await auditEmbeddedHalaqaRelations(supabase, `halaqas-page:${primaryRole ?? "unknown"}`);
+      const data = await selectOrThrow<any[]>(
+        "halaqas-page",
+        "halaqas",
+        "*",
+        supabase.from("halaqas").select("*").order("created_at", { ascending: false }),
+        "order by created_at desc",
+      );
+      if (import.meta.env.DEV) console.info("[HalaqasPage] Applied filters", { role: primaryRole, frontendFilters: "none", count: data?.length ?? 0 });
+      return await attachHalaqaPeople(supabase, "halaqas-page", data ?? []);
     },
   });
 
