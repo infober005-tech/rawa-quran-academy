@@ -10,6 +10,7 @@ import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { RecordingsPanel } from "@/features/recordings/RecordingsPanel";
 import { AIInsightsPanel } from "@/features/insights/AIInsightsPanel";
 import { LogoPremium3D } from "@/components/LogoPremium3D";
+import { attachHalaqaPeople, auditEmbeddedHalaqaRelations, selectOrThrow } from "@/lib/halaqa-query-audit";
 
 type Child = {
   id: string;
@@ -117,14 +118,29 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
   const { data: halaqa } = useQuery({
     queryKey: ["parent-child-halaqa", child.id],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("student_halaqas")
-        .select(
-          "halaqa:halaqas(id, name, level, schedule, schedule_days, start_time, end_time, meeting_provider, meeting_link, live_session_active, teacher:profiles!halaqas_teacher_id_fkey(full_name, avatar_url), supervisor:profiles!halaqas_supervisor_id_fkey(full_name))",
-        )
-        .eq("student_id", child.id)
-        .maybeSingle();
-      return (data as { halaqa: HalaqaInfo } | null)?.halaqa ?? null;
+      await auditEmbeddedHalaqaRelations(supabase, "parent-child-halaqa");
+      const membership = await selectOrThrow<{ halaqa_id: string } | null>(
+        "parent-child-halaqa",
+        "student_halaqas",
+        "halaqa_id",
+        supabase.from("student_halaqas").select("halaqa_id").eq("student_id", child.id).maybeSingle(),
+        `where student_id = ${child.id}`,
+      );
+      if (!membership?.halaqa_id) return null;
+      const halaqa = await selectOrThrow<any | null>(
+        "parent-child-halaqa",
+        "halaqas",
+        "id, name, level, schedule, schedule_days, start_time, end_time, meeting_provider, meeting_link, live_session_active, current_surah, target_surah, teacher_id, supervisor_id",
+        supabase
+          .from("halaqas")
+          .select("id, name, level, schedule, schedule_days, start_time, end_time, meeting_provider, meeting_link, live_session_active, current_surah, target_surah, teacher_id, supervisor_id")
+          .eq("id", membership.halaqa_id)
+          .maybeSingle(),
+        `where id = ${membership.halaqa_id}`,
+      );
+      if (!halaqa) return null;
+      const [withPeople] = await attachHalaqaPeople(supabase, "parent-child-halaqa", [halaqa]);
+      return withPeople as HalaqaInfo;
     },
   });
 
