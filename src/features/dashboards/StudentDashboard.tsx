@@ -274,11 +274,11 @@ export function StudentDashboard() {
       {user && <AIInsightsPanel studentId={user.id} studentName={profile?.full_name ?? undefined} />}
       {halaqa && <RecordingsPanel halaqaId={halaqa.id} />}
 
-      {evals && evals.length > 0 && (
+      {mergedEvals.length > 0 && (
         <div className="p-6 rounded-2xl bg-card border border-border shadow-soft">
           <h2 className="text-xl font-bold text-primary mb-4">{t("dash.evaluations")}</h2>
           <div className="space-y-3">
-            {evals.map((e: any) => (
+            {mergedEvals.map((e: any) => (
               <div key={e.id} className="p-3 rounded-xl bg-muted/40 text-sm grid grid-cols-2 md:grid-cols-6 gap-2">
                 <div><span className="text-xs text-muted-foreground">تجويد</span><div className="font-bold text-primary">{e.tajweed_score ?? "—"}</div></div>
                 <div><span className="text-xs text-muted-foreground">حفظ</span><div className="font-bold text-primary">{e.memorization_score ?? "—"}</div></div>
