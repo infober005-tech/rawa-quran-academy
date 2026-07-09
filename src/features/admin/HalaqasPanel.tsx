@@ -470,6 +470,11 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
       qc.invalidateQueries({ queryKey: ["dir-stats"] });
       qc.invalidateQueries({ queryKey: ["dir-analytics"] });
       qc.invalidateQueries({ queryKey: ["dir-live"] });
+      // Student-side assignment views must refresh after a roster change.
+      qc.invalidateQueries({ queryKey: ["my-halaqa"] });
+      qc.invalidateQueries({ queryKey: ["student-halaqa"] });
+      qc.invalidateQueries({ queryKey: ["student-dashboard"] });
+      qc.invalidateQueries({ queryKey: ["student-progress"] });
       toast.success("✓ تم الحفظ");
       onClose();
     },
