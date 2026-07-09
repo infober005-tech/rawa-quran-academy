@@ -22,14 +22,26 @@ export function StudentDashboard() {
     enabled: !!user,
     queryFn: async () => {
       await auditEmbeddedHalaqaRelations(supabase, "student-my-halaqa");
-      const membership = await selectOrThrow<{ halaqa_id: string } | null>(
-        "student-my-halaqa",
-        "student_halaqas",
-        "halaqa_id",
-        supabase.from("student_halaqas").select("halaqa_id").eq("student_id", user!.id).maybeSingle(),
-        `where student_id = ${user!.id}`,
-      );
-      if (!membership?.halaqa_id) return null;
+      // Read halaqa through the assignment table (student_halaqas → halaqas).
+      const { data: memberships, error: memErr } = await supabase
+        .from("student_halaqas")
+        .select("halaqa_id, joined_at")
+        .eq("student_id", user!.id)
+        .order("joined_at", { ascending: false });
+      if (import.meta.env.DEV) {
+        console.info("[student-assignment-audit]", {
+          studentId: user!.id,
+          rowsInStudentHalaqas: memberships?.length ?? 0,
+          assignedHalaqaIds: (memberships ?? []).map((m) => m.halaqa_id),
+          memErr,
+        });
+      }
+      if (memErr) throw memErr;
+      const halaqaId = memberships?.[0]?.halaqa_id;
+      if (!halaqaId) {
+        if (import.meta.env.DEV) console.warn("[student-assignment-audit] student_halaqas returned zero rows for", user!.id);
+        return null;
+      }
       const halaqa = await selectOrThrow<any | null>(
         "student-my-halaqa",
         "halaqas",
@@ -37,10 +49,13 @@ export function StudentDashboard() {
         supabase
           .from("halaqas")
           .select("id, name, level, schedule, meeting_link, live_session_active, meeting_provider, teacher_id, supervisor_id")
-          .eq("id", membership.halaqa_id)
+          .eq("id", halaqaId)
           .maybeSingle(),
-        `where id = ${membership.halaqa_id}`,
+        `where id = ${halaqaId}`,
       );
+      if (import.meta.env.DEV && !halaqa) {
+        console.warn("[student-assignment-audit] halaqa lookup returned zero rows for", halaqaId);
+      }
       if (!halaqa) return null;
       const [withPeople] = await attachHalaqaPeople(supabase, "student-my-halaqa", [halaqa]);
       return { halaqa: withPeople };
