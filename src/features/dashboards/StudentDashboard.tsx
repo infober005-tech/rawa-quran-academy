@@ -103,7 +103,43 @@ export function StudentDashboard() {
   const rate = total ? Math.round((present / total) * 100) : 0;
 
   const halaqa = (assignment as any)?.halaqa;
-  const chartData = (evals ?? []).map((e: any, i: number) => ({
+
+  // Merge duplicate evaluations for the same (halaqa_id + day) into a single
+  // row. Earlier bugs produced multiple partial rows per session (one with
+  // tajweed only, another with memorization only, etc.). We collapse them by
+  // keeping the latest non-null value for each field.
+  const mergedEvals = (() => {
+    const groups = new Map<string, any>();
+    for (const e of (evals ?? []) as any[]) {
+      const day = e.created_at ? new Date(e.created_at).toISOString().slice(0, 10) : "unknown";
+      const key = `${e.halaqa_id ?? "none"}__${day}`;
+      const prev = groups.get(key);
+      if (!prev) {
+        groups.set(key, { ...e, evaluation_date: day });
+        continue;
+      }
+      // evals are ordered ascending by created_at → current `e` is newer than prev.
+      const merged: any = { ...prev };
+      for (const f of [
+        "tajweed_score",
+        "memorization_score",
+        "behavior_score",
+        "fluency_score",
+        "participation_score",
+        "notes",
+      ]) {
+        if (e[f] !== null && e[f] !== undefined && e[f] !== "") merged[f] = e[f];
+      }
+      merged.created_at = e.created_at ?? prev.created_at;
+      merged.id = e.id ?? prev.id;
+      groups.set(key, merged);
+    }
+    return Array.from(groups.values()).sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    );
+  })();
+
+  const chartData = mergedEvals.map((e: any, i: number) => ({
     name: `#${i + 1}`,
     tajweed: e.tajweed_score ?? 0,
     memorization: e.memorization_score ?? 0,
@@ -130,7 +166,7 @@ export function StudentDashboard() {
       <div className="grid md:grid-cols-3 gap-4">
         <StatCard icon="🕌" label={t("dash.my_halaqa")} value={halaqa?.name ?? "—"} />
         <StatCard icon="✅" label={t("dash.attendance")} value={`${rate}%`} />
-        <StatCard icon="⭐" label={t("dash.evaluations")} value={String(evals?.length ?? 0)} />
+        <StatCard icon="⭐" label={t("dash.evaluations")} value={String(mergedEvals.length)} />
       </div>
 
       {halaqa ? (
