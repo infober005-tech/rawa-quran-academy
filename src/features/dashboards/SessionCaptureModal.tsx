@@ -102,14 +102,50 @@ export function SessionCaptureModal({
 
   const saveAttendance = useMutation({
     mutationFn: async ({ studentId, status }: { studentId: string; status: AttStatus }) => {
-      const { error } = await supabase.from("attendance").upsert(
-        {
-          student_id: studentId, halaqa_id: halaqaId, date: today,
-          status, session_id: sessionId ?? null, recorded_by: teacherId,
-          notes: rows[studentId]?.notes || null,
-        },
-        { onConflict: "student_id,halaqa_id,date" },
-      );
+      const r = rows[studentId];
+      const payload = {
+        student_id: studentId,
+        halaqa_id: halaqaId,
+        date: today,
+        status,
+        session_id: sessionId ?? null,
+        recorded_by: teacherId,
+        notes: r?.notes || null,
+      };
+      // ── LIVE ATTENDANCE INSERT AUDIT ─────────────────────────────
+      // Combined payload (attendance columns + evaluation fields the caller asked to inspect).
+      const auditPayload = {
+        halaqa_id: payload.halaqa_id,
+        student_id: payload.student_id,
+        teacher_id: teacherId, // stored on attendance as `recorded_by`
+        session_id: payload.session_id,
+        status: payload.status,
+        tajweed_score: r?.tajweed ? Number(r.tajweed) : null,
+        memorization_score: r?.memorization ? Number(r.memorization) : null,
+        behavior_score: r?.behavior ? Number(r.behavior) : null,
+        notes: payload.notes,
+      };
+      // eslint-disable-next-line no-console
+      console.log("[attendance-audit] payload →", auditPayload);
+      if (!payload.halaqa_id) {
+        // eslint-disable-next-line no-console
+        console.error("[attendance-audit] halaqa_id is NULL — prop `halaqaId` passed to SessionCaptureModal was falsy:", halaqaId);
+      } else {
+        const { data: hal, error: halErr } = await supabase
+          .from("halaqas").select("id, name, teacher_id").eq("id", payload.halaqa_id).maybeSingle();
+        if (halErr) {
+          // eslint-disable-next-line no-console
+          console.error("[attendance-audit] halaqas lookup error:", halErr);
+        } else if (!hal) {
+          // eslint-disable-next-line no-console
+          console.error("[attendance-audit] MISMATCH — attendance.halaqa_id has no matching public.halaqas.id", { attendance_halaqa_id: payload.halaqa_id });
+        } else {
+          // eslint-disable-next-line no-console
+          console.log("[attendance-audit] halaqa match ✓", { attendance_halaqa_id: payload.halaqa_id, halaqas_id: hal.id, name: hal.name, teacher_id: hal.teacher_id });
+        }
+      }
+      // ─────────────────────────────────────────────────────────────
+      const { error } = await supabase.from("attendance").upsert(payload, { onConflict: "student_id,halaqa_id,date" });
       if (error) throw error;
       return studentId;
     },
