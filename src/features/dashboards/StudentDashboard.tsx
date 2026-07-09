@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -75,7 +76,14 @@ export function StudentDashboard() {
     queryKey: ["my-evals", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase.from("evaluations").select("*").eq("student_id", user!.id).order("created_at", { ascending: true }).limit(20);
+      const { data } = await supabase
+        .from("evaluations")
+        .select(
+          "id, student_id, teacher_id, halaqa_id, session_id, tajweed_score, memorization_score, behavior_score, fluency_score, participation_score, notes, created_at",
+        )
+        .eq("student_id", user!.id)
+        .order("created_at", { ascending: false })
+        .limit(200);
       return data ?? [];
     },
   });
@@ -104,40 +112,72 @@ export function StudentDashboard() {
 
   const halaqa = (assignment as any)?.halaqa;
 
-  // Merge duplicate evaluations for the same (halaqa_id + day) into a single
-  // row. Earlier bugs produced multiple partial rows per session (one with
-  // tajweed only, another with memorization only, etc.). We collapse them by
-  // keeping the latest non-null value for each field.
-  const mergedEvals = (() => {
-    const groups = new Map<string, any>();
-    for (const e of (evals ?? []) as any[]) {
-      const day = e.created_at ? new Date(e.created_at).toISOString().slice(0, 10) : "unknown";
-      const key = `${e.halaqa_id ?? "none"}__${day}`;
-      const prev = groups.get(key);
-      if (!prev) {
-        groups.set(key, { ...e, evaluation_date: day });
-        continue;
-      }
-      // evals are ordered ascending by created_at → current `e` is newer than prev.
-      const merged: any = { ...prev };
-      for (const f of [
-        "tajweed_score",
-        "memorization_score",
-        "behavior_score",
-        "fluency_score",
-        "participation_score",
-        "notes",
-      ]) {
-        if (e[f] !== null && e[f] !== undefined && e[f] !== "") merged[f] = e[f];
-      }
-      merged.created_at = e.created_at ?? prev.created_at;
-      merged.id = e.id ?? prev.id;
-      groups.set(key, merged);
+  const mergedEvals = useMemo(() => {
+    const rows = ((evals ?? []) as any[]).filter(Boolean);
+    const scoreFields = [
+      "tajweed_score",
+      "memorization_score",
+      "behavior_score",
+      "fluency_score",
+      "participation_score",
+      "notes",
+    ];
+    const timestampOf = (row: any) => new Date(row.updated_at ?? row.created_at ?? 0).getTime();
+    const dayOf = (row: any) => {
+      const source = row.evaluation_date ?? row.created_at;
+      const date = source ? new Date(source) : null;
+      return date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : "unknown";
+    };
+    const hasEvaluationContent = (row: any) =>
+      scoreFields.some((field) => row[field] !== null && row[field] !== undefined && row[field] !== "");
+
+    const groups = new Map<string, any[]>();
+    for (const row of rows) {
+      const evaluationDate = dayOf(row);
+      const key = row.session_id
+        ? `session:${row.session_id}`
+        : `fallback:${row.halaqa_id ?? "none"}:${row.student_id ?? user?.id ?? "unknown"}:${evaluationDate}`;
+      const group = groups.get(key) ?? [];
+      group.push({ ...row, evaluation_date: evaluationDate });
+      groups.set(key, group);
     }
-    return Array.from(groups.values()).sort(
-      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+
+    const merged = Array.from(groups.entries())
+      .map(([groupKey, groupRows]) => {
+        const sortedRows = [...groupRows].sort((a, b) => timestampOf(a) - timestampOf(b));
+        const latest = sortedRows[sortedRows.length - 1];
+        const mergedRow: any = { ...latest, evaluation_group_key: groupKey };
+
+        for (const row of sortedRows) {
+          for (const field of scoreFields) {
+            if (row[field] !== null && row[field] !== undefined && row[field] !== "") {
+              mergedRow[field] = row[field];
+            }
+          }
+        }
+
+        return mergedRow;
+      })
+      .filter(hasEvaluationContent)
+      .sort((a, b) => timestampOf(b) - timestampOf(a));
+
+    console.info(
+      "[student-evaluations] groups:",
+      Array.from(groups.entries()).map(([key, groupRows]) => ({
+        key,
+        count: groupRows.length,
+        session_id: groupRows[0]?.session_id ?? null,
+        halaqa_id: groupRows[0]?.halaqa_id ?? null,
+        student_id: groupRows[0]?.student_id ?? null,
+        evaluation_date: groupRows[0]?.evaluation_date ?? null,
+        ids: groupRows.map((row) => row.id),
+      })),
     );
-  })();
+    console.info("[student-evaluations] merged:", merged);
+    console.info("[student-evaluations] duplicates removed:", Math.max(0, rows.length - merged.length));
+
+    return merged;
+  }, [evals, user?.id]);
 
   const chartData = mergedEvals.map((e: any, i: number) => ({
     name: `#${i + 1}`,
