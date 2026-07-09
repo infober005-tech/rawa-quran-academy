@@ -11,13 +11,15 @@ type RowState = {
   tajweed: string;
   memorization: string;
   behavior: string;
+  fluency: string;
+  participation: string;
   notes: string;
   attSavedAt?: number;
   evalSavedAt?: number;
 };
 
 const emptyRow = (): RowState => ({
-  status: null, tajweed: "", memorization: "", behavior: "", notes: "",
+  status: null, tajweed: "", memorization: "", behavior: "", fluency: "", participation: "", notes: "",
 });
 
 /**
@@ -71,7 +73,7 @@ export function SessionCaptureModal({
     queryFn: async () => {
       const [{ data: att }, { data: ev }] = await Promise.all([
         supabase.from("attendance").select("student_id, status, notes").eq("halaqa_id", halaqaId).eq("date", today),
-        supabase.from("evaluations").select("student_id, tajweed_score, memorization_score, behavior_score, notes").eq("session_id", sessionId!),
+        supabase.from("evaluations").select("student_id, tajweed_score, memorization_score, behavior_score, fluency_score, participation_score, notes").eq("session_id", sessionId!),
       ]);
       return { att: att ?? [], ev: ev ?? [] };
     },
@@ -93,6 +95,8 @@ export function SessionCaptureModal({
           tajweed: e.tajweed_score?.toString() ?? "",
           memorization: e.memorization_score?.toString() ?? "",
           behavior: e.behavior_score?.toString() ?? "",
+          fluency: e.fluency_score?.toString() ?? "",
+          participation: e.participation_score?.toString() ?? "",
           notes: e.notes ?? next[e.student_id]?.notes ?? "",
         };
       });
@@ -162,8 +166,10 @@ export function SessionCaptureModal({
       const t = r.tajweed ? Number(r.tajweed) : null;
       const m = r.memorization ? Number(r.memorization) : null;
       const b = r.behavior ? Number(r.behavior) : null;
+      const f = r.fluency ? Number(r.fluency) : null;
+      const p = r.participation ? Number(r.participation) : null;
       const inRange = (n: number | null) => n === null || (Number.isFinite(n) && n >= 0 && n <= 100);
-      if (!inRange(t) || !inRange(m) || !inRange(b)) {
+      if (!inRange(t) || !inRange(m) || !inRange(b) || !inRange(f) || !inRange(p)) {
         throw new Error("يجب أن تكون جميع درجات التقييم بين 0 و100.");
       }
       const payload = {
@@ -171,6 +177,8 @@ export function SessionCaptureModal({
         tajweed_score: t,
         memorization_score: m,
         behavior_score: b,
+        fluency_score: f,
+        participation_score: p,
         notes: r.notes || null,
       };
       // Replace any existing eval for this session+student so it stays a single row.
@@ -244,10 +252,12 @@ export function SessionCaptureModal({
                     })}
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
                   <ScoreInput label="تجويد" value={r.tajweed} onChange={(v) => setRows((p) => ({ ...p, [s.id]: { ...r, tajweed: v } }))} onBlur={() => saveEval.mutate(s.id)} />
                   <ScoreInput label="حفظ" value={r.memorization} onChange={(v) => setRows((p) => ({ ...p, [s.id]: { ...r, memorization: v } }))} onBlur={() => saveEval.mutate(s.id)} />
                   <ScoreInput label="سلوك" value={r.behavior} onChange={(v) => setRows((p) => ({ ...p, [s.id]: { ...r, behavior: v } }))} onBlur={() => saveEval.mutate(s.id)} />
+                  <ScoreInput label="طلاقة" value={r.fluency} onChange={(v) => setRows((p) => ({ ...p, [s.id]: { ...r, fluency: v } }))} onBlur={() => saveEval.mutate(s.id)} />
+                  <ScoreInput label="مشاركة" value={r.participation} onChange={(v) => setRows((p) => ({ ...p, [s.id]: { ...r, participation: v } }))} onBlur={() => saveEval.mutate(s.id)} />
                 </div>
                 <textarea
                   rows={2}
