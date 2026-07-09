@@ -159,11 +159,18 @@ export function SessionCaptureModal({
     mutationFn: async (studentId: string) => {
       const r = rows[studentId];
       if (!r) return;
+      const t = r.tajweed ? Number(r.tajweed) : null;
+      const m = r.memorization ? Number(r.memorization) : null;
+      const b = r.behavior ? Number(r.behavior) : null;
+      const inRange = (n: number | null) => n === null || (Number.isFinite(n) && n >= 0 && n <= 100);
+      if (!inRange(t) || !inRange(m) || !inRange(b)) {
+        throw new Error("يجب أن تكون جميع درجات التقييم بين 0 و100.");
+      }
       const payload = {
         student_id: studentId, teacher_id: teacherId, halaqa_id: halaqaId, session_id: sessionId ?? null,
-        tajweed_score: r.tajweed ? Number(r.tajweed) : null,
-        memorization_score: r.memorization ? Number(r.memorization) : null,
-        behavior_score: r.behavior ? Number(r.behavior) : null,
+        tajweed_score: t,
+        memorization_score: m,
+        behavior_score: b,
         notes: r.notes || null,
       };
       // Replace any existing eval for this session+student so it stays a single row.
@@ -271,12 +278,26 @@ export function SessionCaptureModal({
 }
 
 function ScoreInput({ label, value, onChange, onBlur }: { label: string; value: string; onChange: (v: string) => void; onBlur: () => void }) {
+  const clamp = (raw: string) => {
+    if (raw === "") return "";
+    // strip non-digits (also blocks '-', '.', 'e')
+    const digits = raw.replace(/\D+/g, "");
+    if (digits === "") return "";
+    const n = Number(digits);
+    if (!Number.isFinite(n)) return "";
+    if (n < 0) return "0";
+    if (n > 100) return "100";
+    return String(n);
+  };
   return (
     <label className="block">
       <span className="block text-[10px] text-muted-foreground mb-1">{label} (0-100)</span>
       <input
-        type="number" min={0} max={100} inputMode="numeric"
-        value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur}
+        type="number" min={0} max={100} step={1} inputMode="numeric"
+        value={value}
+        onChange={(e) => onChange(clamp(e.target.value))}
+        onBlur={(e) => { onChange(clamp(e.target.value)); onBlur(); }}
+        onKeyDown={(e) => { if (["e", "E", "+", "-", "."].includes(e.key)) e.preventDefault(); }}
         className="w-full px-3 py-2 rounded-xl border border-input bg-background text-sm text-center font-bold"
       />
     </label>
