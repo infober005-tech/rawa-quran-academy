@@ -226,6 +226,8 @@ function StepInstructions({ settings, canvasRef, qrDataUrl, paymentRef, onCopy, 
   onNext: () => void;
   onBack: () => void;
 }) {
+  const { t } = useI18n();
+  const PAYMENT_METHODS = getPaymentMethods(t);
   return (
     <div className="grid lg:grid-cols-2 gap-6">
       <div className="p-7 rounded-3xl bg-card border border-border shadow-soft space-y-4">
