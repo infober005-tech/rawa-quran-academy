@@ -763,6 +763,7 @@ function PremiumHeroCard({
   lastEval: Eval | null;
   lastNote: NoteRow | null;
 }) {
+  const { t } = useI18n();
   const fmt = (d?: string | null) =>
     d ? new Date(d).toLocaleDateString("ar", { day: "numeric", month: "long" }) : "—";
 

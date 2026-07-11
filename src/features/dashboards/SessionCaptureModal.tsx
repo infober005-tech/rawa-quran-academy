@@ -165,18 +165,18 @@ export function SessionCaptureModal({
     mutationFn: async (studentId: string) => {
       const r = rows[studentId];
       if (!r) return;
-      const t = r.tajweed ? Number(r.tajweed) : null;
+      const tj = r.tajweed ? Number(r.tajweed) : null;
       const m = r.memorization ? Number(r.memorization) : null;
       const b = r.behavior ? Number(r.behavior) : null;
       const f = r.fluency ? Number(r.fluency) : null;
       const p = r.participation ? Number(r.participation) : null;
       const inRange = (n: number | null) => n === null || (Number.isFinite(n) && n >= 0 && n <= 100);
-      if (!inRange(t) || !inRange(m) || !inRange(b) || !inRange(f) || !inRange(p)) {
+      if (!inRange(tj) || !inRange(m) || !inRange(b) || !inRange(f) || !inRange(p)) {
         throw new Error(t("d.session.score_range_error"));
       }
       const payload = {
         student_id: studentId, teacher_id: teacherId, halaqa_id: halaqaId, session_id: sessionId ?? null,
-        tajweed_score: t,
+        tajweed_score: tj,
         memorization_score: m,
         behavior_score: b,
         fluency_score: f,

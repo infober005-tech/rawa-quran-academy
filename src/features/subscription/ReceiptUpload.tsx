@@ -6,7 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { PAYMENT_METHODS, type PaymentMethod } from "@/hooks/use-subscription";
+import { getPaymentMethods, type PaymentMethod } from "@/hooks/use-subscription";
+import { useI18n } from "@/lib/i18n";
 import { compressImageFile } from "@/lib/payment-pdf";
 import { sha256Hex, checkRateLimit, notifyWhatsApp, type QrPayload } from "@/lib/qr-payment";
 

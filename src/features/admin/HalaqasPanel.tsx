@@ -752,6 +752,7 @@ function StudentMultiSelect({
   selected: string[];
   onChange: (ids: string[]) => void;
 }) {
+  const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ beginner: true, intermediate: true, advanced: true });
 
