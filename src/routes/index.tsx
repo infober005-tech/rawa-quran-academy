@@ -366,34 +366,55 @@ function HowItWorks() {
 /* =========================== LIVE HALAQAS ========================= */
 function LiveHalaqas() {
   const { t } = useI18n();
-  const halaqas = [
-    { teacher: t("p.home.halaqas.t1.teacher"), level: t("p.home.halaqas.t1.level"), time: t("p.home.halaqas.t1.time"), seats: 3, gender: t("p.home.halaqas.t1.gender") },
-    { teacher: t("p.home.halaqas.t2.teacher"), level: t("p.home.halaqas.t2.level"), time: t("p.home.halaqas.t2.time"), seats: 5, gender: t("p.home.halaqas.t2.gender") },
-    { teacher: t("p.home.halaqas.t3.teacher"), level: t("p.home.halaqas.t3.level"), time: t("p.home.halaqas.t3.time"), seats: 2, gender: t("p.home.halaqas.t3.gender") },
-    { teacher: t("p.home.halaqas.t4.teacher"), level: t("p.home.halaqas.t4.level"), time: t("p.home.halaqas.t4.time"), seats: 7, gender: t("p.home.halaqas.t4.gender") },
-  ];
+  const fn = useServerFn(getLandingHalaqas);
+  const { data, isLoading } = useQuery({
+    queryKey: ["landing", "halaqas"],
+    queryFn: () => fn(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const halaqas = (data ?? []).slice(0, 4);
+  const formatTime = (t?: string | null) => (t ? t.slice(0, 5) : "");
+  const scheduleLine = (h: (typeof halaqas)[number]) => {
+    const days = (h.schedule_days ?? []).join(" · ");
+    const time = h.start_time ? formatTime(h.start_time) : "";
+    return [days, time].filter(Boolean).join(" · ") || h.schedule || "";
+  };
   return (
     <section id="halaqas" className="max-w-7xl mx-auto px-6 py-24 md:py-32">
       <SectionHeader tag={t("p.home.halaqas.tag")} title={t("p.home.halaqas.title")} desc={t("p.home.halaqas.desc")} />
+      {!isLoading && halaqas.length === 0 ? (
+        <div className="text-center text-muted-foreground py-10 rounded-3xl border border-dashed border-border bg-card/50 max-w-2xl mx-auto">
+          {t("p.home.halaqas.empty")}
+        </div>
+      ) : (
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
         {halaqas.map((h, i) => (
           <motion.div
-            key={i}
+            key={h.id}
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5, delay: i * 0.1 }}
             className="group relative p-6 rounded-3xl bg-card border border-border hover:border-primary/40 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
           >
-            <span className="absolute top-3 left-3 text-[10px] px-2 py-1 rounded-full bg-gold/20 text-dark border border-gold/30 font-semibold">{h.gender}</span>
+            {h.gender && (
+              <span className="absolute top-3 left-3 text-[10px] px-2 py-1 rounded-full bg-gold/20 text-dark border border-gold/30 font-semibold">
+                {t(`f.halaqas.gender.${h.gender}`)}
+              </span>
+            )}
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary text-primary-foreground flex items-center justify-center mb-4">
               <BookOpen className="w-6 h-6" />
             </div>
-            <div className="font-bold text-primary text-lg mb-1">{h.teacher}</div>
-            <div className="text-sm text-muted-foreground mb-4">{h.level}</div>
+            <div className="font-bold text-primary text-lg mb-1">{h.name}</div>
+            <div className="text-sm text-muted-foreground mb-4">
+              {h.teacher_name ? `${h.teacher_name}${h.level ? " · " : ""}` : ""}
+              {h.level ? t(`auth.level.${h.level}`) : ""}
+            </div>
             <div className="flex items-center justify-between text-xs border-t border-border pt-3">
-              <span className="text-muted-foreground">{h.time}</span>
-              <span className="font-bold text-gold">{h.seats} {t("p.home.halaqas.seats")}</span>
+              <span className="text-muted-foreground">{scheduleLine(h)}</span>
+              {h.seats != null && (
+                <span className="font-bold text-gold">{h.seats} {t("p.home.halaqas.seats")}</span>
+              )}
             </div>
             <Link to="/auth" className="mt-4 block text-center text-sm px-4 py-2.5 rounded-xl bg-primary/5 text-primary font-semibold hover:bg-primary hover:text-primary-foreground transition-all">
               {t("p.home.halaqas.book")}
@@ -401,6 +422,7 @@ function LiveHalaqas() {
           </motion.div>
         ))}
       </div>
+      )}
     </section>
   );
 }
