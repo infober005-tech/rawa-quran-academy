@@ -46,10 +46,10 @@ export function ReceiptUpload({ qrPayload, onSubmitted }: { qrPayload: QrPayload
 
   const submit = useMutation({
     mutationFn: async (form: FormData) => {
-      if (!file) throw new Error("يرجى إرفاق صورة الوصل");
+      if (!file) throw new Error(t("s.attach_receipt_required"));
       // Rate limit: max one attempt / 60s
       const allowed = await checkRateLimit(user!.id);
-      if (!allowed) throw new Error("لقد أرسلت طلبًا قبل قليل. يرجى الانتظار دقيقة قبل المحاولة مجددًا.");
+      if (!allowed) throw new Error(t("s.rate_limit_error"));
       const data = schema.parse({
         full_name: form.get("full_name"),
         email: form.get("email"),
@@ -68,7 +68,7 @@ export function ReceiptUpload({ qrPayload, onSubmitted }: { qrPayload: QrPayload
         .eq("receipt_sha256", receiptHash)
         .limit(1)
         .maybeSingle();
-      if (dup) throw new Error("هذا الوصل تم رفعه مسبقًا. يرجى إرفاق وصل دفع جديد.");
+      if (dup) throw new Error(t("s.duplicate_receipt"));
       const ext = compressed.name.split(".").pop() ?? "bin";
       const path = `${user!.id}/${crypto.randomUUID()}.${ext}`;
       setProgress(30);
@@ -92,7 +92,7 @@ export function ReceiptUpload({ qrPayload, onSubmitted }: { qrPayload: QrPayload
       setProgress(100);
     },
     onSuccess: () => {
-      toast.success("تم إرسال طلب الاشتراك بنجاح");
+      toast.success(t("s.subscription_request_success"));
       qc.invalidateQueries({ queryKey: ["my-payments", user?.id] });
       qc.invalidateQueries({ queryKey: ["subscription", user?.id] });
       onSubmitted();
@@ -102,9 +102,9 @@ export function ReceiptUpload({ qrPayload, onSubmitted }: { qrPayload: QrPayload
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); submit.mutate(new FormData(e.currentTarget)); }} className="p-6 rounded-3xl bg-card border border-border shadow-soft space-y-4">
-      <h3 className="font-bold text-primary text-lg">رفع وصل الدفع</h3>
+      <h3 className="font-bold text-primary text-lg">{t("s.upload_receipt_title")}</h3>
       <div>
-        <div className="text-xs font-semibold text-muted-foreground mb-2">طريقة الدفع المستخدمة</div>
+        <div className="text-xs font-semibold text-muted-foreground mb-2">{t("s.payment_method_used")}</div>
         <div className="grid grid-cols-2 gap-2">
           {PAYMENT_METHODS.map((m) => (
             <button type="button" key={m.id} onClick={() => setMethod(m.id)}
@@ -116,12 +116,12 @@ export function ReceiptUpload({ qrPayload, onSubmitted }: { qrPayload: QrPayload
         </div>
       </div>
       <div className="grid sm:grid-cols-2 gap-3">
-        <Field name="full_name" label="الاسم الكامل" defaultValue={profile?.full_name ?? ""} required />
-        <Field name="email" type="email" label="البريد الإلكتروني" defaultValue={profile?.email ?? ""} required />
-        <Field name="phone" label="رقم الهاتف" defaultValue={profile?.phone ?? ""} required />
-        <Field name="transaction_number" label="رقم العملية" required />
-        <Field name="amount" type="number" step="0.01" label="المبلغ المدفوع (دج)" required />
-        <Field name="payment_date" type="date" label="تاريخ الدفع" required />
+        <Field name="full_name" label={t("s.full_name")} defaultValue={profile?.full_name ?? ""} required />
+        <Field name="email" type="email" label={t("s.email")} defaultValue={profile?.email ?? ""} required />
+        <Field name="phone" label={t("s.phone")} defaultValue={profile?.phone ?? ""} required />
+        <Field name="transaction_number" label={t("s.transaction_number")} required />
+        <Field name="amount" type="number" step="0.01" label={t("s.amount_paid")} required />
+        <Field name="payment_date" type="date" label={t("s.payment_date")} required />
       </div>
 
       <div {...getRootProps()} className={`p-8 border-2 border-dashed rounded-2xl text-center cursor-pointer transition ${isDragActive ? "border-gold bg-gold/10" : "border-border hover:border-gold/50"}`}>
@@ -133,14 +133,14 @@ export function ReceiptUpload({ qrPayload, onSubmitted }: { qrPayload: QrPayload
             ) : <div className="text-4xl">📄</div>}
             <div className="text-sm font-semibold text-primary">{file.name}</div>
             <div className="flex justify-center gap-3 text-xs">
-              {preview && <button type="button" onClick={(e) => { e.stopPropagation(); setZoomed(true); }} className="text-primary underline">تكبير الصورة</button>}
-              <button type="button" onClick={(e) => { e.stopPropagation(); setFile(null); setPreview(null); }} className="text-red-500 underline">إزالة</button>
+              {preview && <button type="button" onClick={(e) => { e.stopPropagation(); setZoomed(true); }} className="text-primary underline">{t("s.zoom_image")}</button>}
+              <button type="button" onClick={(e) => { e.stopPropagation(); setFile(null); setPreview(null); }} className="text-red-500 underline">{t("s.remove")}</button>
             </div>
           </div>
         ) : (
           <div className="text-sm text-muted-foreground">
             <div className="text-3xl mb-2">📤</div>
-            اسحب وأفلت ملف الوصل هنا أو انقر للاختيار (JPG / PNG / PDF · حتى 5MB)
+            {t("s.drop_zone_text")}
           </div>
         )}
       </div>
@@ -152,7 +152,7 @@ export function ReceiptUpload({ qrPayload, onSubmitted }: { qrPayload: QrPayload
       )}
 
       <button disabled={submit.isPending || !file} className="w-full py-3 rounded-full bg-gradient-royal text-primary-foreground font-bold shadow-glow disabled:opacity-50">
-        {submit.isPending ? "جاري الإرسال…" : "إرسال طلب الاشتراك"}
+        {submit.isPending ? t("s.sending") : t("s.submit_subscription_request")}
       </button>
 
       {zoomed && preview && (

@@ -260,7 +260,7 @@ function StepInstructions({ settings, canvasRef, qrDataUrl, paymentRef, onCopy, 
             onClick={async () => {
               if (!settings) return;
               try {
-                await downloadPaymentInstructionsPDF(settings, qrDataUrl, paymentRef, t, lang);
+                await downloadPaymentInstructionsPDF(settings, t, lang, qrDataUrl, paymentRef);
                 toast.success(t("s.pdf_success"));
               } catch (err) {
                 console.error("pdf error", err);
