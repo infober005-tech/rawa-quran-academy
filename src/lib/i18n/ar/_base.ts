@@ -222,7 +222,7 @@ const dict = {
     "home.hero.title2": "أكاديمية القرآن الكريم",
     "home.hero.title2_suffix": " وعلومه",
     "home.hero.subtitle": "رحلة متكاملة لحفظ القرآن الكريم، تصحيح التلاوة، دراسة التجويد والمتون العلمية بإشراف نخبة من المعلمين والمشرفين.",
-    "home.hero.badge_teachers_count": "+45 معلم معتمد",
+    "home.hero.badge_teachers_count": "{{count}} معلم معتمد",
     "home.hero.badge_ijazat": "إجازات شرعية",
     "home.hero.badge_live": "حلقات حيّة الآن",
     "home.hero.badge_join": "انضم اليوم",

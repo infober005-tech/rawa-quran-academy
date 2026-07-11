@@ -28,6 +28,7 @@ const dict: Record<string, string> = {
     "p.home.halaqas.desc": "Weekly live circles supervised by a select group of teachers.",
     "p.home.halaqas.seats": "seats",
     "p.home.halaqas.book": "Book Your Seat",
+    "p.home.halaqas.empty": "No halaqas available right now.",
     "p.home.halaqas.t1.teacher": "Sheikh Abdurrahman",
     "p.home.halaqas.t1.level": "Advanced — Hafs",
     "p.home.halaqas.t1.time": "Saturday · 18:00",
