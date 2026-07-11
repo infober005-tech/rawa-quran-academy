@@ -270,5 +270,14 @@ const dict = {
     "notif.mark_all_short": "تعليم الكل",
     "notif.empty_title": "لا توجد إشعارات بعد",
     "notif.empty_desc": "ستظهر هنا تحديثات الحلقات، الفعاليات، والتقييمات.",
+    "sub.status_link": "تفاصيل الحالة",
+    "sub.gate.title": "يلزم اشتراك مفعّل",
+    "sub.gate.desc": "للوصول إلى الحلقات، الجلسات المباشرة، التقييمات والفعاليات يجب أن يكون لديك اشتراك نشط في منصة رواء.",
+    "sub.gate.status": "الحالة:",
+    "sub.gate.cta": "إتمام الاشتراك",
+    "sub.status.pending": "قيد المراجعة",
+    "sub.status.rejected": "تم الرفض",
+    "sub.status.expired": "منتهي",
+    "sub.status.inactive": "غير مفعّل",
 };
 export default dict;

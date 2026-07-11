@@ -270,5 +270,14 @@ const dict = {
     "notif.mark_all_short": "Mark all read",
     "notif.empty_title": "No notifications yet",
     "notif.empty_desc": "Halaqa updates, events, and evaluations will appear here.",
+    "sub.status_link": "Status details",
+    "sub.gate.title": "An active subscription is required",
+    "sub.gate.desc": "You need an active Rawa subscription to access halaqas, live sessions, evaluations and events.",
+    "sub.gate.status": "Status:",
+    "sub.gate.cta": "Complete subscription",
+    "sub.status.pending": "Under review",
+    "sub.status.rejected": "Rejected",
+    "sub.status.expired": "Expired",
+    "sub.status.inactive": "Inactive",
 };
 export default dict;

@@ -270,5 +270,14 @@ const dict = {
     "notif.mark_all_short": "Tout marquer",
     "notif.empty_title": "Aucune notification",
     "notif.empty_desc": "Les mises à jour des halaqas, événements et évaluations s'afficheront ici.",
+    "sub.status_link": "Détails du statut",
+    "sub.gate.title": "Un abonnement actif est requis",
+    "sub.gate.desc": "Vous avez besoin d'un abonnement Rawa actif pour accéder aux halaqas, sessions en direct, évaluations et événements.",
+    "sub.gate.status": "Statut :",
+    "sub.gate.cta": "Compléter l'abonnement",
+    "sub.status.pending": "En cours de vérification",
+    "sub.status.rejected": "Refusé",
+    "sub.status.expired": "Expiré",
+    "sub.status.inactive": "Inactif",
 };
 export default dict;
