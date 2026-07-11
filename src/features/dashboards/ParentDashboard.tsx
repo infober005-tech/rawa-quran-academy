@@ -549,6 +549,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
 // ===== small subcomponents =====
 
 function LiveStatus({ halaqa }: { halaqa: HalaqaInfo | null | undefined }) {
+  const { t } = useI18n();
   const live = !!halaqa?.live_session_active;
   return (
     <div
