@@ -8,6 +8,7 @@ import { useMyPayments, useSubscription } from "@/hooks/use-subscription";
 import { DashboardShell } from "@/components/DashboardShell";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { useQueryClient } from "@tanstack/react-query";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/payment-status")({
   component: PaymentStatusGate,
@@ -23,6 +24,7 @@ function PaymentStatusGate() {
 }
 
 function PaymentStatusPage() {
+  const { t, lang, dir } = useI18n();
   const { user } = useAuth();
   const qc = useQueryClient();
   const { data: payments } = useMyPayments();
@@ -52,12 +54,12 @@ function PaymentStatusPage() {
     return "pending";
   }, [last, subscription, isActive]);
 
-  const meta = STATUS_META[status];
+  const meta = getStatusMeta(t)[status];
 
   return (
     <DashboardShell>
-      <div className="space-y-6" dir="rtl">
-        <DashboardHeader title="حالة الدفع" subtitle="Payment status · live" badge="Realtime" />
+      <div className="space-y-6" dir={dir}>
+        <DashboardHeader title={t("s.payment_status_title")} subtitle={t("s.payment_status_subtitle")} badge={t("s.realtime_badge")} />
 
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -72,24 +74,24 @@ function PaymentStatusPage() {
               <p className="text-sm opacity-80 mt-1 max-w-md">{meta.subtitle}</p>
               {status === "rejected" && last?.admin_notes && (
                 <p className="mt-3 text-sm rounded-xl bg-red-500/10 border border-red-500/30 p-3 text-red-700 dark:text-red-300">
-                  <strong>السبب:</strong> {last.admin_notes}
+                  <strong>{t("s.reason_label")}</strong> {last.admin_notes}
                 </p>
               )}
               {status === "approved" && subscription && (
                 <p className="mt-3 text-sm">
-                  اشتراكك صالح حتى <strong>{new Date(subscription.end_date).toLocaleDateString("ar")}</strong>
-                  {" · "}{daysRemaining} يوم متبقي
+                  {t("s.valid_until")} <strong>{new Date(subscription.end_date).toLocaleDateString(lang === "ar" ? "ar" : lang)}</strong>
+                  {" · "}{t("s.days_unit", { n: daysRemaining })}
                 </p>
               )}
             </div>
             <div className="flex gap-2">
               {(status === "rejected" || status === "expired" || status === "none") && (
                 <Link to="/subscribe" className="px-5 py-2.5 rounded-full bg-gradient-royal text-primary-foreground font-bold text-sm shadow-glow">
-                  {status === "expired" ? "تجديد الاشتراك" : "إتمام الدفع"} ←
+                  {status === "expired" ? t("s.renew_subscription_arrow") : t("s.complete_payment")}
                 </Link>
               )}
               {status === "approved" && (
-                <Link to="/dashboard" className="px-5 py-2.5 rounded-full bg-gold text-primary font-bold text-sm">إلى اللوحة ←</Link>
+                <Link to="/dashboard" className="px-5 py-2.5 rounded-full bg-gold text-primary font-bold text-sm">{t("s.to_dashboard")}</Link>
               )}
             </div>
           </div>
@@ -99,12 +101,12 @@ function PaymentStatusPage() {
 
         {last && (
           <div className="p-5 rounded-2xl bg-card border border-border text-sm space-y-2">
-            <h3 className="font-bold text-primary mb-2">تفاصيل آخر طلب</h3>
-            <Row k="المرجع" v={last.payment_ref ?? "—"} mono />
-            <Row k="المبلغ" v={`${last.amount} DZD`} />
-            <Row k="رقم العملية" v={last.transaction_number} mono />
-            <Row k="تاريخ الدفع" v={new Date(last.payment_date).toLocaleDateString("ar")} />
-            <Row k="أُرسل في" v={new Date(last.created_at).toLocaleString("ar")} />
+            <h3 className="font-bold text-primary mb-2">{t("s.last_request_details")}</h3>
+            <Row k={t("s.reference")} v={last.payment_ref ?? "—"} mono />
+            <Row k={t("s.amount")} v={`${last.amount} DZD`} />
+            <Row k={t("s.transaction_number")} v={last.transaction_number} mono />
+            <Row k={t("s.payment_date")} v={new Date(last.payment_date).toLocaleDateString(lang === "ar" ? "ar" : lang)} />
+            <Row k={t("s.sent_at")} v={new Date(last.created_at).toLocaleString(lang === "ar" ? "ar" : lang)} />
           </div>
         )}
       </div>
@@ -112,25 +114,28 @@ function PaymentStatusPage() {
   );
 }
 
-const STATUS_META: Record<StatusKey, { icon: string; title: string; subtitle: string; card: string; glow: string }> = {
-  pending: { icon: "⏳", title: "قيد المراجعة", subtitle: "تم استلام طلبك وسيتم تفعيل اشتراكك فور موافقة الإدارة.",
-    card: "bg-amber-50 dark:bg-amber-950/30 border-amber-400/40 text-amber-900 dark:text-amber-100", glow: "rgba(245,158,11,.35)" },
-  approved: { icon: "✅", title: "تمت الموافقة وتفعيل الاشتراك", subtitle: "يمكنك الآن الوصول لكامل المنصة.",
-    card: "bg-green-50 dark:bg-green-950/30 border-green-500/40 text-green-900 dark:text-green-100", glow: "rgba(34,197,94,.35)" },
-  rejected: { icon: "❌", title: "تم رفض الطلب", subtitle: "راجع الملاحظات أدناه ثم أرسل وصلاً جديدًا.",
-    card: "bg-red-50 dark:bg-red-950/30 border-red-500/40 text-red-900 dark:text-red-100", glow: "rgba(239,68,68,.35)" },
-  expired: { icon: "⛔", title: "انتهى اشتراكك", subtitle: "لتجنب فقدان الوصول، جدّد اشتراكك الآن.",
-    card: "bg-muted border-border", glow: "rgba(120,120,120,.25)" },
-  none: { icon: "🪪", title: "لا يوجد طلب دفع بعد", subtitle: "ابدأ بإتمام أول اشتراك.",
-    card: "bg-card border-border", glow: "rgba(212,175,55,.25)" },
-};
+function getStatusMeta(t: (k: string) => string): Record<StatusKey, { icon: string; title: string; subtitle: string; card: string; glow: string }> {
+  return {
+    pending: { icon: "⏳", title: t("s.status_meta.pending.title"), subtitle: t("s.status_meta.pending.subtitle"),
+      card: "bg-amber-50 dark:bg-amber-950/30 border-amber-400/40 text-amber-900 dark:text-amber-100", glow: "rgba(245,158,11,.35)" },
+    approved: { icon: "✅", title: t("s.status_meta.approved.title"), subtitle: t("s.status_meta.approved.subtitle"),
+      card: "bg-green-50 dark:bg-green-950/30 border-green-500/40 text-green-900 dark:text-green-100", glow: "rgba(34,197,94,.35)" },
+    rejected: { icon: "❌", title: t("s.status_meta.rejected.title"), subtitle: t("s.status_meta.rejected.subtitle"),
+      card: "bg-red-50 dark:bg-red-950/30 border-red-500/40 text-red-900 dark:text-red-100", glow: "rgba(239,68,68,.35)" },
+    expired: { icon: "⛔", title: t("s.status_meta.expired.title"), subtitle: t("s.status_meta.expired.subtitle"),
+      card: "bg-muted border-border", glow: "rgba(120,120,120,.25)" },
+    none: { icon: "🪪", title: t("s.status_meta.none.title"), subtitle: t("s.status_meta.none.subtitle"),
+      card: "bg-card border-border", glow: "rgba(212,175,55,.25)" },
+  };
+}
 
 function Timeline({ payment, status }: { payment: { created_at: string; approved_at?: string | null; rejected_at?: string | null } | undefined; status: StatusKey }) {
+  const { t, lang } = useI18n();
   const events = [
-    { label: "إرسال الطلب", at: payment?.created_at, done: !!payment },
-    { label: "مراجعة الإدارة", at: payment?.created_at, done: !!payment, active: status === "pending" },
+    { label: t("s.timeline.submit"), at: payment?.created_at, done: !!payment },
+    { label: t("s.timeline.admin_review"), at: payment?.created_at, done: !!payment, active: status === "pending" },
     {
-      label: status === "rejected" ? "تم الرفض" : "الموافقة وتفعيل الاشتراك",
+      label: status === "rejected" ? t("s.timeline.rejected") : t("s.timeline.approved_activated"),
       at: payment?.approved_at ?? payment?.rejected_at,
       done: status === "approved" || status === "rejected",
       danger: status === "rejected",
@@ -147,7 +152,7 @@ function Timeline({ payment, status }: { payment: { created_at: string; approved
             "bg-card border-border"
           }`} />
           <div className="text-sm font-semibold text-primary">{e.label}</div>
-          {e.at && <div className="text-xs text-muted-foreground">{new Date(e.at).toLocaleString("ar")}</div>}
+          {e.at && <div className="text-xs text-muted-foreground">{new Date(e.at).toLocaleString(lang === "ar" ? "ar" : lang)}</div>}
         </motion.li>
       ))}
     </ol>

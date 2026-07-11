@@ -190,7 +190,7 @@ export function StudentDashboard() {
     <div className="space-y-6">
       <DashboardHeader
         badge={t("d.student.badge")}
-        title={`${t("dash.welcome")}، ${profile?.full_name ?? ""}`}
+        title={t("d.welcome_comma", { name: profile?.full_name ?? "" })}
         subtitle={halaqa?.name ? `${halaqa.name} · ${halaqa.level ?? ""}` : t("d.academy_subtitle")}
         actions={
           halaqa?.live_session_active ? (

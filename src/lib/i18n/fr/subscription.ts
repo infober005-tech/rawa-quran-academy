@@ -170,5 +170,7 @@ const dict: Record<string, string> = {
   "s.pdf.duration_days_en": "{{days}} jours",
   "s.pdf.steps_en": "Étapes :",
   "s.pdf.footer_en": "© Rawa Quran Academy — {{url}}",
+  "s.amount": "Montant",
+  "s.request_reason": "Motif :",
 };
 export default dict;

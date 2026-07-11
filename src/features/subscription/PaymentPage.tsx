@@ -10,15 +10,9 @@ import { downloadPaymentInstructionsPDF } from "@/lib/payment-pdf";
 import { useAuth } from "@/hooks/use-auth";
 import { buildPaymentRef, buildQrToken, type QrPayload } from "@/lib/qr-payment";
 
-const STEP_LABELS = [
-  "تفاصيل الاشتراك",
-  "تعليمات الدفع",
-  "رفع الوصل",
-  "مراجعة الحالة",
-  "تفعيل الاشتراك",
-];
-
 export function PaymentPage() {
+  const { t, lang, dir } = useI18n();
+  const STEP_LABELS = [t("s.step1"), t("s.step2"), t("s.step3"), t("s.step4"), t("s.step5")];
   const { data: settings } = usePaymentSettings();
   const { data: payments } = useMyPayments();
   const { isActive, subscription } = useSubscription();
@@ -57,7 +51,7 @@ export function PaymentPage() {
     QRCode.toDataURL(qrText, { width: 480, margin: 1, color: { dark: "#5A436F", light: "#ffffff" } }).then(setQrDataUrl).catch(() => {});
   }, [qrText]);
 
-  const copy = async (text: string, msg = "تم النسخ بنجاح") => {
+  const copy = async (text: string, msg = t("s.copied_success")) => {
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
@@ -75,14 +69,22 @@ export function PaymentPage() {
       toast.success(msg);
     } catch (err) {
       console.error("clipboard error", err);
-      toast.error("تعذر النسخ");
+      toast.error(t("s.copy_failed"));
     }
   };
 
   const copyAll = () => {
     if (!settings) return;
+    const keyPart = settings.ccp_key ? t("s.copy_all_key_part", { key: settings.ccp_key }) : "";
     copy(
-      `اشتراك رواء\nCCP: ${settings.ccp_number}${settings.ccp_key ? " · المفتاح: " + settings.ccp_key : ""}\nاسم المستفيد: ${settings.account_holder}\nالمبلغ: ${settings.price_dzd} ${settings.currency}\nطرق الدفع المقبولة: Edahabia / BaridiMob\nمرجع المعاملة: ${qrPayload?.ref ?? "—"}`
+      t("s.copy_all_template", {
+        ccp: settings.ccp_number ?? "",
+        keyPart,
+        holder: settings.account_holder ?? "",
+        amount: settings.price_dzd ?? "",
+        currency: settings.currency ?? "",
+        ref: qrPayload?.ref ?? "—",
+      })
     );
   };
 
@@ -98,13 +100,13 @@ export function PaymentPage() {
   const goto = (n: number) => setManualStep(Math.max(1, Math.min(5, n)));
 
   return (
-    <div dir="rtl" className="relative min-h-[80vh]">
+    <div dir={dir} className="relative min-h-[80vh]">
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 via-background to-gold/5" />
       <div className="max-w-5xl mx-auto px-4 py-10 space-y-6 pb-28 lg:pb-10">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-3">
-          <div className="inline-block px-4 py-1 rounded-full bg-gold/15 text-gold text-xs font-bold tracking-wider">RAWA · رواء</div>
-          <h1 className="text-4xl sm:text-5xl font-bold text-primary">إتمام الاشتراك</h1>
-          <p className="text-muted-foreground max-w-xl mx-auto">اتبع الخطوات الخمس لإتمام الاشتراك بطريقة آمنة وسهلة.</p>
+          <div className="inline-block px-4 py-1 rounded-full bg-gold/15 text-gold text-xs font-bold tracking-wider">RAWA</div>
+          <h1 className="text-4xl sm:text-5xl font-bold text-primary">{t("s.complete_subscription")}</h1>
+          <p className="text-muted-foreground max-w-xl mx-auto">{t("s.follow_steps")}</p>
         </motion.div>
 
         {/* Stepper */}
@@ -148,10 +150,10 @@ export function PaymentPage() {
         {/* Sticky mobile bar */}
         <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-primary text-primary-foreground p-3 flex items-center justify-between gap-2 shadow-2xl">
           <div>
-            <div className="text-[10px] opacity-70">السعر</div>
+            <div className="text-[10px] opacity-70">{t("s.price")}</div>
             <div className="font-bold text-gold">{settings?.price_dzd ?? "—"} {settings?.currency ?? "DZD"}</div>
           </div>
-          <button onClick={copyAll} className="px-4 py-2 rounded-full bg-gold text-primary text-xs font-bold">📋 نسخ CCP</button>
+          <button onClick={copyAll} className="px-4 py-2 rounded-full bg-gold text-primary text-xs font-bold">{t("s.copy_ccp_short")}</button>
         </div>
       </div>
     </div>

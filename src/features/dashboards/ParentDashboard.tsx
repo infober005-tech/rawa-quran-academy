@@ -73,7 +73,7 @@ export function ParentDashboard() {
           <div className="min-w-0">
             <div className="text-xs uppercase tracking-[0.3em] text-gold/90">{t("d.parent.portal")}</div>
             <h1 className="mt-2 text-2xl md:text-3xl font-black text-white">
-              {t("d.parent.welcome")}، {profile?.full_name} 👨‍👩‍👧
+              {t("d.parent.welcome_comma", { name: profile?.full_name ?? "" })}
             </h1>
             <p className="mt-1 text-sm text-white/70">{t("d.parent.follow_journey")}</p>
           </div>
@@ -272,7 +272,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
           <LogoPremium3D size="sm" halo />
           <div className="min-w-0">
             <h1 className="text-xl md:text-2xl font-bold text-primary truncate">
-              {parentName ? `أهلًا ${parentName}` : t("d.parent.dashboard_title")}
+              {parentName ? t("d.parent.hello_name", { name: parentName }) : t("d.parent.dashboard_title")}
             </h1>
             <p className="text-xs text-muted-foreground truncate">{t("d.academy_subtitle")}</p>
           </div>

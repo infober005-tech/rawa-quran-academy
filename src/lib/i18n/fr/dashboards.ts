@@ -132,5 +132,8 @@ const dict: Record<string, string> = {
   "d.teacher.title": "Espace enseignant",
   "d.teacher.title_required": "Le titre est requis",
   "d.teacher.with_link": "avec lien",
+  "d.welcome_comma": "Bienvenue, {{name}}",
+  "d.parent.welcome_comma": "Bienvenue, {{name}} 👨‍👩‍👧",
+  "d.parent.hello_name": "Bonjour {{name}}",
 };
 export default dict;
