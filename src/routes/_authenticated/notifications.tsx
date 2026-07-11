@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/notifications")({
 
 function NotificationsPage() {
   const { user, primaryRole } = useAuth();
-  const { t, dir } = useI18n();
+  const { t } = useI18n();
   const qc = useQueryClient();
   const navigate = useNavigate();
   const { data } = useQuery({
@@ -56,16 +56,16 @@ function NotificationsPage() {
       <div className="space-y-6">
         <DashboardHeader
           title={t("nav.notifications")}
-          subtitle={unread > 0 ? (dir === "rtl" ? `${unread} غير مقروءة` : `${unread} unread`) : (dir === "rtl" ? "كل شيء محدث" : "All caught up")}
+          subtitle={unread > 0 ? t("notif.unread_count", { count: unread }) : t("notif.all_caught_up")}
           badge="Inbox"
           actions={unread > 0 ? (
             <button
               onClick={() => markAllRead.mutate()}
               className="inline-flex items-center gap-1.5 rounded-full bg-gradient-royal px-4 py-2 text-xs font-semibold text-primary-foreground shadow-glow min-h-11"
-              aria-label={dir === "rtl" ? "تعليم الكل كمقروء" : "Mark all as read"}
+              aria-label={t("notif.mark_all_read")}
             >
               <CheckCheck className="h-4 w-4" aria-hidden />
-              <span className="hidden sm:inline">{dir === "rtl" ? "تعليم الكل" : "Mark all read"}</span>
+              <span className="hidden sm:inline">{t("notif.mark_all_short")}</span>
             </button>
           ) : undefined}
         />
@@ -98,8 +98,8 @@ function NotificationsPage() {
           {(!data || data.length === 0) && (
             <EmptyState
               variant="notifications"
-              title={dir === "rtl" ? "لا توجد إشعارات بعد" : "No notifications yet"}
-              description={dir === "rtl" ? "ستظهر هنا تحديثات الحلقات، الفعاليات، والتقييمات." : "Halaqa updates, events, and evaluations will appear here."}
+              title={t("notif.empty_title")}
+              description={t("notif.empty_desc")}
             />
           )}
         </div>
