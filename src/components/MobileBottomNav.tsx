@@ -17,7 +17,7 @@ export function MobileBottomNav({ onSignOut }: { onSignOut: () => void }) {
     { to: "/dashboard", label: t("nav.dashboard"), icon: Home },
     { to: "/halaqas", label: t("nav.halaqas"), icon: BookOpen },
     { to: "/notifications", label: t("nav.notifications"), icon: Bell },
-    { to: "/settings", label: dir === "rtl" ? "حسابي" : "Profile", icon: User },
+    { to: "/settings", label: t("nav.profile"), icon: User },
   ];
 
   return (
@@ -59,10 +59,10 @@ export function MobileBottomNav({ onSignOut }: { onSignOut: () => void }) {
               type="button"
               onClick={() => setMoreOpen((v) => !v)}
               className="flex w-full flex-col items-center justify-center gap-0.5 min-h-11 rounded-xl px-1 py-1.5 text-[10px] font-semibold text-muted-foreground hover:text-foreground"
-              aria-label={dir === "rtl" ? "المزيد" : "More"}
+              aria-label={t("nav.more")}
             >
               <Menu className="h-5 w-5" />
-              <span>{dir === "rtl" ? "المزيد" : "More"}</span>
+              <span>{t("nav.more")}</span>
             </button>
           </li>
         </ul>
@@ -72,11 +72,11 @@ export function MobileBottomNav({ onSignOut }: { onSignOut: () => void }) {
       {moreOpen && (
         <div className="lg:hidden fixed bottom-20 inset-x-4 z-50 glass-card rounded-2xl p-3 shadow-premium animate-pop">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-primary">{dir === "rtl" ? "القائمة الكاملة" : "Full menu"}</span>
+            <span className="text-sm font-semibold text-primary">{t("nav.full_menu")}</span>
             <MobileSidebar onSignOut={onSignOut} />
           </div>
           <p className="mt-2 text-[11px] text-muted-foreground">
-            {dir === "rtl" ? "اضغط على القائمة للوصول إلى كل الصفحات" : "Open the drawer to access every page"}
+            {t("nav.menu_hint")}
           </p>
         </div>
       )}
