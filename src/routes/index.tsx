@@ -9,6 +9,13 @@ import {
 import logoAsset from "@/assets/rawa-logo.png.asset.json";
 import { LogoPremium3D } from "@/components/LogoPremium3D";
 import { useI18n, LangSwitcher } from "@/lib/i18n";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  getLandingStats,
+  getLandingTeachers,
+  getLandingTestimonials,
+} from "@/lib/landing.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
