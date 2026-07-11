@@ -279,5 +279,16 @@ const dict = {
     "sub.status.rejected": "تم الرفض",
     "sub.status.expired": "منتهي",
     "sub.status.inactive": "غير مفعّل",
+    "home.stats.students": "طلاب مسجلون",
+    "home.stats.halaqas": "حلقات نشطة",
+    "home.stats.teachers": "معلمون",
+    "home.stats.hours": "ساعات تعليم",
+    "home.teachers.tag": "نخبة المعلمين",
+    "home.teachers.title": "معلمون بإجازات معتمدة",
+    "home.teachers.desc": "أساتذة وأستاذات ذوو خبرة طويلة في تعليم القرآن وعلومه.",
+    "home.teachers.empty": "سيتم إضافة المعلمين المعتمدين قريبًا.",
+    "home.testimonials.tag": "آراء طلابنا",
+    "home.testimonials.title": "كلمات من قلوب موصولة بالقرآن",
+    "home.testimonials.empty": "لا توجد آراء منشورة بعد.",
 };
 export default dict;
