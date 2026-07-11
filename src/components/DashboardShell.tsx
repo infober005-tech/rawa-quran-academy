@@ -31,7 +31,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
               <div className="font-bold text-primary truncate">{t("app.name")}</div>
             </div>
             <div className="hidden lg:block text-sm text-muted-foreground truncate">
-              {t("dash.welcome")}، <span className="text-primary font-semibold">{profile?.full_name || profile?.email}</span>
+              {t("dash.welcome")}, <span className="text-primary font-semibold">{profile?.full_name || profile?.email}</span>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">

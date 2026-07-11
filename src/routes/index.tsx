@@ -358,15 +358,16 @@ function HowItWorks() {
 
 /* =========================== LIVE HALAQAS ========================= */
 function LiveHalaqas() {
+  const { t } = useI18n();
   const halaqas = [
-    { teacher: "الشيخ عبدالرحمن", level: "متقدم — حفص", time: "السبت · 18:00", seats: 3, gender: "ذكور" },
-    { teacher: "الأستاذة فاطمة", level: "متوسط — تجويد", time: "الأحد · 16:00", seats: 5, gender: "إناث" },
-    { teacher: "الشيخ يوسف", level: "حفظ المتون", time: "الإثنين · 20:00", seats: 2, gender: "ذكور" },
-    { teacher: "الأستاذة مريم", level: "مبتدئ — تلاوة", time: "الثلاثاء · 17:00", seats: 7, gender: "إناث" },
+    { teacher: t("p.home.halaqas.t1.teacher"), level: t("p.home.halaqas.t1.level"), time: t("p.home.halaqas.t1.time"), seats: 3, gender: t("p.home.halaqas.t1.gender") },
+    { teacher: t("p.home.halaqas.t2.teacher"), level: t("p.home.halaqas.t2.level"), time: t("p.home.halaqas.t2.time"), seats: 5, gender: t("p.home.halaqas.t2.gender") },
+    { teacher: t("p.home.halaqas.t3.teacher"), level: t("p.home.halaqas.t3.level"), time: t("p.home.halaqas.t3.time"), seats: 2, gender: t("p.home.halaqas.t3.gender") },
+    { teacher: t("p.home.halaqas.t4.teacher"), level: t("p.home.halaqas.t4.level"), time: t("p.home.halaqas.t4.time"), seats: 7, gender: t("p.home.halaqas.t4.gender") },
   ];
   return (
     <section id="halaqas" className="max-w-7xl mx-auto px-6 py-24 md:py-32">
-      <SectionHeader tag="حلقات قادمة" title="انضم لحلقة تناسبك" desc="حلقات حية أسبوعية بإشراف نخبة من المعلمين والمعلمات." />
+      <SectionHeader tag={t("p.home.halaqas.tag")} title={t("p.home.halaqas.title")} desc={t("p.home.halaqas.desc")} />
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
         {halaqas.map((h, i) => (
           <motion.div
@@ -385,10 +386,10 @@ function LiveHalaqas() {
             <div className="text-sm text-muted-foreground mb-4">{h.level}</div>
             <div className="flex items-center justify-between text-xs border-t border-border pt-3">
               <span className="text-muted-foreground">{h.time}</span>
-              <span className="font-bold text-gold">{h.seats} مقاعد</span>
+              <span className="font-bold text-gold">{h.seats} {t("p.home.halaqas.seats")}</span>
             </div>
             <Link to="/auth" className="mt-4 block text-center text-sm px-4 py-2.5 rounded-xl bg-primary/5 text-primary font-semibold hover:bg-primary hover:text-primary-foreground transition-all">
-              احجز مقعدك
+              {t("p.home.halaqas.book")}
             </Link>
           </motion.div>
         ))}
@@ -457,11 +458,12 @@ function Stats() {
 
 /* ============================ PARENTS ============================= */
 function Parents() {
+  const { t } = useI18n();
   const items = [
-    { icon: CalendarCheck, title: "متابعة الحضور", desc: "اطّلع على حضور وغياب أبنائك لحظة بلحظة." },
-    { icon: BarChart3, title: "متابعة التقييمات", desc: "تقارير دورية لأداء الطالب والمعلم." },
-    { icon: BookOpen, title: "متابعة الحفظ", desc: "خط سير الحفظ والمراجعة الأسبوعي." },
-    { icon: Mail, title: "استقبال التنبيهات", desc: "إشعارات فورية بأي جديد يخص ابنك." },
+    { icon: CalendarCheck, title: t("p.home.parents.item1.title"), desc: t("p.home.parents.item1.desc") },
+    { icon: BarChart3, title: t("p.home.parents.item2.title"), desc: t("p.home.parents.item2.desc") },
+    { icon: BookOpen, title: t("p.home.parents.item3.title"), desc: t("p.home.parents.item3.desc") },
+    { icon: Mail, title: t("p.home.parents.item4.title"), desc: t("p.home.parents.item4.desc") },
   ];
   return (
     <section className="max-w-7xl mx-auto px-6 py-24 md:py-32">
@@ -479,21 +481,21 @@ function Parents() {
               <div className="absolute top-6 right-6 left-6 flex items-center gap-3">
                 <img src={logoAsset.url} alt="" className="w-12 h-12 rounded-full" />
                 <div className="text-primary-foreground">
-                  <div className="font-bold">لوحة وليّ الأمر</div>
-                  <div className="text-xs text-primary-foreground/70">رواء</div>
+                  <div className="font-bold">{t("p.home.parents.card.title")}</div>
+                  <div className="text-xs text-primary-foreground/70">{t("app.name")}</div>
                 </div>
               </div>
               <div className="relative space-y-3">
-                {["الحفظ هذا الأسبوع: سورة الكهف", "الحضور: 98%", "آخر تقييم: ممتاز"].map((t, i) => (
+                {[t("p.home.parents.card.line1"), t("p.home.parents.card.line2"), t("p.home.parents.card.line3")].map((line, i) => (
                   <motion.div
-                    key={t}
+                    key={line}
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.15 }}
                     className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 text-primary-foreground text-sm"
                   >
-                    {t}
+                    {line}
                   </motion.div>
                 ))}
               </div>
@@ -501,12 +503,12 @@ function Parents() {
           </div>
         </motion.div>
         <div className="space-y-6">
-          <span className="text-sm text-gold font-semibold tracking-[0.3em]">لأولياء الأمور</span>
+          <span className="text-sm text-gold font-semibold tracking-[0.3em]">{t("p.home.parents.tag")}</span>
           <h2 className="text-3xl md:text-5xl font-bold text-primary leading-tight" style={{ fontFamily: "var(--font-display-ar)" }}>
-            تابع رحلة أبنائك القرآنية
+            {t("p.home.parents.title")}
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            بوابة مخصّصة لولي الأمر تمنحك رؤية كاملة على تقدّم أبنائك في الحفظ والتجويد والحضور.
+            {t("p.home.parents.desc")}
           </p>
           <div className="grid sm:grid-cols-2 gap-4 pt-4">
             {items.map((it, i) => (
@@ -640,17 +642,18 @@ function Testimonials() {
 
 /* ============================== FAQ =============================== */
 function FAQ() {
+  const { t } = useI18n();
   const items = [
-    { q: "هل المنصة مجانية؟", a: "نقدّم باقات مرنة، وبعض الحلقات تكون مجانية بدعم من المتبرعين." },
-    { q: "ما الفئات العمرية المقبولة؟", a: "نستقبل الطلاب من سن 6 سنوات فما فوق، ذكوراً وإناثاً في حلقات منفصلة." },
-    { q: "ما طريقة التواصل أثناء الحلقة؟", a: "نستخدم Google Meet ومنصات اجتماعات حيّة لضمان جودة التصحيح." },
-    { q: "هل أحصل على شهادة في النهاية؟", a: "نعم، تُمنح إجازات للطلاب المتميزين وفق ضوابط شرعية معتمدة." },
-    { q: "كيف يتم اختيار المعلم؟", a: "يتم اختيار المعلمين بناءً على إجازاتهم القرآنية وخبرتهم التدريسية." },
+    { q: t("p.home.faq.q1.q"), a: t("p.home.faq.q1.a") },
+    { q: t("p.home.faq.q2.q"), a: t("p.home.faq.q2.a") },
+    { q: t("p.home.faq.q3.q"), a: t("p.home.faq.q3.a") },
+    { q: t("p.home.faq.q4.q"), a: t("p.home.faq.q4.a") },
+    { q: t("p.home.faq.q5.q"), a: t("p.home.faq.q5.a") },
   ];
   const [open, setOpen] = useState<number | null>(0);
   return (
     <section id="faq" className="max-w-3xl mx-auto px-6 py-24 md:py-32">
-      <SectionHeader tag="الأسئلة الشائعة" title="ما يدور في ذهنك" />
+      <SectionHeader tag={t("p.home.faq.tag")} title={t("p.home.faq.title")} />
       <div className="space-y-3">
         {items.map((it, i) => (
           <motion.div
@@ -685,6 +688,7 @@ function FAQ() {
 
 /* ============================ FINAL CTA =========================== */
 function FinalCTA() {
+  const { t } = useI18n();
   return (
     <section className="max-w-6xl mx-auto px-6 py-20">
       <motion.div
@@ -709,17 +713,17 @@ function FinalCTA() {
             aria-hidden
           />
           <h2 className="text-3xl md:text-6xl font-bold text-primary-foreground mb-6 leading-tight" style={{ fontFamily: "var(--font-display-ar)" }}>
-            ابدأ رحلتك مع<br />
-            <span className="bg-gradient-to-l from-gold to-[#F0D78C] bg-clip-text text-transparent">القرآن الكريم اليوم</span>
+            {t("p.home.cta.title1")}<br />
+            <span className="bg-gradient-to-l from-gold to-[#F0D78C] bg-clip-text text-transparent">{t("p.home.cta.title2")}</span>
           </h2>
           <p className="text-primary-foreground/85 text-lg max-w-xl mx-auto mb-10">
-            انضم لأكثر من 1200 طالب وطالبة في رحلة قرآنية مباركة.
+            {t("p.home.cta.desc")}
           </p>
           <Link
             to="/auth"
             className="inline-flex items-center gap-2 px-10 py-4 rounded-full bg-gradient-to-br from-gold to-[#E0BC6E] text-gold-foreground font-bold text-lg shadow-[0_20px_50px_-10px_rgba(199,163,92,0.7)] hover:scale-105 transition-all"
           >
-            سجل الآن <Sparkles className="w-5 h-5" />
+            {t("p.home.cta.button")} <Sparkles className="w-5 h-5" />
           </Link>
         </div>
       </motion.div>
@@ -729,6 +733,7 @@ function FinalCTA() {
 
 /* ============================== FOOTER ============================ */
 function Footer() {
+  const { t } = useI18n();
   return (
     <footer className="border-t border-border bg-gradient-to-b from-background to-muted/30 mt-12">
       <div className="max-w-7xl mx-auto px-6 py-16 grid md:grid-cols-4 gap-10">
@@ -736,12 +741,12 @@ function Footer() {
           <div className="flex items-center gap-3">
             <img src={logoAsset.url} alt="" className="w-12 h-12 rounded-full" />
             <div>
-              <div className="font-bold text-primary text-xl" style={{ fontFamily: "var(--font-display-ar)" }}>رواء</div>
-              <div className="text-xs text-muted-foreground">أكاديمية القرآن الكريم وعلومه</div>
+              <div className="font-bold text-primary text-xl" style={{ fontFamily: "var(--font-display-ar)" }}>{t("app.name")}</div>
+              <div className="text-xs text-muted-foreground">{t("p.home.footer.tagline")}</div>
             </div>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-md">
-            منصة رواء للحلقات القرآنية الإلكترونية والتصحيح المباشر للتلاوة بإشراف نخبة من المعلمين.
+            {t("p.home.footer.desc")}
           </p>
           <div className="flex justify-center md:justify-start gap-4 pt-2">
             {[
@@ -762,16 +767,16 @@ function Footer() {
           </div>
         </div>
         <div>
-          <div className="font-bold text-primary mb-4">روابط</div>
+          <div className="font-bold text-primary mb-4">{t("p.home.footer.links_title")}</div>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><a href="#features" className="hover:text-primary">المنصة</a></li>
-            <li><a href="#halaqas" className="hover:text-primary">الحلقات</a></li>
-            <li><a href="#teachers" className="hover:text-primary">المعلمون</a></li>
-            <li><a href="#faq" className="hover:text-primary">الأسئلة الشائعة</a></li>
+            <li><a href="#features" className="hover:text-primary">{t("p.home.footer.link_platform")}</a></li>
+            <li><a href="#halaqas" className="hover:text-primary">{t("p.home.footer.link_halaqas")}</a></li>
+            <li><a href="#teachers" className="hover:text-primary">{t("p.home.footer.link_teachers")}</a></li>
+            <li><a href="#faq" className="hover:text-primary">{t("p.home.footer.link_faq")}</a></li>
           </ul>
         </div>
         <div>
-          <div className="font-bold text-primary mb-4">تواصل معنا</div>
+          <div className="font-bold text-primary mb-4">{t("p.home.footer.contact_title")}</div>
           <ul className="space-y-3 text-sm text-muted-foreground">
             <li className="flex items-center gap-2"><Mail className="w-4 h-4 text-gold" /> info@rawa-academy.com</li>
             <li className="flex items-center gap-2"><Phone className="w-4 h-4 text-gold" /> +966 50 000 0000</li>
@@ -780,10 +785,10 @@ function Footer() {
       </div>
       <div className="border-t border-border">
         <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-          <div>© {new Date().getFullYear()} رواء — جميع الحقوق محفوظة.</div>
+          <div>{t("p.home.footer.rights", { year: new Date().getFullYear() })}</div>
           <div className="flex gap-4">
-            <a href="#" className="hover:text-primary">سياسة الخصوصية</a>
-            <a href="#" className="hover:text-primary">الشروط والأحكام</a>
+            <a href="/privacy" className="hover:text-primary">{t("p.home.footer.privacy")}</a>
+            <a href="/terms" className="hover:text-primary">{t("p.home.footer.terms")}</a>
           </div>
         </div>
       </div>

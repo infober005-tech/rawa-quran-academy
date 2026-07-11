@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 type Student = { id: string; full_name: string };
 type AttStatus = "present" | "late" | "absent";
@@ -29,6 +30,7 @@ const emptyRow = (): RowState => ({
 export function SessionCaptureModal({
   halaqaId, teacherId, onClose,
 }: { halaqaId: string; teacherId: string; onClose: () => void }) {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const today = new Date().toISOString().slice(0, 10);
 
@@ -163,18 +165,18 @@ export function SessionCaptureModal({
     mutationFn: async (studentId: string) => {
       const r = rows[studentId];
       if (!r) return;
-      const t = r.tajweed ? Number(r.tajweed) : null;
+      const tj = r.tajweed ? Number(r.tajweed) : null;
       const m = r.memorization ? Number(r.memorization) : null;
       const b = r.behavior ? Number(r.behavior) : null;
       const f = r.fluency ? Number(r.fluency) : null;
       const p = r.participation ? Number(r.participation) : null;
       const inRange = (n: number | null) => n === null || (Number.isFinite(n) && n >= 0 && n <= 100);
-      if (!inRange(t) || !inRange(m) || !inRange(b) || !inRange(f) || !inRange(p)) {
-        throw new Error("يجب أن تكون جميع درجات التقييم بين 0 و100.");
+      if (!inRange(tj) || !inRange(m) || !inRange(b) || !inRange(f) || !inRange(p)) {
+        throw new Error(t("d.session.score_range_error"));
       }
       const payload = {
         student_id: studentId, teacher_id: teacherId, halaqa_id: halaqaId, session_id: sessionId ?? null,
-        tajweed_score: t,
+        tajweed_score: tj,
         memorization_score: m,
         behavior_score: b,
         fluency_score: f,
@@ -219,13 +221,13 @@ export function SessionCaptureModal({
       <div className="bg-card rounded-3xl border border-border w-full max-w-5xl max-h-[92vh] overflow-hidden shadow-glow flex flex-col" onClick={(e) => e.stopPropagation()}>
         <div className="p-5 border-b border-border flex items-center justify-between gap-3">
           <div>
-            <div className="text-[10px] uppercase tracking-widest text-gold">جلسة مباشرة</div>
-            <h2 className="font-bold text-primary text-lg">الحضور والتقييم</h2>
+            <div className="text-[10px] uppercase tracking-widest text-gold">{t("d.session.live_session")}</div>
+            <h2 className="font-bold text-primary text-lg">{t("d.session.attendance_and_eval")}</h2>
           </div>
           <div className="flex items-center gap-2 text-xs">
-            <Badge tone="green">حاضر {summary.present}</Badge>
-            <Badge tone="amber">متأخر {summary.late}</Badge>
-            <Badge tone="red">غائب {summary.absent}</Badge>
+            <Badge tone="green">{t("common.present")} {summary.present}</Badge>
+            <Badge tone="amber">{t("common.late")} {summary.late}</Badge>
+            <Badge tone="red">{t("common.absent")} {summary.absent}</Badge>
             <Badge tone="muted">/{summary.total}</Badge>
             <button onClick={close} className="ms-2 text-muted-foreground hover:text-foreground">✕</button>
           </div>
@@ -241,7 +243,7 @@ export function SessionCaptureModal({
                     {(["present", "late", "absent"] as AttStatus[]).map((st) => {
                       const active = r.status === st;
                       const tone = st === "present" ? "green" : st === "late" ? "amber" : "red";
-                      const label = st === "present" ? "حاضر" : st === "late" ? "متأخر" : "غائب";
+                      const label = st === "present" ? t("common.present") : st === "late" ? t("common.late") : t("common.absent");
                       return (
                         <button
                           key={st}
@@ -253,34 +255,34 @@ export function SessionCaptureModal({
                   </div>
                 </div>
                 <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
-                  <ScoreInput label="تجويد" value={r.tajweed} onChange={(v) => setRows((p) => ({ ...p, [s.id]: { ...r, tajweed: v } }))} onBlur={() => saveEval.mutate(s.id)} />
-                  <ScoreInput label="حفظ" value={r.memorization} onChange={(v) => setRows((p) => ({ ...p, [s.id]: { ...r, memorization: v } }))} onBlur={() => saveEval.mutate(s.id)} />
-                  <ScoreInput label="سلوك" value={r.behavior} onChange={(v) => setRows((p) => ({ ...p, [s.id]: { ...r, behavior: v } }))} onBlur={() => saveEval.mutate(s.id)} />
-                  <ScoreInput label="طلاقة" value={r.fluency} onChange={(v) => setRows((p) => ({ ...p, [s.id]: { ...r, fluency: v } }))} onBlur={() => saveEval.mutate(s.id)} />
-                  <ScoreInput label="مشاركة" value={r.participation} onChange={(v) => setRows((p) => ({ ...p, [s.id]: { ...r, participation: v } }))} onBlur={() => saveEval.mutate(s.id)} />
+                  <ScoreInput label={t("d.score.tajweed")} value={r.tajweed} onChange={(v) => setRows((p) => ({ ...p, [s.id]: { ...r, tajweed: v } }))} onBlur={() => saveEval.mutate(s.id)} />
+                  <ScoreInput label={t("d.score.memorization")} value={r.memorization} onChange={(v) => setRows((p) => ({ ...p, [s.id]: { ...r, memorization: v } }))} onBlur={() => saveEval.mutate(s.id)} />
+                  <ScoreInput label={t("d.score.behavior")} value={r.behavior} onChange={(v) => setRows((p) => ({ ...p, [s.id]: { ...r, behavior: v } }))} onBlur={() => saveEval.mutate(s.id)} />
+                  <ScoreInput label={t("d.score.fluency")} value={r.fluency} onChange={(v) => setRows((p) => ({ ...p, [s.id]: { ...r, fluency: v } }))} onBlur={() => saveEval.mutate(s.id)} />
+                  <ScoreInput label={t("d.score.participation")} value={r.participation} onChange={(v) => setRows((p) => ({ ...p, [s.id]: { ...r, participation: v } }))} onBlur={() => saveEval.mutate(s.id)} />
                 </div>
                 <textarea
                   rows={2}
-                  placeholder="ملاحظات المعلم"
+                  placeholder={t("d.session.teacher_notes_placeholder")}
                   value={r.notes}
                   onChange={(e) => setRows((p) => ({ ...p, [s.id]: { ...r, notes: e.target.value } }))}
                   onBlur={() => saveEval.mutate(s.id)}
                   className="mt-2 w-full px-3 py-2 rounded-xl border border-input bg-background text-sm"
                 />
                 <div className="mt-1 flex items-center justify-end gap-3 text-[10px] text-muted-foreground">
-                  {r.attSavedAt && <span>✓ حضور محفوظ</span>}
-                  {r.evalSavedAt && <span>✓ تقييم محفوظ</span>}
+                  {r.attSavedAt && <span>✓ {t("d.session.attendance_saved")}</span>}
+                  {r.evalSavedAt && <span>✓ {t("d.session.eval_saved")}</span>}
                 </div>
               </div>
             );
           })}
           {(!students || students.length === 0) && (
-            <div className="py-12 text-center text-muted-foreground text-sm">لا يوجد طلاب في هذه الحلقة بعد.</div>
+            <div className="py-12 text-center text-muted-foreground text-sm">{t("d.session.no_students")}</div>
           )}
         </div>
         <div className="p-4 border-t border-border bg-muted/30 flex items-center justify-between text-xs text-muted-foreground">
-          <span>التغييرات تحفظ تلقائياً وتظهر فوراً للطالب وولي الأمر.</span>
-          <button onClick={close} className="px-4 py-2 rounded-full bg-gradient-royal text-primary-foreground text-xs font-semibold">إنهاء</button>
+          <span>{t("d.session.autosave_hint")}</span>
+          <button onClick={close} className="px-4 py-2 rounded-full bg-gradient-royal text-primary-foreground text-xs font-semibold">{t("d.session.finish")}</button>
         </div>
       </div>
     </div>

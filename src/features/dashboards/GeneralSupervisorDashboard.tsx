@@ -71,9 +71,9 @@ export function GeneralSupervisorDashboard() {
   return (
     <div className="space-y-6">
       <DashboardHeader
-        badge="General supervisor"
+        badge={t("d.gs.badge")}
         title={t("gs.title")}
-        subtitle="Cross-halaqa monitoring · analytics · reports"
+        subtitle={t("d.gs.subtitle")}
       />
 
       <div className="grid md:grid-cols-4 gap-4">
@@ -185,7 +185,7 @@ function TeachersMon({ halaqas, evaluations }: { halaqas: any[]; evaluations: an
         <thead className="bg-muted/50 text-xs text-muted-foreground"><tr><th className="p-3 text-start">{t("common.teacher")}</th><th className="p-3 text-start">{t("nav.halaqas")}</th><th className="p-3 text-start">{t("dash.evaluations")}</th><th className="p-3 text-start">{t("gs.avg_score")}</th></tr></thead>
         <tbody>
           {teachers.map((tch) => <tr key={tch.id} className="border-t border-border"><td className="p-3 font-semibold text-primary">{tch.name}</td><td className="p-3">{tch.halaqas}</td><td className="p-3">{tch.evals}</td><td className="p-3">{tch.avgScore ? tch.avgScore.toFixed(1) : "—"}</td></tr>)}
-          {!teachers.length && <tr><td colSpan={4} className="p-0"><EmptyState compact variant="students" title="No teacher data yet" description="Assign teachers to halaqas to see performance analytics here." /></td></tr>}
+          {!teachers.length && <tr><td colSpan={4} className="p-0"><EmptyState compact variant="students" title={t("d.gs.no_teacher_data")} description={t("d.gs.no_teacher_data_desc")} /></td></tr>}
         </tbody>
       </table>
     </div>
@@ -212,7 +212,7 @@ function SupervisorsMon({ halaqas, attendance, notes }: { halaqas: any[]; attend
         <thead className="bg-muted/50 text-xs text-muted-foreground"><tr><th className="p-3 text-start">{t("common.supervisor")}</th><th className="p-3 text-start">{t("nav.halaqas")}</th><th className="p-3 text-start">{t("gs.records")}</th><th className="p-3 text-start">{t("sup.notes")}</th></tr></thead>
         <tbody>
           {sups.map((s) => <tr key={s.id} className="border-t border-border"><td className="p-3 font-semibold text-primary">{s.name}</td><td className="p-3">{s.halaqas}</td><td className="p-3">{s.recorded}</td><td className="p-3">{s.notes}</td></tr>)}
-          {!sups.length && <tr><td colSpan={4} className="p-0"><EmptyState compact variant="students" title="No supervisor data" description="Assign supervisors to halaqas to track their activity." /></td></tr>}
+          {!sups.length && <tr><td colSpan={4} className="p-0"><EmptyState compact variant="students" title={t("d.gs.no_supervisor_data")} description={t("d.gs.no_supervisor_data_desc")} /></td></tr>}
         </tbody>
       </table>
     </div>
@@ -322,8 +322,8 @@ function Reports({ halaqas, attendance, evaluations, notes }: { halaqas: any[]; 
               <span className="text-2xl">📊</span>
             </div>
             <div className="flex gap-2 mt-3">
-              <button onClick={() => exportExcel(r.id, r.label, rows)} className="flex-1 px-3 py-2 rounded-full bg-green-600 text-white text-xs font-semibold hover:bg-green-700">⬇ Excel</button>
-              <button onClick={() => exportPdf(r.id, r.label, rows)} className="flex-1 px-3 py-2 rounded-full bg-red-600 text-white text-xs font-semibold hover:bg-red-700">⬇ PDF</button>
+              <button onClick={() => exportExcel(r.id, r.label, rows)} className="flex-1 px-3 py-2 rounded-full bg-green-600 text-white text-xs font-semibold hover:bg-green-700">⬇ {t("d.gs.excel")}</button>
+              <button onClick={() => exportPdf(r.id, r.label, rows)} className="flex-1 px-3 py-2 rounded-full bg-red-600 text-white text-xs font-semibold hover:bg-red-700">⬇ {t("d.gs.pdf")}</button>
             </div>
           </div>
         );

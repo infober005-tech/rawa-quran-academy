@@ -3,21 +3,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import QRCode from "qrcode";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
-import { usePaymentSettings, useMyPayments, useSubscription, PAYMENT_METHODS } from "@/hooks/use-subscription";
+import { usePaymentSettings, useMyPayments, useSubscription, getPaymentMethods } from "@/hooks/use-subscription";
+import { useI18n } from "@/lib/i18n";
 import { ReceiptUpload } from "./ReceiptUpload";
 import { downloadPaymentInstructionsPDF } from "@/lib/payment-pdf";
 import { useAuth } from "@/hooks/use-auth";
 import { buildPaymentRef, buildQrToken, type QrPayload } from "@/lib/qr-payment";
 
-const STEP_LABELS = [
-  "تفاصيل الاشتراك",
-  "تعليمات الدفع",
-  "رفع الوصل",
-  "مراجعة الحالة",
-  "تفعيل الاشتراك",
-];
-
 export function PaymentPage() {
+  const { t, lang, dir } = useI18n();
+  const STEP_LABELS = [t("s.step1"), t("s.step2"), t("s.step3"), t("s.step4"), t("s.step5")];
   const { data: settings } = usePaymentSettings();
   const { data: payments } = useMyPayments();
   const { isActive, subscription } = useSubscription();
@@ -56,7 +51,7 @@ export function PaymentPage() {
     QRCode.toDataURL(qrText, { width: 480, margin: 1, color: { dark: "#5A436F", light: "#ffffff" } }).then(setQrDataUrl).catch(() => {});
   }, [qrText]);
 
-  const copy = async (text: string, msg = "تم النسخ بنجاح") => {
+  const copy = async (text: string, msg = t("s.copied_success")) => {
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
@@ -74,14 +69,22 @@ export function PaymentPage() {
       toast.success(msg);
     } catch (err) {
       console.error("clipboard error", err);
-      toast.error("تعذر النسخ");
+      toast.error(t("s.copy_failed"));
     }
   };
 
   const copyAll = () => {
     if (!settings) return;
+    const keyPart = settings.ccp_key ? t("s.copy_all_key_part", { key: settings.ccp_key }) : "";
     copy(
-      `اشتراك رواء\nCCP: ${settings.ccp_number}${settings.ccp_key ? " · المفتاح: " + settings.ccp_key : ""}\nاسم المستفيد: ${settings.account_holder}\nالمبلغ: ${settings.price_dzd} ${settings.currency}\nطرق الدفع المقبولة: Edahabia / BaridiMob\nمرجع المعاملة: ${qrPayload?.ref ?? "—"}`
+      t("s.copy_all_template", {
+        ccp: settings.ccp_number ?? "",
+        keyPart,
+        holder: settings.account_holder ?? "",
+        amount: settings.price_dzd ?? "",
+        currency: settings.currency ?? "",
+        ref: qrPayload?.ref ?? "—",
+      })
     );
   };
 
@@ -97,17 +100,17 @@ export function PaymentPage() {
   const goto = (n: number) => setManualStep(Math.max(1, Math.min(5, n)));
 
   return (
-    <div dir="rtl" className="relative min-h-[80vh]">
+    <div dir={dir} className="relative min-h-[80vh]">
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 via-background to-gold/5" />
       <div className="max-w-5xl mx-auto px-4 py-10 space-y-6 pb-28 lg:pb-10">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-3">
-          <div className="inline-block px-4 py-1 rounded-full bg-gold/15 text-gold text-xs font-bold tracking-wider">RAWA · رواء</div>
-          <h1 className="text-4xl sm:text-5xl font-bold text-primary">إتمام الاشتراك</h1>
-          <p className="text-muted-foreground max-w-xl mx-auto">اتبع الخطوات الخمس لإتمام الاشتراك بطريقة آمنة وسهلة.</p>
+          <div className="inline-block px-4 py-1 rounded-full bg-gold/15 text-gold text-xs font-bold tracking-wider">RAWA</div>
+          <h1 className="text-4xl sm:text-5xl font-bold text-primary">{t("s.complete_subscription")}</h1>
+          <p className="text-muted-foreground max-w-xl mx-auto">{t("s.follow_steps")}</p>
         </motion.div>
 
         {/* Stepper */}
-        <Stepper current={step} onJump={(n) => { if (n <= derivedStep) goto(n); }} />
+        <Stepper labels={STEP_LABELS} current={step} onJump={(n) => { if (n <= derivedStep) goto(n); }} />
 
         <AnimatePresence mode="wait">
           <motion.div
@@ -147,23 +150,23 @@ export function PaymentPage() {
         {/* Sticky mobile bar */}
         <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-primary text-primary-foreground p-3 flex items-center justify-between gap-2 shadow-2xl">
           <div>
-            <div className="text-[10px] opacity-70">السعر</div>
+            <div className="text-[10px] opacity-70">{t("s.price")}</div>
             <div className="font-bold text-gold">{settings?.price_dzd ?? "—"} {settings?.currency ?? "DZD"}</div>
           </div>
-          <button onClick={copyAll} className="px-4 py-2 rounded-full bg-gold text-primary text-xs font-bold">📋 نسخ CCP</button>
+          <button onClick={copyAll} className="px-4 py-2 rounded-full bg-gold text-primary text-xs font-bold">{t("s.copy_ccp_short")}</button>
         </div>
       </div>
     </div>
   );
 }
 
-function Stepper({ current, onJump }: { current: number; onJump: (n: number) => void }) {
+function Stepper({ labels, current, onJump }: { labels: string[]; current: number; onJump: (n: number) => void }) {
   return (
     <div className="relative">
       <div className="absolute top-5 inset-x-6 h-0.5 bg-border" />
-      <div className="absolute top-5 right-6 h-0.5 bg-gradient-to-l from-gold to-primary" style={{ width: `calc(${((current - 1) / (STEP_LABELS.length - 1)) * 100}% - 1.5rem)` }} />
+      <div className="absolute top-5 right-6 h-0.5 bg-gradient-to-l from-gold to-primary" style={{ width: `calc(${((current - 1) / (labels.length - 1)) * 100}% - 1.5rem)` }} />
       <ol className="relative grid grid-cols-5 gap-2">
-        {STEP_LABELS.map((label, i) => {
+        {labels.map((label, i) => {
           const n = i + 1;
           const done = n < current;
           const active = n === current;
@@ -188,26 +191,30 @@ function Stepper({ current, onJump }: { current: number; onJump: (n: number) => 
 type Settings = ReturnType<typeof usePaymentSettings>["data"];
 
 function StepDetails({ settings, onNext }: { settings: Settings; onNext: () => void }) {
+  const { t, lang } = useI18n();
+  const nameField = lang === "fr" ? (settings as { subscription_name_fr?: string } | null | undefined)?.subscription_name_fr : lang === "en" ? (settings as { subscription_name_en?: string } | null | undefined)?.subscription_name_en : (settings as { subscription_name_ar?: string } | null | undefined)?.subscription_name_ar;
+  const descField = lang === "fr" ? (settings as { description_fr?: string } | null | undefined)?.description_fr : lang === "en" ? (settings as { description_en?: string } | null | undefined)?.description_en : (settings as { description_ar?: string } | null | undefined)?.description_ar;
+  const benefitsField = lang === "fr" ? (settings as { benefits_fr?: string[] } | null | undefined)?.benefits_fr : lang === "en" ? (settings as { benefits_en?: string[] } | null | undefined)?.benefits_en : (settings as { benefits_ar?: string[] } | null | undefined)?.benefits_ar;
   return (
     <motion.div className="relative overflow-hidden rounded-3xl border border-gold/40 bg-gradient-to-br from-primary via-primary/95 to-primary/80 text-primary-foreground p-8 shadow-glow">
       <div className="absolute -top-24 -left-24 w-72 h-72 bg-gold/30 blur-3xl rounded-full" />
       <div className="relative grid md:grid-cols-2 gap-6">
         <div className="space-y-4">
-          <div className="text-xs uppercase opacity-70 tracking-wider">الخطة</div>
-          <div className="text-3xl font-bold">{settings?.subscription_name_ar ?? "اشتراك رواء"}</div>
+          <div className="text-xs uppercase opacity-70 tracking-wider">{t("s.plan")}</div>
+          <div className="text-3xl font-bold">{nameField ?? t("s.default_plan_name")}</div>
           <div className="text-6xl font-black text-gold leading-none">{settings?.price_dzd ?? "—"} <span className="text-lg font-normal text-primary-foreground/80">{settings?.currency ?? "DZD"}</span></div>
-          <p className="text-sm opacity-90">{settings?.description_ar}</p>
-          <div className="text-xs opacity-80">مدة الاشتراك: {settings?.subscription_duration_days ?? 30} يومًا</div>
+          <p className="text-sm opacity-90">{descField}</p>
+          <div className="text-xs opacity-80">{t("s.subscription_duration", { days: settings?.subscription_duration_days ?? 30 })}</div>
         </div>
         <div className="space-y-3">
-          <div className="text-xs uppercase opacity-70 tracking-wider mb-1">المزايا</div>
+          <div className="text-xs uppercase opacity-70 tracking-wider mb-1">{t("s.benefits")}</div>
           <ul className="space-y-2 text-sm">
-            {((settings?.benefits_ar as string[]) ?? []).map((b, i) => (
+            {(benefitsField ?? []).map((b, i) => (
               <motion.li key={i} initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} className="flex items-center gap-2"><span className="text-gold">✦</span>{b}</motion.li>
             ))}
           </ul>
           <div className="pt-3">
-            <button onClick={onNext} className="w-full py-3 rounded-full bg-gold text-primary font-bold shadow-glow hover:scale-[1.02] transition">متابعة إلى تعليمات الدفع ←</button>
+            <button onClick={onNext} className="w-full py-3 rounded-full bg-gold text-primary font-bold shadow-glow hover:scale-[1.02] transition">{t("s.continue_to_payment")}</button>
           </div>
         </div>
       </div>
@@ -225,11 +232,13 @@ function StepInstructions({ settings, canvasRef, qrDataUrl, paymentRef, onCopy, 
   onNext: () => void;
   onBack: () => void;
 }) {
+  const { t, lang } = useI18n();
+  const PAYMENT_METHODS = getPaymentMethods(t);
   return (
     <div className="grid lg:grid-cols-2 gap-6">
       <div className="p-7 rounded-3xl bg-card border border-border shadow-soft space-y-4">
-        <h3 className="font-bold text-primary text-lg">معلومات الدفع</h3>
-        <p className="text-xs text-muted-foreground">طرق الدفع المقبولة فقط: <strong className="text-primary">Edahabia</strong> أو <strong className="text-primary">BaridiMob</strong>.</p>
+        <h3 className="font-bold text-primary text-lg">{t("s.payment_info")}</h3>
+        <p className="text-xs text-muted-foreground" dangerouslySetInnerHTML={{ __html: t("s.accepted_methods_only", { m1: '<strong class="text-primary">Edahabia</strong>', m2: '<strong class="text-primary">BaridiMob</strong>' }) }} />
         <div className="grid grid-cols-2 gap-2">
           {PAYMENT_METHODS.map((m) => (
             <div key={m.id} className="p-3 rounded-2xl border border-gold/30 bg-gold/5">
@@ -239,40 +248,40 @@ function StepInstructions({ settings, canvasRef, qrDataUrl, paymentRef, onCopy, 
           ))}
         </div>
         <div className="rounded-2xl bg-muted/40 p-4 space-y-3">
-          <Row label="رقم CCP" value={settings?.ccp_number ?? ""} onCopy={() => onCopy(settings!.ccp_number!)} />
-          {settings?.ccp_key && <Row label="المفتاح" value={settings.ccp_key} onCopy={() => onCopy(settings.ccp_key!)} />}
-          <Row label="اسم المستفيد" value={settings?.account_holder ?? ""} onCopy={() => onCopy(settings!.account_holder!)} />
-          <Row label="مرجع المعاملة" value={paymentRef || "—"} onCopy={() => paymentRef && onCopy(paymentRef)} />
+          <Row label={t("s.ccp_number")} value={settings?.ccp_number ?? ""} onCopy={() => onCopy(settings!.ccp_number!)} />
+          {settings?.ccp_key && <Row label={t("s.key_label")} value={settings.ccp_key} onCopy={() => onCopy(settings.ccp_key!)} />}
+          <Row label={t("s.account_holder_label")} value={settings?.account_holder ?? ""} onCopy={() => onCopy(settings!.account_holder!)} />
+          <Row label={t("s.transaction_ref")} value={paymentRef || "—"} onCopy={() => paymentRef && onCopy(paymentRef)} />
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={onCopyAll} className="flex-1 min-w-[160px] py-2.5 rounded-full bg-gradient-royal text-primary-foreground font-bold text-sm">📋 نسخ كل المعلومات</button>
+          <button type="button" onClick={onCopyAll} className="flex-1 min-w-[160px] py-2.5 rounded-full bg-gradient-royal text-primary-foreground font-bold text-sm">{t("s.copy_all_info")}</button>
           <button
             type="button"
             onClick={async () => {
               if (!settings) return;
               try {
-                await downloadPaymentInstructionsPDF(settings, qrDataUrl, paymentRef);
-                toast.success("تم إنشاء ملف PDF بنجاح");
+                await downloadPaymentInstructionsPDF(settings, t, lang, qrDataUrl, paymentRef);
+                toast.success(t("s.pdf_success"));
               } catch (err) {
                 console.error("pdf error", err);
-                toast.error("تعذر إنشاء ملف PDF");
+                toast.error(t("s.pdf_failed"));
               }
             }}
             className="flex-1 min-w-[160px] py-2.5 rounded-full border-2 border-gold text-primary font-bold text-sm hover:bg-gold/10 transition"
-          >⬇ تنزيل التعليمات PDF</button>
+          >{t("s.download_pdf")}</button>
         </div>
       </div>
 
       <div className="p-7 rounded-3xl bg-card border border-border shadow-soft text-center space-y-3">
-        <h3 className="font-bold text-primary text-lg">رمز QR الذكي</h3>
-        <p className="text-xs text-muted-foreground">رمز فريد لهذه المحاولة · صالح 30 دقيقة · يحتوي على المرجع والمبلغ.</p>
+        <h3 className="font-bold text-primary text-lg">{t("s.qr_smart")}</h3>
+        <p className="text-xs text-muted-foreground">{t("s.qr_desc")}</p>
         <div className="inline-block p-3 rounded-2xl bg-white border-2 border-gold/40 shadow-glow">
           <canvas ref={canvasRef} className="block w-[220px] sm:w-[260px] md:w-[320px] h-auto max-w-full" />
         </div>
         {paymentRef && <div className="font-mono text-[10px] text-muted-foreground break-all px-2">{paymentRef}</div>}
         <div className="flex flex-col sm:flex-row gap-2 pt-2 stack-actions">
-          <button onClick={onBack} className="flex-1 py-2.5 rounded-full bg-muted text-foreground text-sm font-semibold">→ رجوع</button>
-          <button onClick={onNext} className="flex-1 py-2.5 rounded-full bg-gradient-royal text-primary-foreground font-bold text-sm">متابعة ←</button>
+          <button onClick={onBack} className="flex-1 py-2.5 rounded-full bg-muted text-foreground text-sm font-semibold">{t("s.back_arrow")}</button>
+          <button onClick={onNext} className="flex-1 py-2.5 rounded-full bg-gradient-royal text-primary-foreground font-bold text-sm">{t("s.continue")}</button>
         </div>
       </div>
     </div>
@@ -280,12 +289,13 @@ function StepInstructions({ settings, canvasRef, qrDataUrl, paymentRef, onCopy, 
 }
 
 function StepUpload({ hasPending, rejected, qrPayload, onSubmitted, onBack }: { hasPending: boolean; rejected: string | null; qrPayload: QrPayload | null; onSubmitted: () => void; onBack: () => void }) {
+  const { t } = useI18n();
   if (hasPending) {
     return (
       <div className="p-8 rounded-3xl border border-amber-500/30 bg-amber-500/5 text-center space-y-3">
         <div className="text-4xl">⏳</div>
-        <div className="font-bold text-amber-700 dark:text-amber-400">لديك طلب قيد المراجعة</div>
-        <p className="text-sm text-muted-foreground">يرجى انتظار قرار الإدارة قبل إرسال طلب جديد.</p>
+        <div className="font-bold text-amber-700 dark:text-amber-400">{t("s.pending_request_title")}</div>
+        <p className="text-sm text-muted-foreground">{t("s.pending_request_desc")}</p>
       </div>
     );
   }
@@ -293,54 +303,57 @@ function StepUpload({ hasPending, rejected, qrPayload, onSubmitted, onBack }: { 
     <div className="space-y-4">
       {rejected && (
         <div className="p-4 rounded-2xl border border-red-500/30 bg-red-500/5 text-sm text-red-700 dark:text-red-400">
-          <strong>تم رفض الطلب السابق:</strong> {rejected}
+          <strong>{t("s.previous_rejected")}</strong> {rejected}
         </div>
       )}
       <ReceiptUpload qrPayload={qrPayload} onSubmitted={onSubmitted} />
-      <button onClick={onBack} className="text-sm text-muted-foreground underline">→ رجوع إلى التعليمات</button>
+      <button onClick={onBack} className="text-sm text-muted-foreground underline">{t("s.back_to_instructions")}</button>
     </div>
   );
 }
 
 function StepReview({ status, notes, onRetry }: { status: string; notes: string | null; onRetry: () => void }) {
+  const { t } = useI18n();
   if (status === "rejected") {
     return (
       <div className="p-10 rounded-3xl border border-red-500/30 bg-red-500/5 text-center space-y-4">
         <div className="text-5xl">❌</div>
-        <h2 className="text-xl font-bold text-red-700 dark:text-red-400">تم رفض طلب الدفع</h2>
+        <h2 className="text-xl font-bold text-red-700 dark:text-red-400">{t("s.rejected_title")}</h2>
         {notes && <p className="text-sm text-muted-foreground max-w-md mx-auto">{notes}</p>}
-        <button onClick={onRetry} className="px-6 py-3 rounded-full bg-gradient-royal text-primary-foreground font-bold shadow-glow">إعادة رفع وصل جديد</button>
+        <button onClick={onRetry} className="px-6 py-3 rounded-full bg-gradient-royal text-primary-foreground font-bold shadow-glow">{t("s.reupload_receipt")}</button>
       </div>
     );
   }
   return (
     <div className="p-10 rounded-3xl border border-amber-500/30 bg-amber-500/5 text-center space-y-3">
       <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="text-5xl">⏳</motion.div>
-      <h2 className="text-xl font-bold text-amber-700 dark:text-amber-400">طلبك قيد المراجعة</h2>
-      <p className="text-sm text-muted-foreground max-w-md mx-auto">سيتم إشعارك فور موافقة الإدارة على طلب الدفع وتفعيل اشتراكك (عادة خلال 24 ساعة).</p>
+      <h2 className="text-xl font-bold text-amber-700 dark:text-amber-400">{t("s.under_review_title")}</h2>
+      <p className="text-sm text-muted-foreground max-w-md mx-auto">{t("s.under_review_desc")}</p>
     </div>
   );
 }
 
 function StepActivated({ endDate }: { endDate: string | null }) {
+  const { t, lang } = useI18n();
   return (
     <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="p-10 rounded-3xl bg-card border border-gold/40 shadow-glow text-center space-y-4 max-w-xl mx-auto">
       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 200 }} className="inline-flex w-20 h-20 rounded-full bg-green-500/15 text-green-600 items-center justify-center text-4xl">✓</motion.div>
-      <h2 className="text-2xl font-bold text-primary">تم تفعيل اشتراكك بنجاح</h2>
-      {endDate && <p className="text-sm text-muted-foreground">اشتراكك صالح حتى <strong className="text-primary">{new Date(endDate).toLocaleDateString("ar")}</strong></p>}
-      <Link to="/dashboard" className="inline-block px-6 py-3 rounded-full bg-gradient-royal text-primary-foreground font-bold shadow-glow">انتقل إلى لوحة التحكم ←</Link>
+      <h2 className="text-2xl font-bold text-primary">{t("s.activated_title")}</h2>
+      {endDate && <p className="text-sm text-muted-foreground">{t("s.valid_until")} <strong className="text-primary">{new Date(endDate).toLocaleDateString(lang === "ar" ? "ar" : lang)}</strong></p>}
+      <Link to="/dashboard" className="inline-block px-6 py-3 rounded-full bg-gradient-royal text-primary-foreground font-bold shadow-glow">{t("s.go_to_dashboard")}</Link>
     </motion.div>
   );
 }
 
 function Row({ label, value, onCopy }: { label: string; value: string; onCopy: () => void }) {
+  const { t } = useI18n();
   return (
     <div className="flex items-center justify-between gap-3">
       <div className="min-w-0">
         <div className="text-[10px] uppercase opacity-70 tracking-wide">{label}</div>
         <div className="font-mono text-sm truncate">{value}</div>
       </div>
-      <button onClick={onCopy} className="shrink-0 px-3 py-1 rounded-full bg-primary/10 hover:bg-primary/20 text-xs font-semibold text-primary">نسخ</button>
+      <button onClick={onCopy} className="shrink-0 px-3 py-1 rounded-full bg-primary/10 hover:bg-primary/20 text-xs font-semibold text-primary">{t("s.copy")}</button>
     </div>
   );
 }

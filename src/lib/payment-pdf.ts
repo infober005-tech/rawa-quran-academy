@@ -13,7 +13,8 @@ type SettingsLike = {
   subscription_duration_days: number | null;
 };
 
-const ARABIC_PDF_FILENAME = "تعليمات_الدفع_رواء.pdf";
+type Lang = "ar" | "fr" | "en";
+type T = (key: string, vars?: Record<string, string | number>) => string;
 const PLATFORM_URL = "https://rawa-quran-academy.lovable.app";
 
 // Transparent 1x1 PNG fallback so html2canvas never aborts on a broken <img>.
@@ -60,11 +61,14 @@ function buildPaymentRow(label: string, value: string, accent = false): string {
   </div>`;
 }
 
-function buildArabicInvoiceHTML(settings: SettingsLike, logoSrc: string, qrDataUrl?: string, paymentRef?: string): string {
+function buildInvoiceHTML(settings: SettingsLike, logoSrc: string, t: T, lang: Lang, qrDataUrl?: string, paymentRef?: string): string {
   const price = `${settings.price_dzd ?? "—"} ${settings.currency ?? "DZD"}`;
   const logoUrl = logoSrc;
+  const dir = lang === "ar" ? "rtl" : "ltr";
+  const borderSide = dir === "rtl" ? "border-right" : "border-left";
+  const paddingSide = dir === "rtl" ? "padding-right" : "padding-left";
   return `
-  <div id="rawa-pdf-root" dir="rtl" lang="ar" style="
+  <div id="rawa-pdf-root" dir="${dir}" lang="${lang}" style="
     width: 794px; min-height: 1123px; background:#ffffff; color:#1a1a1a; position:relative; overflow:hidden;
     font-family: 'Cairo','Tajawal','Noto Sans Arabic','Segoe UI',Tahoma,sans-serif;
     padding: 0; margin: 0; box-sizing: border-box;">
@@ -77,51 +81,51 @@ function buildArabicInvoiceHTML(settings: SettingsLike, logoSrc: string, qrDataU
     <!-- Header -->
     <div style="position:relative; z-index:1; background: linear-gradient(135deg,#5A436F 0%, #7A5A95 60%, #D4AF37 100%); padding: 28px 48px 24px; text-align:center; color:#fff;">
       <img src="${logoUrl}" alt="Rawa" style="width:88px; height:88px; border-radius:50%; border:3px solid #D4AF37; box-shadow:0 6px 18px rgba(0,0,0,.25); background:#fff; object-fit:cover; margin-bottom:10px;" />
-      <div style="font-size: 12px; letter-spacing: 6px; font-weight:700; opacity:.9;">RAWA · رواء</div>
-      <h1 style="margin:6px 0 2px; font-size: 26px; font-weight: 900;">منصة رواء للقرآن الكريم</h1>
-      <div style="font-size: 15px; opacity:.92;">تعليمات الدفع</div>
+      <div style="font-size: 12px; letter-spacing: 6px; font-weight:700; opacity:.9;">RAWA</div>
+      <h1 style="margin:6px 0 2px; font-size: 26px; font-weight: 900;">${t("s.pdf.platform_title")}</h1>
+      <div style="font-size: 15px; opacity:.92;">${t("s.pdf.header_title")}</div>
       <div style="height:3px; width:120px; margin:14px auto 0; background:#D4AF37; border-radius:2px;"></div>
     </div>
 
     <div style="position:relative; z-index:1; padding: 28px 48px 16px; display:flex; gap:24px; align-items:flex-start;">
       <div style="flex:1; min-width:0;">
-        <h2 style="color:#5A436F; font-size:18px; margin:0 0 10px; border-right:4px solid #D4AF37; padding-right:10px;">بيانات الدفع</h2>
+        <h2 style="color:#5A436F; font-size:18px; margin:0 0 10px; ${borderSide}:4px solid #D4AF37; ${paddingSide}:10px;">${t("s.pdf.payment_data")}</h2>
         <div style="background:#faf7ff; border:1px solid #ece5f7; border-radius:14px; padding:14px 18px; font-size:14px; line-height:1.9;">
-          <div style="padding:6px 0; border-bottom:1px dashed #ece5f7; color:#7a6a91; font-weight:600;">طريقة الدفع: <span style="color:#3a2a55; font-weight:700;">البطاقة الذهبية / بريدي موب</span></div>
-          ${buildPaymentRow("رقم CCP", settings.ccp_number ?? "—")}
-          ${settings.ccp_key ? buildPaymentRow("المفتاح", settings.ccp_key) : ""}
-          ${buildPaymentRow("اسم المستفيد", settings.account_holder ?? "—")}
-          ${buildPaymentRow("المبلغ", price, true)}
-          ${paymentRef ? buildPaymentRow("رقم المرجع", paymentRef) : ""}
-          ${buildPaymentRow("مدة الاشتراك", `${settings.subscription_duration_days ?? 30} يومًا`)}
+          <div style="padding:6px 0; border-bottom:1px dashed #ece5f7; color:#7a6a91; font-weight:600;">${t("s.pdf.payment_method_label")} <span style="color:#3a2a55; font-weight:700;">${t("s.pdf.payment_method_value")}</span></div>
+          ${buildPaymentRow(t("s.pdf.ccp_number"), settings.ccp_number ?? "—")}
+          ${settings.ccp_key ? buildPaymentRow(t("s.pdf.key"), settings.ccp_key) : ""}
+          ${buildPaymentRow(t("s.pdf.beneficiary"), settings.account_holder ?? "—")}
+          ${buildPaymentRow(t("s.pdf.amount"), price, true)}
+          ${paymentRef ? buildPaymentRow(t("s.pdf.reference"), paymentRef) : ""}
+          ${buildPaymentRow(t("s.pdf.duration"), t("s.pdf.duration_days", { days: settings.subscription_duration_days ?? 30 }))}
         </div>
       </div>
       ${qrDataUrl ? `<div style="width:210px; text-align:center;">
         <div style="display:inline-block; padding:10px; background:#fff; border:2px solid #D4AF37; border-radius:14px;">
           <img src="${qrDataUrl}" alt="QR" style="width:188px; height:188px; display:block;" />
         </div>
-        <div style="font-size:11px; color:#7a6a91; margin-top:8px;">امسح الرمز لنسخ بيانات الدفع</div>
+        <div style="font-size:11px; color:#7a6a91; margin-top:8px;">${t("s.pdf.qr_scan_hint")}</div>
       </div>` : ""}
     </div>
 
     <div style="position:relative; z-index:1; padding: 0 48px 16px;">
-      <h2 style="color:#5A436F; font-size:18px; margin:0 0 10px; border-right:4px solid #D4AF37; padding-right:10px;">خطوات الدفع</h2>
-      <ol style="font-size:14px; line-height:1.9; color:#1a1a1a; padding-right:24px; margin:0;">
-        <li>قم بتحويل مبلغ الاشتراك عبر البطاقة الذهبية أو بريدي موب.</li>
-        <li>احتفظ بوصل الدفع ورقم المرجع.</li>
-        <li>ارجع إلى المنصة وارفع صورة الوصل.</li>
-        <li>انتظر مراجعة الإدارة (عادة خلال 24 ساعة).</li>
-        <li>سيتم تفعيل اشتراكك مباشرة بعد الموافقة.</li>
+      <h2 style="color:#5A436F; font-size:18px; margin:0 0 10px; ${borderSide}:4px solid #D4AF37; ${paddingSide}:10px;">${t("s.pdf.steps_title")}</h2>
+      <ol style="font-size:14px; line-height:1.9; color:#1a1a1a; ${paddingSide}:24px; margin:0;">
+        <li>${t("s.pdf.step1")}</li>
+        <li>${t("s.pdf.step2")}</li>
+        <li>${t("s.pdf.step3")}</li>
+        <li>${t("s.pdf.step4")}</li>
+        <li>${t("s.pdf.step5")}</li>
       </ol>
     </div>
 
     <div style="position:relative; z-index:1; padding: 0 48px 16px;">
-      <div style="background:#fff8e1; border:1px solid #f1d98a; border-right:4px solid #D4AF37; border-radius:12px; padding:12px 16px;">
-        <div style="font-weight:800; color:#5A436F; margin-bottom:4px;">ملاحظات مهمة</div>
-        <ul style="font-size:13px; color:#3a2a55; line-height:1.9; margin:0; padding-right:18px;">
-          <li>ضع الوصل بعد التحويل.</li>
-          <li>احتفظ برقم المرجع.</li>
-          <li>لا تتم مراجعة الدفع إلا بعد رفع الوصل.</li>
+      <div style="background:#fff8e1; border:1px solid #f1d98a; ${borderSide}:4px solid #D4AF37; border-radius:12px; padding:12px 16px;">
+        <div style="font-weight:800; color:#5A436F; margin-bottom:4px;">${t("s.pdf.notes_title")}</div>
+        <ul style="font-size:13px; color:#3a2a55; line-height:1.9; margin:0; ${paddingSide}:18px;">
+          <li>${t("s.pdf.note1")}</li>
+          <li>${t("s.pdf.note2")}</li>
+          <li>${t("s.pdf.note3")}</li>
         </ul>
       </div>
     </div>
@@ -129,24 +133,24 @@ function buildArabicInvoiceHTML(settings: SettingsLike, logoSrc: string, qrDataU
     <!-- Signature + Stamp -->
     <div style="position:relative; z-index:1; padding: 8px 48px 16px; display:flex; gap:24px; align-items:center; justify-content:space-between;">
       <div style="flex:1;">
-        <div style="color:#7a6a91; font-size:12px; margin-bottom:6px;">التوقيع الإلكتروني</div>
-        <div style="font-family:'Cairo'; font-style:italic; font-weight:700; color:#5A436F; font-size:18px; border-bottom:2px solid #D4AF37; display:inline-block; padding:2px 8px 6px;">إدارة منصة رواء للقرآن الكريم</div>
+        <div style="color:#7a6a91; font-size:12px; margin-bottom:6px;">${t("s.pdf.esignature")}</div>
+        <div style="font-family:'Cairo'; font-style:italic; font-weight:700; color:#5A436F; font-size:18px; border-bottom:2px solid #D4AF37; display:inline-block; padding:2px 8px 6px;">${t("s.pdf.admin_signature")}</div>
       </div>
       <div style="width:130px; height:130px; position:relative; display:flex; align-items:center; justify-content:center;">
         <div style="position:absolute; inset:0; border-radius:50%; border:4px double #D4AF37; transform:rotate(-12deg);"></div>
         <div style="position:absolute; inset:10px; border-radius:50%; border:2px solid #D4AF37; transform:rotate(-12deg);"></div>
         <div style="text-align:center; transform:rotate(-12deg); color:#8a6a1f; font-weight:900;">
-          <div style="font-size:10px; letter-spacing:2px;">RAWA · رواء</div>
-          <div style="font-size:14px; margin-top:2px;">معتمد</div>
-          <div style="font-size:9px; margin-top:2px;">OFFICIAL</div>
+          <div style="font-size:10px; letter-spacing:2px;">RAWA</div>
+          <div style="font-size:14px; margin-top:2px;">${t("s.pdf.stamp_certified")}</div>
+          <div style="font-size:9px; margin-top:2px;">${t("s.pdf.stamp_official")}</div>
         </div>
       </div>
     </div>
 
     <div style="position:relative; z-index:1; margin-top:auto; padding: 14px 48px; border-top:2px solid #D4AF37; text-align:center; color:#7a6a91; font-size:11px;">
-      <div style="font-weight:700; color:#5A436F;">© Rawa Quran Academy · منصة رواء للقرآن الكريم</div>
+      <div style="font-weight:700; color:#5A436F;">${t("s.pdf.footer_copyright")}</div>
       <div style="margin-top:2px;"><a href="${PLATFORM_URL}" style="color:#5A436F; text-decoration:none;">${PLATFORM_URL}</a></div>
-      <div>جميع الحقوق محفوظة © 2026</div>
+      <div>${t("s.pdf.all_rights")}</div>
     </div>
   </div>`;
 }
@@ -172,7 +176,7 @@ async function ensureArabicFont(): Promise<void> {
   } catch { /* ignore */ }
 }
 
-function buildFallbackPdf(settings: SettingsLike, qrDataUrl?: string, paymentRef?: string, logoDataUrl?: string): jsPDF {
+function buildFallbackPdf(settings: SettingsLike, t: T, qrDataUrl?: string, paymentRef?: string, logoDataUrl?: string): jsPDF {
   console.info("[pdf] Building fallback PDF (text-only via jsPDF)...");
   const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait", compress: true });
   const price = `${settings.price_dzd ?? "—"} ${settings.currency ?? "DZD"}`;
@@ -183,20 +187,20 @@ function buildFallbackPdf(settings: SettingsLike, qrDataUrl?: string, paymentRef
   doc.setFillColor(90, 67, 111);
   doc.rect(0, 120, 595, 4, "F");
   doc.setFontSize(20); doc.setTextColor(90, 67, 111);
-  doc.text("RAWA - Rawa Quran Academy", 297, 150, { align: "center" });
+  doc.text(t("s.pdf.fallback_title"), 297, 150, { align: "center" });
   doc.setFontSize(13); doc.setTextColor(80, 80, 80);
-  doc.text("Payment Instructions / Instructions de paiement", 297, 172, { align: "center" });
+  doc.text(t("s.pdf.fallback_subtitle"), 297, 172, { align: "center" });
 
   let y = 220;
   doc.setFontSize(12); doc.setTextColor(30, 30, 30);
   const rows: [string, string][] = [
-    ["Method", "Edahabia / BaridiMob"],
-    ["CCP", settings.ccp_number ?? "—"],
-    ...(settings.ccp_key ? [["Key", settings.ccp_key] as [string, string]] : []),
-    ["Beneficiary", settings.account_holder ?? "—"],
-    ["Amount", price],
-    ...(paymentRef ? [["Reference", paymentRef] as [string, string]] : []),
-    ["Duration", `${settings.subscription_duration_days ?? 30} days`],
+    [t("s.pdf.method"), "Edahabia / BaridiMob"],
+    [t("s.pdf.ccp"), settings.ccp_number ?? "—"],
+    ...(settings.ccp_key ? [[t("s.pdf.key"), settings.ccp_key] as [string, string]] : []),
+    [t("s.pdf.beneficiary_en"), settings.account_holder ?? "—"],
+    [t("s.pdf.amount_en"), price],
+    ...(paymentRef ? [[t("s.pdf.reference_en"), paymentRef] as [string, string]] : []),
+    [t("s.pdf.duration_en"), t("s.pdf.duration_days_en", { days: settings.subscription_duration_days ?? 30 })],
   ];
   for (const [k, v] of rows) {
     doc.setTextColor(120, 110, 140); doc.text(`${k}:`, 60, y);
@@ -211,22 +215,22 @@ function buildFallbackPdf(settings: SettingsLike, qrDataUrl?: string, paymentRef
 
   y = Math.max(y, 420);
   doc.setFontSize(11); doc.setTextColor(90, 67, 111);
-  doc.text("Steps:", 60, y); y += 18;
+  doc.text(t("s.pdf.steps_en"), 60, y); y += 18;
   doc.setTextColor(40, 40, 40);
   [
-    "1. Transfer the amount via Edahabia or BaridiMob.",
-    "2. Keep your payment receipt and reference number.",
-    "3. Return to the platform and upload the receipt image.",
-    "4. Wait for admin review (usually within 24 hours).",
-    "5. Your subscription will be activated upon approval.",
+    `1. ${t("s.pdf.step1")}`,
+    `2. ${t("s.pdf.step2")}`,
+    `3. ${t("s.pdf.step3")}`,
+    `4. ${t("s.pdf.step4")}`,
+    `5. ${t("s.pdf.step5")}`,
   ].forEach((line) => { doc.text(line, 60, y); y += 16; });
 
   doc.setFontSize(10); doc.setTextColor(120, 110, 140);
-  doc.text(`© Rawa Quran Academy — ${PLATFORM_URL}`, 297, 800, { align: "center" });
+  doc.text(t("s.pdf.footer_en", { url: PLATFORM_URL }), 297, 800, { align: "center" });
   return doc;
 }
 
-export async function downloadPaymentInstructionsPDF(settings: SettingsLike, qrDataUrl?: string, paymentRef?: string) {
+export async function downloadPaymentInstructionsPDF(settings: SettingsLike, t: T, lang: Lang, qrDataUrl?: string, paymentRef?: string) {
   let logoSrc = BLANK_PNG;
 
   // Step 1: Fonts
@@ -246,7 +250,7 @@ export async function downloadPaymentInstructionsPDF(settings: SettingsLike, qrD
     host = document.createElement("div");
     host.style.cssText = "position:fixed; left:-99999px; top:0; width:794px; visibility:hidden;";
     host.setAttribute("aria-hidden", "true");
-    host.innerHTML = buildArabicInvoiceHTML(settings, logoSrc, qrDataUrl, paymentRef);
+    host.innerHTML = buildInvoiceHTML(settings, logoSrc, t, lang, qrDataUrl, paymentRef);
     document.body.appendChild(host);
     const node = host.querySelector("#rawa-pdf-root") as HTMLElement | null;
     if (!node) throw new Error("template root missing");
@@ -288,15 +292,15 @@ export async function downloadPaymentInstructionsPDF(settings: SettingsLike, qrD
       }
     }
     console.info("[pdf] Saving PDF...");
-    doc.save(ARABIC_PDF_FILENAME);
+    doc.save(`${t("s.pdf.filename")}.pdf`);
     return;
   } catch (error) {
     console.error("PDF ERROR:", error);
     // Fallback: always produce a PDF
     try {
-      const doc = buildFallbackPdf(settings, qrDataUrl, paymentRef, logoSrc);
+      const doc = buildFallbackPdf(settings, t, qrDataUrl, paymentRef, logoSrc);
       console.info("[pdf] Saving fallback PDF...");
-      doc.save(ARABIC_PDF_FILENAME);
+      doc.save(`${t("s.pdf.filename")}.pdf`);
     } catch (fallbackError) {
       console.error("PDF ERROR (fallback also failed):", fallbackError);
       throw fallbackError;

@@ -14,12 +14,12 @@ import { attachHalaqaPeople, auditEmbeddedHalaqaRelations, selectOrThrow } from 
 
 // Weekday tokens stored in schedule_days (existing convention)
 const DAYS = ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"] as const;
-const DAY_LABELS_AR: Record<string, string> = {
-  Sat: "السبت", Sun: "الأحد", Mon: "الإثنين", Tue: "الثلاثاء",
-  Wed: "الأربعاء", Thu: "الخميس", Fri: "الجمعة",
+const DAY_LABEL_KEYS: Record<string, string> = {
+  Sat: "a.calendar.day.sat", Sun: "a.calendar.day.sun", Mon: "a.calendar.day.mon", Tue: "a.calendar.day.tue",
+  Wed: "a.calendar.day.wed", Thu: "a.calendar.day.thu", Fri: "a.calendar.day.fri",
 };
-// JS getDay(): 0=Sun..6=Sat → weekday name (Arabic)
-const JS_DAY_AR = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+// JS getDay(): 0=Sun..6=Sat → weekday label key
+const JS_DAY_KEYS = ["a.calendar.day.sun", "a.calendar.day.mon", "a.calendar.day.tue", "a.calendar.day.wed", "a.calendar.day.thu", "a.calendar.day.fri", "a.calendar.day.sat"];
 
 const inputCls =
   "w-full min-h-11 px-3 py-2 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30";
@@ -187,23 +187,23 @@ export function HalaqasPanel() {
           <input
             value={fName}
             onChange={(e) => setFName(e.target.value)}
-            placeholder="اسم الحلقة…"
+            placeholder={t("a.halaqas.name_placeholder")}
             className={cn(inputCls, "ps-9")}
           />
         </label>
         <select value={fTeacher} onChange={(e) => setFTeacher(e.target.value)} className={inputCls}>
-          <option value="">كل المعلمين</option>
+          <option value="">{t("a.halaqas.all_teachers")}</option>
           {teacherOptions?.map((tt) => <option key={tt.id} value={tt.id}>{tt.full_name}</option>)}
         </select>
         <select value={fLevel} onChange={(e) => setFLevel(e.target.value)} className={inputCls}>
-          <option value="">كل المستويات</option>
-          <option value="beginner">مبتدئ</option>
-          <option value="intermediate">متوسط</option>
-          <option value="advanced">متقدم</option>
+          <option value="">{t("a.halaqas.all_levels")}</option>
+          <option value="beginner">{t("a.halaqas.level.beginner")}</option>
+          <option value="intermediate">{t("a.halaqas.level.intermediate")}</option>
+          <option value="advanced">{t("a.halaqas.level.advanced")}</option>
         </select>
         <select value={fDay} onChange={(e) => setFDay(e.target.value)} className={inputCls}>
-          <option value="">كل الأيام</option>
-          {DAYS.map((d) => <option key={d} value={d}>{DAY_LABELS_AR[d]}</option>)}
+          <option value="">{t("a.halaqas.all_days")}</option>
+          {DAYS.map((d) => <option key={d} value={d}>{t(DAY_LABEL_KEYS[d])}</option>)}
         </select>
         <div className="sm:col-span-2 lg:col-span-2 flex flex-wrap gap-1 p-1 rounded-xl bg-muted/50">
           {(["all", "published", "draft"] as const).map((k) => (
@@ -216,12 +216,12 @@ export function HalaqasPanel() {
                 fStatus === k ? "bg-gradient-royal text-primary-foreground shadow-glow" : "text-muted-foreground hover:bg-background/70",
               )}
             >
-              {k === "all" ? "الكل" : k === "published" ? "✅ منشورة" : "📝 مسودة"}
+              {k === "all" ? t("a.halaqas.all") : k === "published" ? t("a.halaqas.published") : t("a.halaqas.draft")}
             </button>
           ))}
         </div>
-        <input type="date" value={fFrom} onChange={(e) => setFFrom(e.target.value)} className={inputCls} placeholder="من" />
-        <input type="date" value={fTo} onChange={(e) => setFTo(e.target.value)} className={inputCls} placeholder="إلى" />
+        <input type="date" value={fFrom} onChange={(e) => setFFrom(e.target.value)} className={inputCls} placeholder={t("a.halaqas.from")} />
+        <input type="date" value={fTo} onChange={(e) => setFTo(e.target.value)} className={inputCls} placeholder={t("a.halaqas.to")} />
       </div>
 
       {showForm && (
@@ -238,24 +238,24 @@ export function HalaqasPanel() {
                 <div className="min-w-0">
                   <h3 className="text-base font-bold text-primary truncate">{h.name}</h3>
                   <div className="text-[11px] text-muted-foreground mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <span>{h.level === "beginner" ? "مبتدئ" : h.level === "intermediate" ? "متوسط" : "متقدم"}</span>
+                    <span>{h.level === "beginner" ? t("a.halaqas.level.beginner") : h.level === "intermediate" ? t("a.halaqas.level.intermediate") : t("a.halaqas.level.advanced")}</span>
                     <span>·</span>
-                    <span>{h.gender === "male" ? "ذكور" : "إناث"}</span>
+                    <span>{h.gender === "male" ? t("a.halaqas.gender.male") : t("a.halaqas.gender.female")}</span>
                   </div>
                 </div>
                 <Badge variant={disp === "published" ? "success" : disp === "draft" ? "warning" : "outline"}>
-                  {disp === "published" ? "✅ منشورة" : disp === "draft" ? "📝 مسودة" : "🗄 مؤرشفة"}
+                  {disp === "published" ? t("a.halaqas.published") : disp === "draft" ? t("a.halaqas.draft") : t("a.halaqas.archived")}
                 </Badge>
               </header>
               <dl className="text-xs text-muted-foreground grid grid-cols-1 gap-1.5">
-                <div className="flex items-center gap-2"><span className="opacity-70">المعلم:</span><span className="truncate">{h.teacher?.full_name ?? "—"}</span></div>
-                <div className="flex items-center gap-2"><span className="opacity-70">المشرف:</span><span className="truncate">{h.supervisor?.full_name ?? "—"}</span></div>
-                {h.max_students && <div className="flex items-center gap-2"><Users2 className="h-3.5 w-3.5" aria-hidden /><span>حتى {h.max_students} طالب</span></div>}
+                <div className="flex items-center gap-2"><span className="opacity-70">{t("a.halaqas.teacher_label")}</span><span className="truncate">{h.teacher?.full_name ?? "—"}</span></div>
+                <div className="flex items-center gap-2"><span className="opacity-70">{t("a.halaqas.supervisor_label")}</span><span className="truncate">{h.supervisor?.full_name ?? "—"}</span></div>
+                {h.max_students && <div className="flex items-center gap-2"><Users2 className="h-3.5 w-3.5" aria-hidden /><span>{t("a.halaqas.up_to_students", { count: h.max_students })}</span></div>}
                 {h.halaqa_date && (
                   <div className="flex items-center gap-2">
                     <CalendarIcon className="h-3.5 w-3.5" aria-hidden />
                     <span>{fmtDate(h.halaqa_date, locale)}</span>
-                    {h.halaqa_day !== null && <span className="opacity-70">· {JS_DAY_AR[h.halaqa_day]}</span>}
+                    {h.halaqa_day !== null && <span className="opacity-70">· {t(JS_DAY_KEYS[h.halaqa_day])}</span>}
                   </div>
                 )}
                 {(h.start_time || h.end_time) && (
@@ -264,7 +264,7 @@ export function HalaqasPanel() {
                 {(h.schedule_days?.length ?? 0) > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1">
                     {h.schedule_days!.map((d) => (
-                      <span key={d} className="px-2 py-0.5 rounded-full bg-muted text-[10px]">{DAY_LABELS_AR[d] ?? d}</span>
+                      <span key={d} className="px-2 py-0.5 rounded-full bg-muted text-[10px]">{DAY_LABEL_KEYS[d] ? t(DAY_LABEL_KEYS[d]) : d}</span>
                     ))}
                   </div>
                 )}
@@ -285,16 +285,16 @@ export function HalaqasPanel() {
                     value={h.status}
                     onChange={(e) => setStatus.mutate({ id: h.id, status: e.target.value as HalaqaStatus })}
                     className="min-h-9 px-2 py-1 rounded-lg border border-input bg-background text-[11px]"
-                    aria-label="الحالة"
+                    aria-label={t("a.halaqas.status_aria")}
                   >
-                    <option value="draft">📝 مسودة</option>
-                    <option value="published">✅ منشورة</option>
-                    <option value="active">نشطة (قديم)</option>
-                    <option value="inactive">غير نشطة</option>
-                    <option value="archived">مؤرشفة</option>
+                    <option value="draft">{t("a.halaqas.draft")}</option>
+                    <option value="published">{t("a.halaqas.published")}</option>
+                    <option value="active">{t("a.halaqas.active_old")}</option>
+                    <option value="inactive">{t("a.halaqas.inactive")}</option>
+                    <option value="archived">{t("a.halaqas.archived")}</option>
                   </select>
                   <button onClick={() => { setEditing(h); setShowForm(true); }} className="min-h-9 px-3 py-1 rounded-full text-xs bg-muted">{t("common.edit")}</button>
-                  <button onClick={() => { if (confirm("Delete?")) del.mutate(h.id); }} className="min-h-9 px-3 py-1 rounded-full text-xs bg-destructive/10 text-destructive">{t("common.delete")}</button>
+                  <button onClick={() => { if (confirm(t("a.confirm.delete"))) del.mutate(h.id); }} className="min-h-9 px-3 py-1 rounded-full text-xs bg-destructive/10 text-destructive">{t("common.delete")}</button>
                 </div>
               </div>
               <HalaqaStudents halaqa={h} />
@@ -393,18 +393,18 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
   const save = useMutation({
     mutationFn: async () => {
       // Validation
-      if (!form.name.trim()) throw new Error("اسم الحلقة مطلوب");
-      if (!form.teacher_id) throw new Error("المعلم مطلوب");
-      if (!form.gender) throw new Error("الجنس مطلوب");
-      if (!form.level) throw new Error("المستوى مطلوب");
-      if (!form.max_students || form.max_students < 1) throw new Error("عدد الطلاب مطلوب");
-      if (!form.halaqa_date) throw new Error("تاريخ الحلقة مطلوب");
-      if (!form.start_time) throw new Error("وقت البداية مطلوب");
-      if (!form.end_time) throw new Error("وقت النهاية مطلوب");
-      if (!form.meeting_link?.trim()) throw new Error("رابط Google Meet مطلوب");
-      if (!form.status) throw new Error("الحالة مطلوبة");
-      if ((form.schedule_days?.length ?? 0) < 1) throw new Error("اختر يوماً واحداً على الأقل");
-      if (form.selectedStudentIds.length < 1) throw new Error("اختر طالباً واحداً على الأقل");
+      if (!form.name.trim()) throw new Error(t("a.halaqas.name_required"));
+      if (!form.teacher_id) throw new Error(t("a.halaqas.teacher_required"));
+      if (!form.gender) throw new Error(t("a.halaqas.gender_required"));
+      if (!form.level) throw new Error(t("a.halaqas.level_required"));
+      if (!form.max_students || form.max_students < 1) throw new Error(t("a.halaqas.max_students_required"));
+      if (!form.halaqa_date) throw new Error(t("a.halaqas.date_required"));
+      if (!form.start_time) throw new Error(t("a.halaqas.start_time_required"));
+      if (!form.end_time) throw new Error(t("a.halaqas.end_time_required"));
+      if (!form.meeting_link?.trim()) throw new Error(t("a.halaqas.meeting_link_required"));
+      if (!form.status) throw new Error(t("a.halaqas.status_required"));
+      if ((form.schedule_days?.length ?? 0) < 1) throw new Error(t("a.halaqas.choose_one_day"));
+      if (form.selectedStudentIds.length < 1) throw new Error(t("a.halaqas.choose_one_student"));
 
       const payload = {
         name: form.name.trim(),
@@ -433,14 +433,14 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
         if (import.meta.env.DEV) console.info("[HalaqasPanel] INSERT payload", payload);
         const { data, error, status } = await supabase.from("halaqas").insert(payload).select("id").single();
         if (import.meta.env.DEV) console.info("[HalaqasPanel] INSERT result", { data, error, status });
-        if (error) throw new Error(`فشل إنشاء الحلقة: ${error.message}`);
-        if (!data?.id) throw new Error("تعذر قراءة الحلقة بعد الإنشاء — تحقق من صلاحيات القراءة.");
+        if (error) throw new Error(t("a.halaqas.create_failed", { msg: error.message }));
+        if (!data?.id) throw new Error(t("a.halaqas.read_after_create_failed"));
         halaqaId = data.id;
         // Read-after-write verification: confirm the row is visible under RLS
         const verify = await supabase.from("halaqas").select("id, status, teacher_id, supervisor_id").eq("id", halaqaId).maybeSingle();
         if (import.meta.env.DEV) console.info("[HalaqasPanel] VERIFY row", verify);
-        if (verify.error) throw new Error(`الحلقة أُنشئت لكن لا يمكن قراءتها: ${verify.error.message}`);
-        if (!verify.data) throw new Error("الحلقة أُنشئت لكن حُجبت بواسطة سياسات RLS.");
+        if (verify.error) throw new Error(t("a.halaqas.created_unreadable", { msg: verify.error.message }));
+        if (!verify.data) throw new Error(t("a.halaqas.created_hidden_rls"));
       }
 
       // Sync students
@@ -475,7 +475,7 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
       qc.invalidateQueries({ queryKey: ["student-halaqa"] });
       qc.invalidateQueries({ queryKey: ["student-dashboard"] });
       qc.invalidateQueries({ queryKey: ["student-progress"] });
-      toast.success("✓ تم الحفظ");
+      toast.success(t("a.halaqas.saved"));
       onClose();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -505,19 +505,19 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
     >
       {/* Halaqa name */}
       <div className="lg:col-span-3">
-        <label className="text-xs font-semibold text-primary/80">اسم الحلقة *</label>
+        <label className="text-xs font-semibold text-primary/80">{t("a.halaqas.name_label")}</label>
         <input
           required
           value={form.name}
           onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-          placeholder="مثال: حلقة النور، حلقة الريان، حلقة حفظ الجزء الأول"
+          placeholder={t("a.halaqas.name_example")}
           className={cn(inputCls, "mt-1")}
         />
       </div>
 
       {/* Gender / Level */}
       <div>
-        <label className="text-xs font-semibold text-primary/80">الجنس *</label>
+        <label className="text-xs font-semibold text-primary/80">{t("a.halaqas.gender_label")}</label>
         <select
           value={form.gender}
           onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value as FormState["gender"], selectedStudentIds: [] }))}
@@ -528,19 +528,19 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
         </select>
       </div>
       <div>
-        <label className="text-xs font-semibold text-primary/80">المستوى *</label>
+        <label className="text-xs font-semibold text-primary/80">{t("a.halaqas.level_label")}</label>
         <select
           value={form.level}
           onChange={(e) => setForm((f) => ({ ...f, level: e.target.value as FormState["level"] }))}
           className={cn(inputCls, "mt-1")}
         >
-          <option value="beginner">مبتدئ</option>
-          <option value="intermediate">متوسط</option>
-          <option value="advanced">متقدم</option>
+          <option value="beginner">{t("a.halaqas.level.beginner")}</option>
+          <option value="intermediate">{t("a.halaqas.level.intermediate")}</option>
+          <option value="advanced">{t("a.halaqas.level.advanced")}</option>
         </select>
       </div>
       <div>
-        <label className="text-xs font-semibold text-primary/80">عدد الطلاب (الحد الأقصى) *</label>
+        <label className="text-xs font-semibold text-primary/80">{t("a.halaqas.max_students_label")}</label>
         <input
           required
           type="number"
@@ -554,32 +554,32 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
 
       {/* Teacher / Supervisor */}
       <div>
-        <label className="text-xs font-semibold text-primary/80">المعلم *</label>
+        <label className="text-xs font-semibold text-primary/80">{t("a.halaqas.teacher_field")}</label>
         <select
           required
           value={form.teacher_id ?? ""}
           onChange={(e) => setForm((f) => ({ ...f, teacher_id: e.target.value || null }))}
           className={cn(inputCls, "mt-1")}
         >
-          <option value="">— اختر المعلم —</option>
+          <option value="">{t("a.halaqas.choose_teacher")}</option>
           {filteredTeachers.map((u) => <option key={u.id} value={u.id}>{u.full_name}</option>)}
         </select>
       </div>
       <div>
-        <label className="text-xs font-semibold text-primary/80">المشرف</label>
+        <label className="text-xs font-semibold text-primary/80">{t("a.halaqas.supervisor_field")}</label>
         <select
           value={form.supervisor_id ?? ""}
           onChange={(e) => setForm((f) => ({ ...f, supervisor_id: e.target.value || null }))}
           className={cn(inputCls, "mt-1")}
         >
-          <option value="">— اختر المشرف —</option>
+          <option value="">{t("a.halaqas.choose_supervisor")}</option>
           {filteredSupervisors.map((u) => <option key={u.id} value={u.id}>{u.full_name}</option>)}
         </select>
       </div>
 
       {/* Date + auto day */}
       <div>
-        <label className="text-xs font-semibold text-primary/80">📅 تاريخ الحلقة *</label>
+        <label className="text-xs font-semibold text-primary/80">{t("a.halaqas.date_label")}</label>
         <Popover>
           <PopoverTrigger asChild>
             <button
@@ -587,7 +587,7 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
               className={cn(inputCls, "mt-1 flex items-center justify-between text-start")}
             >
               <span className={form.halaqa_date ? "" : "text-muted-foreground"}>
-                {form.halaqa_date ? fmtDate(form.halaqa_date, locale) : "اختر التاريخ"}
+                {form.halaqa_date ? fmtDate(form.halaqa_date, locale) : t("a.halaqas.choose_date")}
               </span>
               <CalendarIcon className="h-4 w-4 text-muted-foreground" aria-hidden />
             </button>
@@ -604,14 +604,14 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
         </Popover>
         {form.halaqa_day !== null && (
           <div className="mt-2 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gold/15 text-gold-foreground text-[11px] font-semibold border border-gold/30">
-            اليوم: {JS_DAY_AR[form.halaqa_day]}
+            {t("a.halaqas.day")} {t(JS_DAY_KEYS[form.halaqa_day])}
           </div>
         )}
       </div>
 
       {/* Times */}
       <div>
-        <label className="text-xs font-semibold text-primary/80">وقت البداية *</label>
+        <label className="text-xs font-semibold text-primary/80">{t("a.halaqas.start_time_label")}</label>
         <input
           required
           type="time"
@@ -621,7 +621,7 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
         />
       </div>
       <div>
-        <label className="text-xs font-semibold text-primary/80">وقت النهاية *</label>
+        <label className="text-xs font-semibold text-primary/80">{t("a.halaqas.end_time_label")}</label>
         <input
           required
           type="time"
@@ -634,7 +634,7 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
       {/* Meeting */}
       <div className="lg:col-span-3 grid gap-3 md:grid-cols-[1fr_auto]">
         <div>
-          <label className="text-xs font-semibold text-primary/80">رابط Google Meet *</label>
+          <label className="text-xs font-semibold text-primary/80">{t("a.halaqas.meeting_link_label")}</label>
           <input
             required
             value={form.meeting_link ?? ""}
@@ -651,14 +651,14 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
             rel="noreferrer"
             className="min-h-11 px-4 rounded-xl bg-muted text-xs font-semibold whitespace-nowrap flex items-center"
           >
-            + إنشاء رابط جديد
+            {t("a.halaqas.new_link")}
           </a>
         </div>
       </div>
 
       {/* Weekdays */}
       <div className="lg:col-span-3">
-        <label className="text-xs font-semibold text-primary/80">أيام الأسبوع * (اختر يوماً على الأقل)</label>
+        <label className="text-xs font-semibold text-primary/80">{t("a.halaqas.weekdays_label")}</label>
         <div className="mt-2 flex flex-wrap gap-2">
           {DAYS.map((d) => (
             <button
@@ -672,7 +672,7 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
                   : "bg-muted text-muted-foreground",
               )}
             >
-              {DAY_LABELS_AR[d]}
+              {t(DAY_LABEL_KEYS[d])}
             </button>
           ))}
         </div>
@@ -696,12 +696,12 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
 
       {/* Status segmented */}
       <div className="lg:col-span-3">
-        <label className="text-xs font-semibold text-primary/80">الحالة *</label>
+        <label className="text-xs font-semibold text-primary/80">{t("a.halaqas.status_field")}</label>
         <div className="mt-2 grid grid-cols-2 gap-2 max-w-sm">
           {(
             [
-              { v: "draft" as const, label: "📝 مسودة" },
-              { v: "published" as const, label: "✅ منشورة" },
+              { v: "draft" as const, label: t("a.halaqas.draft") },
+              { v: "published" as const, label: t("a.halaqas.published") },
             ]
           ).map((opt) => (
             <button
@@ -720,7 +720,7 @@ function HalaqaForm({ initial, onClose }: { initial: Halaqa | null; onClose: () 
           ))}
         </div>
         {form.status === "draft" && (
-          <p className="mt-2 text-[11px] text-muted-foreground">🔒 المسودات مرئية للمدير فقط، ولا تُرسَل إشعارات ولا يظهر رابط الاجتماع.</p>
+          <p className="mt-2 text-[11px] text-muted-foreground">{t("a.halaqas.draft_hint")}</p>
         )}
       </div>
 
@@ -752,6 +752,7 @@ function StudentMultiSelect({
   selected: string[];
   onChange: (ids: string[]) => void;
 }) {
+  const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ beginner: true, intermediate: true, advanced: true });
 
@@ -759,9 +760,9 @@ function StudentMultiSelect({
     const q = query.trim().toLowerCase();
     const match = (s: { full_name: string }) => !q || s.full_name.toLowerCase().includes(q);
     return [
-      { key: "beginner", label: "مبتدئ", icon: "📗", list: students.filter((s) => (s.quran_level ?? "beginner") === "beginner" && match(s)) },
-      { key: "intermediate", label: "متوسط", icon: "📘", list: students.filter((s) => s.quran_level === "intermediate" && match(s)) },
-      { key: "advanced", label: "متقدم", icon: "📕", list: students.filter((s) => s.quran_level === "advanced" && match(s)) },
+      { key: "beginner", label: t("a.halaqas.level.beginner"), icon: "📗", list: students.filter((s) => (s.quran_level ?? "beginner") === "beginner" && match(s)) },
+      { key: "intermediate", label: t("a.halaqas.level.intermediate"), icon: "📘", list: students.filter((s) => s.quran_level === "intermediate" && match(s)) },
+      { key: "advanced", label: t("a.halaqas.level.advanced"), icon: "📕", list: students.filter((s) => s.quran_level === "advanced" && match(s)) },
     ];
   }, [students, query]);
 
@@ -778,11 +779,11 @@ function StudentMultiSelect({
     <div className="lg:col-span-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <label className="text-xs font-semibold text-primary/80">
-          الطلاب * <span className="text-muted-foreground">({selected.length} محدد)</span>
+          {t("a.halaqas.students_label")} <span className="text-muted-foreground">{t("a.halaqas.selected_count", { count: selected.length })}</span>
         </label>
         <div className="flex gap-1">
-          <button type="button" onClick={selectAll} className="min-h-9 px-3 py-1 rounded-full text-[11px] bg-primary/10 text-primary font-semibold">تحديد الكل</button>
-          <button type="button" onClick={clearAll} className="min-h-9 px-3 py-1 rounded-full text-[11px] bg-muted text-muted-foreground font-semibold">إلغاء الكل</button>
+          <button type="button" onClick={selectAll} className="min-h-9 px-3 py-1 rounded-full text-[11px] bg-primary/10 text-primary font-semibold">{t("a.halaqas.select_all")}</button>
+          <button type="button" onClick={clearAll} className="min-h-9 px-3 py-1 rounded-full text-[11px] bg-muted text-muted-foreground font-semibold">{t("a.halaqas.clear_all")}</button>
         </div>
       </div>
 
@@ -791,7 +792,7 @@ function StudentMultiSelect({
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="ابحث عن طالب…"
+          placeholder={t("a.halaqas.search_student")}
           className={cn(inputCls, "ps-9")}
         />
       </div>
@@ -832,7 +833,7 @@ function StudentMultiSelect({
           </div>
         ))}
       </div>
-      {allSelected && <p className="mt-1 text-[10px] text-muted-foreground">تم تحديد كل الطلاب المطابقين للبحث.</p>}
+      {allSelected && <p className="mt-1 text-[10px] text-muted-foreground">{t("a.halaqas.all_matched_selected")}</p>}
     </div>
   );
 }

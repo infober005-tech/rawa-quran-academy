@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ReceiptPreviewDialog } from "@/components/ReceiptPreviewDialog";
+import { useI18n } from "@/lib/i18n";
 
 type Tab = "pending" | "approved" | "rejected";
 
@@ -27,8 +28,10 @@ type SubEnrichedRow = SubRow & {
 type SortKey = "name" | "start" | "end" | "status";
 
 const METHOD_LABEL: Record<string, string> = { edahabia: "💳 Edahabia", baridimob: "📱 BaridiMob" };
+const PAY_LOCALE = (lang: string) => (lang === "ar" ? "ar-DZ" : lang);
 
 export function PaymentsPanel() {
+  const { t, lang } = useI18n();
   const [tab, setTab] = useState<Tab>("pending");
   const [search, setSearch] = useState("");
   const [methodFilter, setMethodFilter] = useState<"all" | "edahabia" | "baridimob">("all");
@@ -101,7 +104,7 @@ export function PaymentsPanel() {
       qc.invalidateQueries({ queryKey: ["admin-payments"] });
       qc.invalidateQueries({ queryKey: ["admin-payments-all"] });
       qc.invalidateQueries({ queryKey: ["admin-subscriptions-all"] });
-      toast.success("تم تحديث الحالة");
+      toast.success(t("a.payments.status_updated"));
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -117,7 +120,7 @@ export function PaymentsPanel() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-subscriptions-all"] });
-      toast.success("تم تمديد الاشتراك");
+      toast.success(t("a.payments.sub_extended"));
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -132,7 +135,7 @@ export function PaymentsPanel() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-subscriptions-all"] });
-      toast.success("تم إلغاء الاشتراك");
+      toast.success(t("a.payments.sub_cancelled"));
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -177,18 +180,18 @@ export function PaymentsPanel() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-primary mb-3">مركز المدفوعات</h2>
+        <h2 className="text-xl font-bold text-primary mb-3">{t("a.payments.title")}</h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <Stat icon="⏳" label="قيد المراجعة" value={stats.pending} accent="amber" />
-          <Stat icon="✅" label="مقبولة اليوم" value={stats.approvedToday} accent="green" />
-          <Stat icon="💰" label="إيرادات الشهر" value={`${stats.revenueMonth.toLocaleString("ar-DZ")} دج`} accent="primary" />
-          <Stat icon="👥" label="مشتركون نشطون" value={stats.activeSubs} accent="primary" />
-          <Stat icon="⚠️" label="تنتهي قريبًا (7 أيام)" value={stats.expiringSoon} accent="red" />
+          <Stat icon="⏳" label={t("a.payments.pending")} value={stats.pending} accent="amber" />
+          <Stat icon="✅" label={t("a.payments.approved_today")} value={stats.approvedToday} accent="green" />
+          <Stat icon="💰" label={t("a.payments.revenue_month")} value={`${stats.revenueMonth.toLocaleString(PAY_LOCALE(lang))} DZD`} accent="primary" />
+          <Stat icon="👥" label={t("a.payments.active_subs")} value={stats.activeSubs} accent="primary" />
+          <Stat icon="⚠️" label={t("a.payments.expiring_soon")} value={stats.expiringSoon} accent="red" />
         </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
-        <ChartCard title="📈 الإيرادات الشهرية (آخر 6 أشهر)">
+        <ChartCard title={t("a.payments.chart.revenue")}>
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={stats.revenue6m}>
               <defs>
@@ -205,15 +208,15 @@ export function PaymentsPanel() {
             </AreaChart>
           </ResponsiveContainer>
         </ChartCard>
-        <ChartCard title="👥 مشتركون جدد ومُجددون (آخر 6 أشهر)">
+        <ChartCard title={t("a.payments.chart.subs")}>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={stats.subs6m}>
               <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
               <XAxis dataKey="m" fontSize={11} />
               <YAxis fontSize={11} width={30} />
               <Tooltip contentStyle={{ borderRadius: 12, fontSize: 12 }} />
-              <Bar dataKey="new" name="جدد" fill="#5A436F" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="renew" name="تجديدات" fill="#D4AF37" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="new" name={t("a.payments.chart.new")} fill="#5A436F" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="renew" name={t("a.payments.chart.renew")} fill="#D4AF37" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -223,17 +226,17 @@ export function PaymentsPanel() {
         <div className="flex gap-1 p-1 bg-muted rounded-full text-sm overflow-x-auto no-scrollbar">
           {(["pending", "approved", "rejected"] as Tab[]).map((s) => (
             <button key={s} onClick={() => setTab(s)} className={`shrink-0 px-4 py-1.5 rounded-full ${tab === s ? "bg-gradient-royal text-primary-foreground" : "text-muted-foreground"}`}>
-              {s === "pending" ? "قيد المراجعة" : s === "approved" ? "موافق عليها" : "مرفوضة"}
+              {s === "pending" ? t("a.payments.tab.pending") : s === "approved" ? t("a.payments.tab.approved") : t("a.payments.tab.rejected")}
             </button>
           ))}
         </div>
         <div className="flex gap-2 flex-wrap md:flex-nowrap">
           <select value={methodFilter} onChange={(e) => setMethodFilter(e.target.value as typeof methodFilter)} className="flex-1 md:flex-none px-3 py-2 min-h-11 rounded-full border border-border bg-background text-sm">
-            <option value="all">كل الطرق</option>
+            <option value="all">{t("a.payments.method.all")}</option>
             <option value="edahabia">Edahabia</option>
             <option value="baridimob">BaridiMob</option>
           </select>
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="بحث (اسم، بريد، رقم العملية)…" className="w-full md:w-72 max-w-full px-4 py-2 min-h-11 rounded-full border border-border bg-background text-sm" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("a.payments.search_placeholder")} className="w-full md:w-72 max-w-full px-4 py-2 min-h-11 rounded-full border border-border bg-background text-sm" />
         </div>
       </div>
 
@@ -241,52 +244,52 @@ export function PaymentsPanel() {
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-xs">
             <tr>
-              <th className="text-right p-3">الطالب</th>
-              <th className="text-right p-3">المبلغ</th>
-              <th className="text-right p-3">الطريقة</th>
-              <th className="text-right p-3">مرجع QR</th>
-              <th className="text-right p-3">رقم العملية</th>
-              <th className="text-right p-3">التاريخ</th>
-              <th className="text-right p-3">الوصل</th>
-              <th className="text-right p-3">إجراءات</th>
+              <th className="text-right p-3">{t("a.payments.table.student")}</th>
+              <th className="text-right p-3">{t("a.payments.table.amount")}</th>
+              <th className="text-right p-3">{t("a.payments.table.method")}</th>
+              <th className="text-right p-3">{t("a.payments.table.qr_ref")}</th>
+              <th className="text-right p-3">{t("a.payments.table.transaction_number")}</th>
+              <th className="text-right p-3">{t("a.payments.table.date")}</th>
+              <th className="text-right p-3">{t("a.payments.table.receipt")}</th>
+              <th className="text-right p-3">{t("a.payments.table.actions")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {filtered.map((p) => <PaymentRow key={p.id} payment={p} onReview={(status, notes) => review.mutate({ id: p.id, status, notes })} />)}
-            {filtered.length === 0 && <tr><td colSpan={8} className="text-center text-muted-foreground py-8">لا توجد طلبات</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={8} className="text-center text-muted-foreground py-8">{t("a.payments.no_requests")}</td></tr>}
           </tbody>
         </table>
       </div>
 
       <div className="rounded-2xl border border-border bg-card overflow-hidden">
         <div className="px-4 py-3 border-b border-border bg-muted/40 flex items-center justify-between flex-wrap gap-3">
-          <h3 className="font-bold text-primary text-sm">إدارة الاشتراكات</h3>
-          <span className="text-xs text-muted-foreground">{displaySubs.length} / {(subs ?? []).length} سجل</span>
+          <h3 className="font-bold text-primary text-sm">{t("a.payments.subs.title")}</h3>
+          <span className="text-xs text-muted-foreground">{t("a.payments.subs.count", { shown: displaySubs.length, total: (subs ?? []).length })}</span>
         </div>
         <div className="px-4 py-3 border-b border-border flex flex-col md:flex-row md:items-center gap-2">
           <input
             value={subSearch}
             onChange={(e) => setSubSearch(e.target.value)}
-            placeholder="بحث (اسم، بريد، مرجع الدفع)…"
+            placeholder={t("a.payments.subs.search_placeholder")}
             className="flex-1 px-4 py-2 min-h-11 rounded-full border border-border bg-background text-sm"
-            aria-label="بحث في الاشتراكات"
+            aria-label={t("a.payments.subs.search_aria")}
           />
           <select
             value={subSort}
             onChange={(e) => setSubSort(e.target.value as SortKey)}
             className="px-3 py-2 min-h-11 rounded-full border border-border bg-background text-sm"
-            aria-label="ترتيب حسب"
+            aria-label={t("a.payments.subs.sort_by")}
           >
-            <option value="name">الاسم</option>
-            <option value="start">تاريخ البدء</option>
-            <option value="end">تاريخ الانتهاء</option>
-            <option value="status">الحالة</option>
+            <option value="name">{t("a.payments.subs.sort.name")}</option>
+            <option value="start">{t("a.payments.subs.sort.start")}</option>
+            <option value="end">{t("a.payments.subs.sort.end")}</option>
+            <option value="status">{t("a.payments.subs.sort.status")}</option>
           </select>
           <button
             type="button"
             onClick={() => setSubSortDir((d) => (d === "asc" ? "desc" : "asc"))}
             className="px-3 py-2 min-h-11 rounded-full border border-border bg-background text-sm"
-            aria-label="عكس الاتجاه"
+            aria-label={t("a.payments.subs.reverse_dir")}
           >
             {subSortDir === "asc" ? "↑" : "↓"}
           </button>
@@ -297,19 +300,19 @@ export function PaymentsPanel() {
           <table className="w-full text-sm">
             <thead className="bg-muted/30 text-xs">
               <tr>
-                <th className="text-right p-3">الطالب</th>
-                <th className="text-right p-3">البريد</th>
-                <th className="text-right p-3">مرجع الدفع</th>
-                <th className="text-right p-3">الحالة</th>
-                <th className="text-right p-3">يبدأ</th>
-                <th className="text-right p-3">ينتهي</th>
-                <th className="text-right p-3">إجراءات</th>
+                <th className="text-right p-3">{t("a.payments.subs.table.student")}</th>
+                <th className="text-right p-3">{t("a.payments.subs.table.email")}</th>
+                <th className="text-right p-3">{t("a.payments.subs.table.payment_ref")}</th>
+                <th className="text-right p-3">{t("a.payments.subs.table.status")}</th>
+                <th className="text-right p-3">{t("a.payments.subs.table.starts")}</th>
+                <th className="text-right p-3">{t("a.payments.subs.table.ends")}</th>
+                <th className="text-right p-3">{t("a.payments.subs.table.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {displaySubs.slice(0, 100).map((s) => {
                 const expired = new Date(s.end_date) < new Date();
-                const name = s.full_name || s.email || "Unknown Student";
+                const name = s.full_name || s.email || t("a.payments.subs.unknown_student");
                 return (
                   <tr key={s.id} className="hover:bg-muted/30">
                     <td className="p-3 font-semibold text-primary">{name}</td>
@@ -322,8 +325,8 @@ export function PaymentsPanel() {
                         "bg-red-500/15 text-red-700 dark:text-red-400"
                       }`}>{expired && s.status === "active" ? "expired" : s.status}</span>
                     </td>
-                    <td className="p-3 text-xs">{new Date(s.start_date).toLocaleDateString("ar")}</td>
-                    <td className="p-3 text-xs">{new Date(s.end_date).toLocaleDateString("ar")}</td>
+                    <td className="p-3 text-xs">{new Date(s.start_date).toLocaleDateString(PAY_LOCALE(lang))}</td>
+                    <td className="p-3 text-xs">{new Date(s.end_date).toLocaleDateString(PAY_LOCALE(lang))}</td>
                     <td className="p-3">
                       <div className="flex gap-1.5 flex-wrap">
                         <button
@@ -331,15 +334,15 @@ export function PaymentsPanel() {
                           disabled={extendSub.isPending}
                           className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold disabled:opacity-50"
                         >
-                          تمديد 30 يوم
+                          {t("a.payments.subs.extend_30")}
                         </button>
                         {s.status === "active" && (
                           <button
-                            onClick={() => { if (confirm("إلغاء الاشتراك؟")) cancelSub.mutate(s); }}
+                            onClick={() => { if (confirm(t("a.payments.subs.cancel_confirm"))) cancelSub.mutate(s); }}
                             disabled={cancelSub.isPending}
                             className="px-3 py-1 rounded-full bg-red-600 text-white text-xs font-bold disabled:opacity-50"
                           >
-                            إلغاء
+                            {t("a.payments.subs.cancel")}
                           </button>
                         )}
                       </div>
@@ -348,7 +351,7 @@ export function PaymentsPanel() {
                 );
               })}
               {displaySubs.length === 0 && (
-                <tr><td colSpan={7} className="text-center text-muted-foreground py-8">لا توجد اشتراكات</td></tr>
+                <tr><td colSpan={7} className="text-center text-muted-foreground py-8">{t("a.payments.subs.empty")}</td></tr>
               )}
             </tbody>
           </table>
@@ -358,7 +361,7 @@ export function PaymentsPanel() {
         <div className="md:hidden divide-y divide-border">
           {displaySubs.slice(0, 100).map((s) => {
             const expired = new Date(s.end_date) < new Date();
-            const name = s.full_name || s.email || "Unknown Student";
+            const name = s.full_name || s.email || t("a.payments.subs.unknown_student");
             return (
               <div key={s.id} className="p-4 space-y-2">
                 <div className="flex items-start justify-between gap-2">
@@ -374,8 +377,8 @@ export function PaymentsPanel() {
                 </div>
                 <div className="text-[11px] text-muted-foreground font-mono break-all">{s.payment_ref ?? "—"}</div>
                 <div className="flex justify-between text-[11px] text-muted-foreground">
-                  <span>يبدأ: {new Date(s.start_date).toLocaleDateString("ar")}</span>
-                  <span>ينتهي: {new Date(s.end_date).toLocaleDateString("ar")}</span>
+                  <span>{t("a.payments.subs.starts_label", { date: new Date(s.start_date).toLocaleDateString(PAY_LOCALE(lang)) })}</span>
+                  <span>{t("a.payments.subs.ends_label", { date: new Date(s.end_date).toLocaleDateString(PAY_LOCALE(lang)) })}</span>
                 </div>
                 <div className="flex gap-2 pt-1">
                   <button
@@ -383,15 +386,15 @@ export function PaymentsPanel() {
                     disabled={extendSub.isPending}
                     className="flex-1 min-h-11 px-3 rounded-full bg-primary text-primary-foreground text-xs font-bold disabled:opacity-50"
                   >
-                    تمديد 30 يوم
+                    {t("a.payments.subs.extend_30")}
                   </button>
                   {s.status === "active" && (
                     <button
-                      onClick={() => { if (confirm("إلغاء الاشتراك؟")) cancelSub.mutate(s); }}
+                      onClick={() => { if (confirm(t("a.payments.subs.cancel_confirm"))) cancelSub.mutate(s); }}
                       disabled={cancelSub.isPending}
                       className="flex-1 min-h-11 px-3 rounded-full bg-red-600 text-white text-xs font-bold disabled:opacity-50"
                     >
-                      إلغاء
+                      {t("a.payments.subs.cancel")}
                     </button>
                   )}
                 </div>
@@ -399,7 +402,7 @@ export function PaymentsPanel() {
             );
           })}
           {displaySubs.length === 0 && (
-            <div className="text-center text-muted-foreground py-8 text-sm">لا توجد اشتراكات</div>
+            <div className="text-center text-muted-foreground py-8 text-sm">{t("a.payments.subs.empty")}</div>
           )}
         </div>
       </div>
@@ -483,6 +486,7 @@ function computeStats(payments: Array<{ status: string; amount: number; created_
 }
 
 function PaymentRow({ payment, onReview }: { payment: PaymentRowT; onReview: (status: "approved" | "rejected", notes?: string) => void }) {
+  const { t, lang } = useI18n();
   const [showReceipt, setShowReceipt] = useState(false);
   const [showReject, setShowReject] = useState(false);
   const [notes, setNotes] = useState("");
@@ -498,22 +502,22 @@ function PaymentRow({ payment, onReview }: { payment: PaymentRowT; onReview: (st
         <td className="p-3 text-xs">{METHOD_LABEL[payment.payment_method ?? "edahabia"] ?? "—"}</td>
         <td className="p-3 font-mono text-[11px] text-muted-foreground" title={payment.payment_ref ?? ""}>{payment.payment_ref ? payment.payment_ref.slice(0, 22) + "…" : "—"}</td>
         <td className="p-3 font-mono">{payment.transaction_number}</td>
-        <td className="p-3 text-xs">{new Date(payment.payment_date).toLocaleDateString("ar")}</td>
+        <td className="p-3 text-xs">{new Date(payment.payment_date).toLocaleDateString(PAY_LOCALE(lang))}</td>
         <td className="p-3">
           <button
             type="button"
             onClick={() => setShowReceipt(true)}
             className="text-primary underline text-xs min-h-11 px-2"
-            aria-label="معاينة الوصل"
+            aria-label={t("a.payments.preview_receipt")}
           >
-            معاينة الوصل
+            {t("a.payments.preview_receipt")}
           </button>
         </td>
         <td className="p-3">
           {payment.status === "pending" ? (
             <div className="flex gap-1.5">
-              <button onClick={() => onReview("approved")} className="px-3 py-1 rounded-full bg-green-600 text-white text-xs font-bold">قبول</button>
-              <button onClick={() => setShowReject(true)} className="px-3 py-1 rounded-full bg-red-600 text-white text-xs font-bold">رفض</button>
+              <button onClick={() => onReview("approved")} className="px-3 py-1 rounded-full bg-green-600 text-white text-xs font-bold">{t("a.payments.approve")}</button>
+              <button onClick={() => setShowReject(true)} className="px-3 py-1 rounded-full bg-red-600 text-white text-xs font-bold">{t("a.payments.reject")}</button>
             </div>
           ) : (
             <div className="text-xs text-muted-foreground">{payment.admin_notes ?? "—"}</div>
@@ -524,17 +528,17 @@ function PaymentRow({ payment, onReview }: { payment: PaymentRowT; onReview: (st
         open={showReceipt}
         onOpenChange={setShowReceipt}
         receiptPath={payment.receipt_file_url}
-        title={`وصل · ${payment.full_name}`}
+        title={t("a.payments.receipt_title", { name: payment.full_name })}
       />
       {showReject && (
         <tr><td colSpan={7}>
           <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-6" onClick={() => setShowReject(false)}>
             <div className="bg-card rounded-2xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-              <h3 className="font-bold text-primary mb-3">سبب الرفض</h3>
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm" placeholder="اشرح للطالب سبب رفض الطلب…" />
+              <h3 className="font-bold text-primary mb-3">{t("a.payments.reject_reason_title")}</h3>
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm" placeholder={t("a.payments.reject_reason_placeholder")} />
               <div className="flex gap-2 justify-end mt-3">
-                <button onClick={() => setShowReject(false)} className="px-4 py-2 rounded-full bg-muted text-xs">إلغاء</button>
-                <button onClick={() => { onReview("rejected", notes); setShowReject(false); }} className="px-4 py-2 rounded-full bg-red-600 text-white text-xs font-bold">تأكيد الرفض</button>
+                <button onClick={() => setShowReject(false)} className="px-4 py-2 rounded-full bg-muted text-xs">{t("a.payments.subs.cancel")}</button>
+                <button onClick={() => { onReview("rejected", notes); setShowReject(false); }} className="px-4 py-2 rounded-full bg-red-600 text-white text-xs font-bold">{t("a.payments.confirm_reject")}</button>
               </div>
             </div>
           </div>

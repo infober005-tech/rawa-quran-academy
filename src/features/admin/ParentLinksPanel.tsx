@@ -1,12 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
 type Profile = { id: string; full_name: string | null; email: string | null };
 type Link = { id: string; parent_user_id: string; student_user_id: string; parent: Profile; student: Profile };
 
 export function ParentLinksPanel() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [parentId, setParentId] = useState("");
   const [studentId, setStudentId] = useState("");
@@ -48,12 +50,12 @@ export function ParentLinksPanel() {
 
   const create = useMutation({
     mutationFn: async () => {
-      if (!parentId || !studentId) throw new Error("Choose parent and student");
+      if (!parentId || !studentId) throw new Error(t("a.parents.choose_parent_student"));
       const { error } = await supabase.from("parent_links").insert({ parent_user_id: parentId, student_user_id: studentId });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Linked");
+      toast.success(t("a.parents.linked"));
       setParentId("");
       setStudentId("");
       qc.invalidateQueries({ queryKey: ["admin-parent-links"] });
@@ -67,7 +69,7 @@ export function ParentLinksPanel() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Removed");
+      toast.success(t("a.parents.removed"));
       qc.invalidateQueries({ queryKey: ["admin-parent-links"] });
     },
   });
@@ -76,11 +78,11 @@ export function ParentLinksPanel() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-primary">Parent ↔ Student Links</h2>
+      <h2 className="text-xl font-bold text-primary">{t("a.parents.title")}</h2>
 
       <div className="p-5 rounded-2xl bg-card border border-border shadow-soft grid md:grid-cols-3 gap-3">
         <select value={parentId} onChange={(e) => setParentId(e.target.value)} className={input}>
-          <option value="">— Parent —</option>
+          <option value="">{t("a.parents.select_parent")}</option>
           {parents?.map((p) => (
             <option key={p.id} value={p.id}>
               {p.full_name} {p.email ? `(${p.email})` : ""}
@@ -88,7 +90,7 @@ export function ParentLinksPanel() {
           ))}
         </select>
         <select value={studentId} onChange={(e) => setStudentId(e.target.value)} className={input}>
-          <option value="">— Student —</option>
+          <option value="">{t("a.parents.select_student")}</option>
           {students?.map((s) => (
             <option key={s.id} value={s.id}>
               {s.full_name} {s.email ? `(${s.email})` : ""}
@@ -100,11 +102,11 @@ export function ParentLinksPanel() {
           disabled={create.isPending}
           className="px-4 py-2 rounded-xl bg-gradient-royal text-primary-foreground text-sm font-semibold"
         >
-          + Link
+          {t("a.parents.link")}
         </button>
         {(!parents || parents.length === 0) && (
           <div className="md:col-span-3 text-xs text-muted-foreground">
-            No users with role <span className="font-mono">parent</span> yet. Assign the parent role from the Users tab first.
+            {t("a.parents.no_parents")}<span className="font-mono">parent</span>{t("a.parents.no_parents_suffix")}
           </div>
         )}
       </div>
@@ -118,13 +120,13 @@ export function ParentLinksPanel() {
               <span className="font-semibold">{l.student?.full_name ?? "?"}</span>
             </div>
             <button onClick={() => remove.mutate(l.id)} className="text-xs text-destructive hover:underline">
-              Remove
+              {t("a.parents.remove")}
             </button>
           </div>
         ))}
         {(!links || links.length === 0) && (
           <div className="p-10 text-center text-muted-foreground border border-dashed rounded-2xl">
-            No parent links yet.
+            {t("a.parents.empty")}
           </div>
         )}
       </div>

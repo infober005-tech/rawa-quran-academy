@@ -49,8 +49,8 @@ function AdminPage() {
     { id: "events", label: t("dir.events") },
     { id: "calendar", label: t("dir.calendar") },
     { id: "parents", label: "Parent Links" },
-    { id: "payments", label: "💳 المدفوعات" },
-    { id: "payment_settings", label: "⚙️ إعدادات الدفع" },
+    { id: "payments", label: t("a.nav.payments") },
+    { id: "payment_settings", label: t("a.nav.payment_settings") },
   ];
 
   return (

@@ -2,6 +2,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Environment } from "@react-three/drei";
 import logoAsset from "@/assets/rawa-logo.png.asset.json";
+import { useI18n } from "@/lib/i18n";
 import { useLogoAnimation, isWebGLAvailable } from "@/hooks/useLogoAnimation";
 import { PremiumRawaLogo } from "@/components/PremiumRawaLogo";
 import { Lights } from "@/components/Lights";
@@ -45,6 +46,7 @@ function playChime(muted: boolean) {
 }
 
 export function Logo3D() {
+  const { t } = useI18n();
   const [mounted, setMounted] = useState(false);
   const [webgl, setWebgl] = useState(true);
   const [hovered, setHovered] = useState(false);
@@ -82,7 +84,7 @@ export function Logo3D() {
         <div className="absolute inset-8 rounded-full bg-gradient-to-br from-[#C7A35C]/40 to-[#5E4B7B]/40 blur-3xl animate-pulse" />
         <img
           src={logoAsset.url}
-          alt="شعار رواء"
+          alt={t("p.logo.alt")}
           className="relative w-[78%] drop-shadow-[0_30px_60px_rgba(94,75,123,0.5)] animate-float"
         />
       </div>
@@ -196,7 +198,7 @@ export function Logo3D() {
       <button
         type="button"
         onClick={onToggleMute}
-        aria-label={muted ? "تشغيل الصوت" : "كتم الصوت"}
+        aria-label={muted ? t("p.logo.play_sound") : t("p.logo.mute_sound")}
         className="absolute bottom-3 left-3 z-10 grid h-9 w-9 place-items-center rounded-full border border-[#C7A35C]/40 bg-black/40 text-[#f5d68a] backdrop-blur-md transition hover:bg-black/60"
       >
         {muted ? (

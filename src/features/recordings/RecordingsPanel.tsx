@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
+import { useI18n } from "@/lib/i18n";
 
 type Recording = {
   id: string;
@@ -21,6 +22,7 @@ export function RecordingsPanel({
   halaqaId, allowUpload = false, allowModerate = false,
 }: { halaqaId?: string; allowUpload?: boolean; allowModerate?: boolean }) {
   const { user } = useAuth();
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [playing, setPlaying] = useState<string | null>(null);
   useRealtimeInvalidate(["session_recordings"], ["recordings"]);
@@ -53,7 +55,7 @@ export function RecordingsPanel({
       });
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("تم رفع التسجيل"); qc.invalidateQueries({ queryKey: ["recordings"] }); },
+    onSuccess: () => { toast.success(t("f.recordings.upload_success")); qc.invalidateQueries({ queryKey: ["recordings"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -63,23 +65,23 @@ export function RecordingsPanel({
       const { error } = await supabase.from("session_recordings").delete().eq("id", r.id);
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("تم الحذف"); qc.invalidateQueries({ queryKey: ["recordings"] }); },
+    onSuccess: () => { toast.success(t("f.recordings.delete_success")); qc.invalidateQueries({ queryKey: ["recordings"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const sign = async (path: string) => {
     const { data, error } = await supabase.storage.from("recordings").createSignedUrl(path, 60 * 60);
-    if (error || !data?.signedUrl) { toast.error("تعذر فتح التسجيل"); return null; }
+    if (error || !data?.signedUrl) { toast.error(t("f.recordings.open_error")); return null; }
     return data.signedUrl;
   };
 
   return (
     <div className="p-6 rounded-2xl bg-card border border-border shadow-soft">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <h2 className="text-xl font-bold text-primary">🎥 تسجيلات الحلقة</h2>
+        <h2 className="text-xl font-bold text-primary">{t("f.recordings.title")}</h2>
         {allowUpload && halaqaId && (
           <label className="px-4 py-2 rounded-full bg-gradient-royal text-primary-foreground text-xs font-bold cursor-pointer">
-            {upload.isPending ? "...جاري الرفع" : "+ رفع تسجيل"}
+            {upload.isPending ? t("f.recordings.upload_uploading") : t("f.recordings.upload_btn")}
             <input
               type="file" accept="video/*,audio/*" className="hidden"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) upload.mutate(f); e.currentTarget.value = ""; }}
@@ -92,7 +94,7 @@ export function RecordingsPanel({
           <div key={r.id} className="py-3">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="min-w-0">
-                <div className="font-semibold text-foreground truncate">{r.title || "تسجيل"}</div>
+                <div className="font-semibold text-foreground truncate">{r.title || t("f.recordings.untitled")}</div>
                 <div className="text-xs text-muted-foreground">
                   {new Date(r.created_at).toLocaleString()} {r.size_bytes ? `· ${(r.size_bytes / (1024 * 1024)).toFixed(1)} MB` : ""}
                 </div>
@@ -101,19 +103,19 @@ export function RecordingsPanel({
                 <button
                   onClick={async () => { const url = await sign(r.file_path); if (url) setPlaying(url); }}
                   className="px-3 py-1.5 rounded-full bg-gold/20 text-gold text-xs font-bold"
-                >▶ تشغيل</button>
+                >{t("f.recordings.play")}</button>
                 {allowModerate && (
                   <button
-                    onClick={() => { if (confirm("حذف هذا التسجيل؟")) remove.mutate(r); }}
+                    onClick={() => { if (confirm(t("f.recordings.delete_confirm"))) remove.mutate(r); }}
                     className="px-3 py-1.5 rounded-full bg-red-500/15 text-red-600 text-xs font-bold"
-                  >🗑 حذف</button>
+                  >{t("f.recordings.delete")}</button>
                 )}
               </div>
             </div>
           </div>
         ))}
         {(!recordings || recordings.length === 0) && (
-          <div className="py-8 text-center text-muted-foreground text-sm">لا توجد تسجيلات بعد.</div>
+          <div className="py-8 text-center text-muted-foreground text-sm">{t("f.recordings.empty")}</div>
         )}
       </div>
 

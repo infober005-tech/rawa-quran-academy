@@ -39,6 +39,7 @@ type HalaqaInfo = {
 
 export function ParentDashboard() {
   const { user, profile } = useAuth();
+  const { t } = useI18n();
   const [activeChild, setActiveChild] = useState<string | null>(null);
   useRealtimeInvalidate(
     ["attendance", "evaluations", "halaqas"],
@@ -70,11 +71,11 @@ export function ParentDashboard() {
         <div className="absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-gold/10 blur-3xl" />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
           <div className="min-w-0">
-            <div className="text-xs uppercase tracking-[0.3em] text-gold/90">Parent Portal</div>
+            <div className="text-xs uppercase tracking-[0.3em] text-gold/90">{t("d.parent.portal")}</div>
             <h1 className="mt-2 text-2xl md:text-3xl font-black text-white">
-              مرحباً، {profile?.full_name} 👨‍👩‍👧
+              {t("d.parent.welcome_comma", { name: profile?.full_name ?? "" })}
             </h1>
-            <p className="mt-1 text-sm text-white/70">تابع رحلة أبنائك القرآنية بكل سهولة</p>
+            <p className="mt-1 text-sm text-white/70">{t("d.parent.follow_journey")}</p>
           </div>
           {children && children.length > 1 && (
             <div className="flex gap-2 flex-wrap">
@@ -99,9 +100,9 @@ export function ParentDashboard() {
       {!children || children.length === 0 ? (
         <div className="p-12 rounded-3xl bg-card border border-dashed border-gold/30 text-center">
           <div className="text-5xl mb-3">🔗</div>
-          <h2 className="text-lg font-bold text-primary mb-1">لم يتم ربط أي طالب بحسابك بعد</h2>
+          <h2 className="text-lg font-bold text-primary mb-1">{t("d.parent.no_child_linked")}</h2>
           <p className="text-sm text-muted-foreground">
-            يرجى التواصل مع إدارة الأكاديمية لربط حساب ابنك بحسابك.
+            {t("d.parent.no_child_linked_desc")}
           </p>
         </div>
       ) : (
@@ -113,7 +114,7 @@ export function ParentDashboard() {
 
 function ChildPanel({ child, parentName }: { child: Child; parentName: string }) {
   const { user } = useAuth();
-  useI18n();
+  const { t } = useI18n();
 
   const { data: halaqa } = useQuery({
     queryKey: ["parent-child-halaqa", child.id],
@@ -271,9 +272,9 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
           <LogoPremium3D size="sm" halo />
           <div className="min-w-0">
             <h1 className="text-xl md:text-2xl font-bold text-primary truncate">
-              {parentName ? `أهلًا ${parentName}` : "لوحة ولي الأمر"}
+              {parentName ? t("d.parent.hello_name", { name: parentName }) : t("d.parent.dashboard_title")}
             </h1>
-            <p className="text-xs text-muted-foreground truncate">رواء — أكاديمية القرآن الكريم</p>
+            <p className="text-xs text-muted-foreground truncate">{t("d.academy_subtitle")}</p>
           </div>
         </div>
       </div>
@@ -292,7 +293,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
         <div className="rounded-3xl border border-gold/30 bg-gradient-to-br from-card to-card/40 backdrop-blur-xl p-6 shadow-soft">
           <div className="flex items-center justify-between mb-5">
             <h3 className="text-lg font-bold text-primary flex items-center gap-2">
-              📖 تتبّع الحفظ
+              📖 {t("d.parent.memorization_tracking")}
             </h3>
             <span className="px-3 py-1 rounded-full bg-gold/20 text-gold text-xs font-bold">
               {stats.memAvg}%
@@ -302,24 +303,24 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  السورة الحالية
+                  {t("d.parent.current_surah")}
                 </div>
                 <div className="text-lg font-black text-primary mt-1">
-                  {halaqa?.current_surah ?? "سورة الكهف"}
+                  {halaqa?.current_surah ?? t("d.parent.default_current_surah")}
                 </div>
               </div>
               <div className="p-4 rounded-2xl bg-gold/10 border border-gold/20">
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  الهدف
+                  {t("d.parent.target")}
                 </div>
                 <div className="text-lg font-black text-gold-foreground mt-1">
-                  {halaqa?.target_surah ?? "سورة مريم"}
+                  {halaqa?.target_surah ?? t("d.parent.default_target_surah")}
                 </div>
               </div>
             </div>
             <Progress value={stats.memAvg} className="h-3" />
             <p className="text-xs text-muted-foreground text-center">
-              متوسط نسبة الحفظ من آخر التقييمات
+              {t("d.parent.memorization_avg_desc")}
             </p>
           </div>
         </div>
@@ -327,12 +328,12 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
         <div className="rounded-3xl border border-border bg-card/60 backdrop-blur-xl p-6 shadow-soft">
           <div className="flex items-center justify-between mb-5">
             <h3 className="text-lg font-bold text-primary flex items-center gap-2">
-              📊 سجل الحضور الشهري
+              📊 {t("d.parent.monthly_attendance")}
             </h3>
             <div className="flex gap-3 text-[10px]">
-              <LegendDot color="bg-emerald-500" label="حاضر" />
-              <LegendDot color="bg-amber-500" label="متأخر" />
-              <LegendDot color="bg-rose-500" label="غائب" />
+              <LegendDot color="bg-emerald-500" label={t("common.present")} />
+              <LegendDot color="bg-amber-500" label={t("common.late")} />
+              <LegendDot color="bg-rose-500" label={t("common.absent")} />
             </div>
           </div>
           <div className="flex items-end justify-between gap-2 h-40">
@@ -376,17 +377,17 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
       <div className="grid lg:grid-cols-[1.6fr_1fr] gap-6">
         <div className="rounded-3xl border border-border bg-card/60 backdrop-blur-xl p-6 shadow-soft">
           <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-            ⭐ آخر التقييمات
+            ⭐ {t("d.parent.latest_evaluations")}
           </h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-xs text-muted-foreground border-b border-border">
-                  <th className="text-start py-2 font-semibold">التاريخ</th>
-                  <th className="text-start py-2 font-semibold">المعلم</th>
-                  <th className="text-center py-2 font-semibold">التجويد</th>
-                  <th className="text-center py-2 font-semibold">الحفظ</th>
-                  <th className="text-start py-2 font-semibold">ملاحظات</th>
+                  <th className="text-start py-2 font-semibold">{t("common.date")}</th>
+                  <th className="text-start py-2 font-semibold">{t("common.teacher")}</th>
+                  <th className="text-center py-2 font-semibold">{t("d.score.tajweed")}</th>
+                  <th className="text-center py-2 font-semibold">{t("d.score.memorization")}</th>
+                  <th className="text-start py-2 font-semibold">{t("common.notes")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
@@ -412,7 +413,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
                 {(!evals || evals.length === 0) && (
                   <tr>
                     <td colSpan={5} className="py-8 text-center text-muted-foreground text-sm">
-                      لا توجد تقييمات بعد
+                      {t("d.parent.no_evaluations")}
                     </td>
                   </tr>
                 )}
@@ -423,7 +424,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
 
         <div className="rounded-3xl border border-gold/30 bg-gradient-to-br from-gold/5 via-card to-card p-6 shadow-soft">
           <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-            📝 ملاحظات المعلمين
+            📝 {t("d.parent.teacher_notes")}
           </h3>
           <div className="space-y-3 max-h-80 overflow-y-auto pe-1">
             {(notes ?? []).map((n) => (
@@ -439,8 +440,8 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
             ))}
             {(!notes || notes.length === 0) && (
               <>
-                <NoteSample text="أداء ممتاز هذا الأسبوع." />
-                <NoteSample text="تحسن ملحوظ في مخارج الحروف." />
+                <NoteSample text={t("d.parent.sample_note1")} />
+                <NoteSample text={t("d.parent.sample_note2")} />
               </>
             )}
           </div>
@@ -451,7 +452,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
       <div className="grid lg:grid-cols-[1.4fr_1fr] gap-6">
         <div className="rounded-3xl border border-border bg-card/60 backdrop-blur-xl p-6 shadow-soft">
           <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-            🗓️ الفعاليات القادمة
+            🗓️ {t("d.upcoming_events")}
           </h3>
           <div className="grid sm:grid-cols-2 gap-3">
             {(events ?? []).map((ev) => (
@@ -462,7 +463,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="text-xs text-gold font-bold">
-                      {ev.event_type ?? ev.category ?? "فعالية"}
+                      {ev.event_type ?? ev.category ?? t("d.parent.event_default")}
                     </div>
                     <div className="font-bold text-primary truncate">{ev.title}</div>
                   </div>
@@ -477,20 +478,20 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
             ))}
             {(!events || events.length === 0) && (
               <>
-                <EventSample title="دورة تجويد" type="دورة تعليمية" />
-                <EventSample title="لقاء تربوي" type="لقاء" />
-                <EventSample title="مسابقة قرآنية" type="مسابقة" />
+                <EventSample title={t("d.parent.sample_event1")} type={t("d.parent.sample_event1_type")} />
+                <EventSample title={t("d.parent.sample_event2")} type={t("d.parent.sample_event2_type")} />
+                <EventSample title={t("d.parent.sample_event3")} type={t("d.parent.sample_event3_type")} />
               </>
             )}
           </div>
         </div>
 
         <div className="rounded-3xl border border-gold/30 bg-gradient-to-br from-primary/95 to-primary/80 p-6 shadow-xl text-white">
-          <h3 className="text-lg font-bold flex items-center gap-2 mb-4">🎯 أهداف هذا الأسبوع</h3>
+          <h3 className="text-lg font-bold flex items-center gap-2 mb-4">🎯 {t("d.parent.weekly_goals")}</h3>
           <div className="space-y-3">
-            <Goal label="الحفظ هذا الأسبوع" value="سورة الكهف · 20 آية" pct={70} />
-            <Goal label="المراجعة المطلوبة" value="الأجزاء 15-16" pct={45} />
-            <Goal label="المتون المطلوبة" value="تحفة الأطفال" pct={85} />
+            <Goal label={t("d.parent.goal_memorization")} value={t("d.parent.goal_memorization_value")} pct={70} />
+            <Goal label={t("d.parent.goal_review")} value={t("d.parent.goal_review_value")} pct={45} />
+            <Goal label={t("d.parent.goal_texts")} value={t("d.parent.goal_texts_value")} pct={85} />
           </div>
         </div>
       </div>
@@ -499,7 +500,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
       <div className="grid lg:grid-cols-[1.4fr_1fr] gap-6">
         <div className="rounded-3xl border border-border bg-card/60 backdrop-blur-xl p-6 shadow-soft">
           <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-            🔔 آخر الإشعارات
+            🔔 {t("d.parent.latest_notifications")}
           </h3>
           <div className="divide-y divide-border/60">
             {(notifs ?? []).map((n) => (
@@ -521,20 +522,20 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
               </div>
             ))}
             {(!notifs || notifs.length === 0) && (
-              <div className="py-6 text-center text-muted-foreground text-sm">لا توجد إشعارات</div>
+              <div className="py-6 text-center text-muted-foreground text-sm">{t("d.parent.no_notifications")}</div>
             )}
           </div>
         </div>
 
         <div className="rounded-3xl border border-border bg-card/60 backdrop-blur-xl p-6 shadow-soft">
           <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-            ⚡ إجراءات سريعة
+            ⚡ {t("d.parent.quick_actions")}
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            <QuickAction icon="⭐" label="عرض التقييمات" />
-            <QuickAction icon="✅" label="عرض الحضور" />
-            <QuickAction icon="✉️" label="التواصل مع الإدارة" />
-            <QuickAction icon="⬇️" label="تحميل التقرير" />
+            <QuickAction icon="⭐" label={t("d.parent.view_evaluations")} to="/dashboard" />
+            <QuickAction icon="✅" label={t("d.parent.view_attendance")} to="/dashboard" />
+            <QuickAction icon="✉️" label={t("d.parent.contact_admin")} to="/notifications" />
+            <QuickAction icon="⬇️" label={t("d.parent.download_report")} to="/dashboard" />
           </div>
         </div>
       </div>
@@ -548,6 +549,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
 // ===== small subcomponents =====
 
 function LiveStatus({ halaqa }: { halaqa: HalaqaInfo | null | undefined }) {
+  const { t } = useI18n();
   const live = !!halaqa?.live_session_active;
   return (
     <div
@@ -564,13 +566,13 @@ function LiveStatus({ halaqa }: { halaqa: HalaqaInfo | null | undefined }) {
           }`}
         />
         <span className="text-xs font-bold">
-          {live ? "🟢 الحلقة مباشرة الآن" : "⚫ لا توجد حلقة مباشرة"}
+          {live ? `🟢 ${t("d.parent.live_now_label")}` : `⚫ ${t("d.parent.no_live_now")}`}
         </span>
       </div>
       {live && halaqa?.meeting_link && (
         <Button asChild size="sm" className="w-full mt-3 bg-emerald-500 hover:bg-emerald-600 text-white">
           <a href={halaqa.meeting_link} target="_blank" rel="noreferrer">
-            انضم الآن ←
+            {t("d.parent.join_now")} ←
           </a>
         </Button>
       )}
@@ -718,16 +720,10 @@ function Goal({ label, value, pct }: { label: string; value: string; pct: number
   );
 }
 
-function QuickAction({ icon, label }: { icon: string; label: string }) {
-  const map: Record<string, string> = {
-    "عرض التقييمات": "/dashboard",
-    "عرض الحضور": "/dashboard",
-    "التواصل مع الإدارة": "/notifications",
-    "تحميل التقرير": "/dashboard",
-  };
+function QuickAction({ icon, label, to }: { icon: string; label: string; to?: string }) {
   return (
     <Link
-      to={map[label] ?? "/dashboard"}
+      to={to ?? "/dashboard"}
       className="group flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-gradient-to-br from-primary/5 to-gold/5 border border-primary/10 hover:border-gold/40 hover:shadow-md transition text-center"
     >
       <span className="text-2xl group-hover:scale-110 transition-transform">{icon}</span>
@@ -767,6 +763,7 @@ function PremiumHeroCard({
   lastEval: Eval | null;
   lastNote: NoteRow | null;
 }) {
+  const { t } = useI18n();
   const fmt = (d?: string | null) =>
     d ? new Date(d).toLocaleDateString("ar", { day: "numeric", month: "long" }) : "—";
 
@@ -853,21 +850,21 @@ function PremiumHeroCard({
             </div>
             <div className="min-w-0">
               <div className="text-[10px] uppercase tracking-[0.3em] text-gold/90 font-bold">
-                طالب أكاديمية رواء
+                {t("d.parent.academy_student")}
               </div>
               <h2 className="text-2xl md:text-3xl font-black text-white truncate mt-1 drop-shadow">
                 {child.full_name}
               </h2>
               <div className="text-xs text-white/70 mt-1 truncate">
-                ولي الأمر: <span className="text-gold font-semibold">{parentName}</span>
+                {t("d.parent.guardian")}: <span className="text-gold font-semibold">{parentName}</span>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2.5">
-            <HeroChip icon="🕌" label="الحلقة" value={halaqa?.name ?? "—"} />
-            <HeroChip icon="👤" label="المعلم" value={halaqa?.teacher?.full_name ?? "—"} />
-            <HeroChip icon="🛡️" label="المشرف" value={halaqa?.supervisor?.full_name ?? "—"} />
+            <HeroChip icon="🕌" label={t("dash.my_halaqa")} value={halaqa?.name ?? "—"} />
+            <HeroChip icon="👤" label={t("common.teacher")} value={halaqa?.teacher?.full_name ?? "—"} />
+            <HeroChip icon="🛡️" label={t("common.supervisor")} value={halaqa?.supervisor?.full_name ?? "—"} />
           </div>
 
           <LiveStatus halaqa={halaqa} />
@@ -878,12 +875,12 @@ function PremiumHeroCard({
         {/* === Stats + Progress ring === */}
         <div className="grid gap-5 lg:grid-cols-[1fr_auto]">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <HeroStat icon="✅" label="نسبة الحضور" value={`${stats.rate}%`} accent="from-emerald-400 to-emerald-600" />
-            <HeroStat icon="📖" label="الحفظ الأسبوعي" value={`${stats.memAvg}%`} accent="from-gold to-amber-500" />
-            <HeroStat icon="🕌" label="عدد الحلقات" value={`${stats.totalSessions}`} accent="from-fuchsia-400 to-fuchsia-600" />
+            <HeroStat icon="✅" label={t("sup.attendance_rate")} value={`${stats.rate}%`} accent="from-emerald-400 to-emerald-600" />
+            <HeroStat icon="📖" label={t("d.parent.weekly_memorization")} value={`${stats.memAvg}%`} accent="from-gold to-amber-500" />
+            <HeroStat icon="🕌" label={t("d.parent.sessions_count")} value={`${stats.totalSessions}`} accent="from-fuchsia-400 to-fuchsia-600" />
             <HeroStat
               icon="⭐"
-              label="آخر تقييم"
+              label={t("d.parent.last_evaluation")}
               value={lastEvalScore != null ? `${lastEvalScore}%` : "—"}
               accent="from-sky-400 to-indigo-500"
             />
@@ -914,7 +911,7 @@ function PremiumHeroCard({
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                 <div className="text-3xl font-black text-white">{stats.memAvg}%</div>
-                <div className="text-[10px] text-gold/90 font-bold tracking-wider mt-0.5">التقدم في الحفظ</div>
+                <div className="text-[10px] text-gold/90 font-bold tracking-wider mt-0.5">{t("d.parent.progress_in_memorization")}</div>
               </div>
             </div>
           </div>
@@ -923,19 +920,19 @@ function PremiumHeroCard({
         {/* === Timeline === */}
         <div className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-5">
           <h4 className="text-sm font-bold text-gold mb-4 flex items-center gap-2">
-            <span>🕰️</span> الخط الزمني للنشاط
+            <span>🕰️</span> {t("d.parent.activity_timeline")}
           </h4>
           <div className="relative grid gap-4 md:grid-cols-3">
-            <TimelineItem icon="📚" label="آخر حصة" value={fmt(lastSessionDate)} dotClass="bg-emerald-400" />
+            <TimelineItem icon="📚" label={t("d.parent.last_session")} value={fmt(lastSessionDate)} dotClass="bg-emerald-400" />
             <TimelineItem
               icon="📝"
-              label="آخر واجب"
+              label={t("d.parent.last_homework")}
               value={lastNote ? fmt(lastNote.created_at) : "—"}
               dotClass="bg-gold"
             />
             <TimelineItem
               icon="⭐"
-              label="آخر تقييم"
+              label={t("d.parent.last_evaluation")}
               value={lastEval ? fmt(lastEval.created_at) : "—"}
               dotClass="bg-fuchsia-400"
             />
@@ -944,9 +941,9 @@ function PremiumHeroCard({
 
         {/* === Quick actions === */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <HeroAction icon="✅" label="متابعة الحضور" to="/dashboard" />
-          <HeroAction icon="📊" label="التقارير" to="/dashboard" />
-          <HeroAction icon="✉️" label="التواصل مع المعلم" to="/notifications" />
+          <HeroAction icon="✅" label={t("d.parent.track_attendance")} to="/dashboard" />
+          <HeroAction icon="📊" label={t("sup.reports")} to="/dashboard" />
+          <HeroAction icon="✉️" label={t("d.parent.contact_teacher")} to="/notifications" />
         </div>
       </div>
     </div>

@@ -3,8 +3,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { usePaymentSettings } from "@/hooks/use-subscription";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 export function PaymentSettingsPanel() {
+  const { t } = useI18n();
   const { data: settings } = usePaymentSettings();
   const qc = useQueryClient();
   const [form, setForm] = useState<Record<string, string | number>>({});
@@ -45,7 +47,7 @@ export function PaymentSettingsPanel() {
       const { error } = await supabase.from("payment_settings").update(payload).eq("id", settings.id);
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("تم الحفظ"); qc.invalidateQueries({ queryKey: ["payment-settings"] }); },
+    onSuccess: () => { toast.success(t("a.pay_settings.saved")); qc.invalidateQueries({ queryKey: ["payment-settings"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -53,27 +55,27 @@ export function PaymentSettingsPanel() {
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); save.mutate(); }} className="space-y-4 max-w-3xl">
-      <h2 className="text-xl font-bold text-primary">إعدادات الاشتراك والدفع</h2>
+      <h2 className="text-xl font-bold text-primary">{t("a.pay_settings.title")}</h2>
       <div className="grid sm:grid-cols-2 gap-3">
-        <Field label="اسم الخطة" value={String(form.subscription_name_ar ?? "")} onChange={(v) => setForm({ ...form, subscription_name_ar: v })} />
-        <Field label="السعر (دج)" type="number" value={String(form.price_dzd ?? "")} onChange={(v) => setForm({ ...form, price_dzd: Number(v) })} />
-        <Field label="العملة" value={String(form.currency ?? "")} onChange={(v) => setForm({ ...form, currency: v })} />
-        <Field label="مدة الاشتراك (أيام)" type="number" value={String(form.subscription_duration_days ?? "")} onChange={(v) => setForm({ ...form, subscription_duration_days: Number(v) })} />
-        <Field label="رقم CCP" value={String(form.ccp_number ?? "")} onChange={(v) => setForm({ ...form, ccp_number: v })} />
-        <Field label="مفتاح CCP" value={String(form.ccp_key ?? "")} onChange={(v) => setForm({ ...form, ccp_key: v })} />
-        <Field label="اسم المستفيد" value={String(form.account_holder ?? "")} onChange={(v) => setForm({ ...form, account_holder: v })} />
-        <Field label="رقم RIP (اختياري)" value={String(form.rip_number ?? "")} onChange={(v) => setForm({ ...form, rip_number: v })} />
+        <Field label={t("a.pay_settings.plan_name")} value={String(form.subscription_name_ar ?? "")} onChange={(v) => setForm({ ...form, subscription_name_ar: v })} />
+        <Field label={t("a.pay_settings.price")} type="number" value={String(form.price_dzd ?? "")} onChange={(v) => setForm({ ...form, price_dzd: Number(v) })} />
+        <Field label={t("a.pay_settings.currency")} value={String(form.currency ?? "")} onChange={(v) => setForm({ ...form, currency: v })} />
+        <Field label={t("a.pay_settings.duration_days")} type="number" value={String(form.subscription_duration_days ?? "")} onChange={(v) => setForm({ ...form, subscription_duration_days: Number(v) })} />
+        <Field label={t("a.pay_settings.ccp_number")} value={String(form.ccp_number ?? "")} onChange={(v) => setForm({ ...form, ccp_number: v })} />
+        <Field label={t("a.pay_settings.ccp_key")} value={String(form.ccp_key ?? "")} onChange={(v) => setForm({ ...form, ccp_key: v })} />
+        <Field label={t("a.pay_settings.account_holder")} value={String(form.account_holder ?? "")} onChange={(v) => setForm({ ...form, account_holder: v })} />
+        <Field label={t("a.pay_settings.rip_number")} value={String(form.rip_number ?? "")} onChange={(v) => setForm({ ...form, rip_number: v })} />
       </div>
       <label className="block space-y-1">
-        <span className="text-xs font-medium text-muted-foreground">وصف الاشتراك</span>
+        <span className="text-xs font-medium text-muted-foreground">{t("a.pay_settings.description")}</span>
         <textarea rows={2} value={String(form.description_ar ?? "")} onChange={(e) => setForm({ ...form, description_ar: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm" />
       </label>
       <label className="block space-y-1">
-        <span className="text-xs font-medium text-muted-foreground">المزايا (سطر لكل ميزة)</span>
+        <span className="text-xs font-medium text-muted-foreground">{t("a.pay_settings.benefits")}</span>
         <textarea rows={7} value={benefits} onChange={(e) => setBenefits(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm font-mono" />
       </label>
       <button disabled={save.isPending} className="px-6 py-2.5 rounded-full bg-gradient-royal text-primary-foreground font-bold shadow-glow">
-        {save.isPending ? "جاري الحفظ…" : "حفظ الإعدادات"}
+        {save.isPending ? t("a.pay_settings.saving") : t("a.pay_settings.save")}
       </button>
     </form>
   );
