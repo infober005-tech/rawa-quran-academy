@@ -15,6 +15,7 @@ import {
   getLandingStats,
   getLandingTeachers,
   getLandingTestimonials,
+  getLandingHalaqas,
 } from "@/lib/landing.functions";
 
 export const Route = createFileRoute("/")({
@@ -108,6 +109,12 @@ function Hero() {
   const { t } = useI18n();
   const { scrollY } = useScroll();
   const patternY = useTransform(scrollY, [0, 800], [0, 200]);
+  const statsFn = useServerFn(getLandingStats);
+  const { data: heroStats } = useQuery({
+    queryKey: ["landing", "stats"],
+    queryFn: () => statsFn(),
+    staleTime: 5 * 60 * 1000,
+  });
   return (
     <section className="relative overflow-hidden pt-8 md:pt-12 pb-24 md:pb-32">
       <motion.div style={{ y: patternY }} className="absolute inset-0 opacity-[0.07] pointer-events-none" aria-hidden>
