@@ -158,7 +158,7 @@ export function PremiumSidebar({ onSignOut }: { onSignOut: () => void }) {
   const items = usePremiumNav();
   const { location } = useRouterState();
   const [collapsed, setCollapsed] = useState(false);
-  const { dir } = useI18n();
+  const { dir, t } = useI18n();
 
   return (
     <motion.aside
@@ -180,7 +180,7 @@ export function PremiumSidebar({ onSignOut }: { onSignOut: () => void }) {
           "absolute top-8 z-10 grid h-7 w-7 place-items-center rounded-full border border-border bg-card text-muted-foreground shadow-soft transition-colors hover:bg-gold/15 hover:text-gold",
           dir === "rtl" ? "-left-3" : "-right-3",
         )}
-        aria-label={collapsed ? tt("nav.expand_sidebar") : tt("nav.collapse_sidebar")}
+        aria-label={collapsed ? t("nav.expand_sidebar") : t("nav.collapse_sidebar")}
       >
         {(dir === "rtl" ? !collapsed : collapsed) ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
       </button>
@@ -191,14 +191,14 @@ export function PremiumSidebar({ onSignOut }: { onSignOut: () => void }) {
 export function MobileSidebar({ onSignOut }: { onSignOut: () => void }) {
   const items = usePremiumNav();
   const { location } = useRouterState();
-  const { dir } = useI18n();
+  const { dir, t } = useI18n();
   const [open, setOpen] = useState(false);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
         className="lg:hidden grid h-10 w-10 place-items-center rounded-xl border border-border bg-card text-primary shadow-soft"
-        aria-label="Open menu"
+        aria-label={t("nav.open_menu")}
       >
         <Menu className="h-5 w-5" />
       </SheetTrigger>
@@ -207,8 +207,8 @@ export function MobileSidebar({ onSignOut }: { onSignOut: () => void }) {
         className="w-[280px] p-0 flex flex-col glass-panel"
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-border/60">
-          <span className="text-sm font-semibold text-primary">القائمة</span>
-          <button onClick={() => setOpen(false)} className="grid h-8 w-8 place-items-center rounded-lg hover:bg-muted" aria-label="Close">
+          <span className="text-sm font-semibold text-primary">{t("nav.menu")}</span>
+          <button onClick={() => setOpen(false)} className="grid h-8 w-8 place-items-center rounded-lg hover:bg-muted" aria-label={t("nav.close")}>
             <X className="h-4 w-4" />
           </button>
         </div>
