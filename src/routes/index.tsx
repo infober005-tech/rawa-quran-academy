@@ -642,17 +642,18 @@ function Testimonials() {
 
 /* ============================== FAQ =============================== */
 function FAQ() {
+  const { t } = useI18n();
   const items = [
-    { q: "هل المنصة مجانية؟", a: "نقدّم باقات مرنة، وبعض الحلقات تكون مجانية بدعم من المتبرعين." },
-    { q: "ما الفئات العمرية المقبولة؟", a: "نستقبل الطلاب من سن 6 سنوات فما فوق، ذكوراً وإناثاً في حلقات منفصلة." },
-    { q: "ما طريقة التواصل أثناء الحلقة؟", a: "نستخدم Google Meet ومنصات اجتماعات حيّة لضمان جودة التصحيح." },
-    { q: "هل أحصل على شهادة في النهاية؟", a: "نعم، تُمنح إجازات للطلاب المتميزين وفق ضوابط شرعية معتمدة." },
-    { q: "كيف يتم اختيار المعلم؟", a: "يتم اختيار المعلمين بناءً على إجازاتهم القرآنية وخبرتهم التدريسية." },
+    { q: t("p.home.faq.q1.q"), a: t("p.home.faq.q1.a") },
+    { q: t("p.home.faq.q2.q"), a: t("p.home.faq.q2.a") },
+    { q: t("p.home.faq.q3.q"), a: t("p.home.faq.q3.a") },
+    { q: t("p.home.faq.q4.q"), a: t("p.home.faq.q4.a") },
+    { q: t("p.home.faq.q5.q"), a: t("p.home.faq.q5.a") },
   ];
   const [open, setOpen] = useState<number | null>(0);
   return (
     <section id="faq" className="max-w-3xl mx-auto px-6 py-24 md:py-32">
-      <SectionHeader tag="الأسئلة الشائعة" title="ما يدور في ذهنك" />
+      <SectionHeader tag={t("p.home.faq.tag")} title={t("p.home.faq.title")} />
       <div className="space-y-3">
         {items.map((it, i) => (
           <motion.div
@@ -687,6 +688,7 @@ function FAQ() {
 
 /* ============================ FINAL CTA =========================== */
 function FinalCTA() {
+  const { t } = useI18n();
   return (
     <section className="max-w-6xl mx-auto px-6 py-20">
       <motion.div
@@ -711,17 +713,17 @@ function FinalCTA() {
             aria-hidden
           />
           <h2 className="text-3xl md:text-6xl font-bold text-primary-foreground mb-6 leading-tight" style={{ fontFamily: "var(--font-display-ar)" }}>
-            ابدأ رحلتك مع<br />
-            <span className="bg-gradient-to-l from-gold to-[#F0D78C] bg-clip-text text-transparent">القرآن الكريم اليوم</span>
+            {t("p.home.cta.title1")}<br />
+            <span className="bg-gradient-to-l from-gold to-[#F0D78C] bg-clip-text text-transparent">{t("p.home.cta.title2")}</span>
           </h2>
           <p className="text-primary-foreground/85 text-lg max-w-xl mx-auto mb-10">
-            انضم لأكثر من 1200 طالب وطالبة في رحلة قرآنية مباركة.
+            {t("p.home.cta.desc")}
           </p>
           <Link
             to="/auth"
             className="inline-flex items-center gap-2 px-10 py-4 rounded-full bg-gradient-to-br from-gold to-[#E0BC6E] text-gold-foreground font-bold text-lg shadow-[0_20px_50px_-10px_rgba(199,163,92,0.7)] hover:scale-105 transition-all"
           >
-            سجل الآن <Sparkles className="w-5 h-5" />
+            {t("p.home.cta.button")} <Sparkles className="w-5 h-5" />
           </Link>
         </div>
       </motion.div>
@@ -731,6 +733,7 @@ function FinalCTA() {
 
 /* ============================== FOOTER ============================ */
 function Footer() {
+  const { t } = useI18n();
   return (
     <footer className="border-t border-border bg-gradient-to-b from-background to-muted/30 mt-12">
       <div className="max-w-7xl mx-auto px-6 py-16 grid md:grid-cols-4 gap-10">
@@ -738,12 +741,12 @@ function Footer() {
           <div className="flex items-center gap-3">
             <img src={logoAsset.url} alt="" className="w-12 h-12 rounded-full" />
             <div>
-              <div className="font-bold text-primary text-xl" style={{ fontFamily: "var(--font-display-ar)" }}>رواء</div>
-              <div className="text-xs text-muted-foreground">أكاديمية القرآن الكريم وعلومه</div>
+              <div className="font-bold text-primary text-xl" style={{ fontFamily: "var(--font-display-ar)" }}>{t("app.name")}</div>
+              <div className="text-xs text-muted-foreground">{t("p.home.footer.tagline")}</div>
             </div>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-md">
-            منصة رواء للحلقات القرآنية الإلكترونية والتصحيح المباشر للتلاوة بإشراف نخبة من المعلمين.
+            {t("p.home.footer.desc")}
           </p>
           <div className="flex justify-center md:justify-start gap-4 pt-2">
             {[
@@ -764,16 +767,16 @@ function Footer() {
           </div>
         </div>
         <div>
-          <div className="font-bold text-primary mb-4">روابط</div>
+          <div className="font-bold text-primary mb-4">{t("p.home.footer.links_title")}</div>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><a href="#features" className="hover:text-primary">المنصة</a></li>
-            <li><a href="#halaqas" className="hover:text-primary">الحلقات</a></li>
-            <li><a href="#teachers" className="hover:text-primary">المعلمون</a></li>
-            <li><a href="#faq" className="hover:text-primary">الأسئلة الشائعة</a></li>
+            <li><a href="#features" className="hover:text-primary">{t("p.home.footer.link_platform")}</a></li>
+            <li><a href="#halaqas" className="hover:text-primary">{t("p.home.footer.link_halaqas")}</a></li>
+            <li><a href="#teachers" className="hover:text-primary">{t("p.home.footer.link_teachers")}</a></li>
+            <li><a href="#faq" className="hover:text-primary">{t("p.home.footer.link_faq")}</a></li>
           </ul>
         </div>
         <div>
-          <div className="font-bold text-primary mb-4">تواصل معنا</div>
+          <div className="font-bold text-primary mb-4">{t("p.home.footer.contact_title")}</div>
           <ul className="space-y-3 text-sm text-muted-foreground">
             <li className="flex items-center gap-2"><Mail className="w-4 h-4 text-gold" /> info@rawa-academy.com</li>
             <li className="flex items-center gap-2"><Phone className="w-4 h-4 text-gold" /> +966 50 000 0000</li>
@@ -782,10 +785,10 @@ function Footer() {
       </div>
       <div className="border-t border-border">
         <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-          <div>© {new Date().getFullYear()} رواء — جميع الحقوق محفوظة.</div>
+          <div>{t("p.home.footer.rights", { year: new Date().getFullYear() })}</div>
           <div className="flex gap-4">
-            <a href="#" className="hover:text-primary">سياسة الخصوصية</a>
-            <a href="#" className="hover:text-primary">الشروط والأحكام</a>
+            <a href="/privacy" className="hover:text-primary">{t("p.home.footer.privacy")}</a>
+            <a href="/terms" className="hover:text-primary">{t("p.home.footer.terms")}</a>
           </div>
         </div>
       </div>

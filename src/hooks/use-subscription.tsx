@@ -63,7 +63,9 @@ export function useMyPayments() {
 
 export type PaymentMethod = "edahabia" | "baridimob";
 
-export const PAYMENT_METHODS: { id: PaymentMethod; label: string; icon: string; hint: string }[] = [
-  { id: "edahabia", label: "البطاقة الذهبية Edahabia", icon: "💳", hint: "ادفع مباشرة عبر بطاقة Edahabia في أي موزع آلي أو عبر الإنترنت." },
-  { id: "baridimob", label: "BaridiMob", icon: "📱", hint: "افتح تطبيق BaridiMob واختر تحويل إلى رقم CCP أعلاه." },
-];
+export function getPaymentMethods(t: (k: string) => string): { id: PaymentMethod; label: string; icon: string; hint: string }[] {
+  return [
+    { id: "edahabia", label: t("s.method.edahabia.label"), icon: "💳", hint: t("s.method.edahabia.hint") },
+    { id: "baridimob", label: t("s.method.baridimob.label"), icon: "📱", hint: t("s.method.baridimob.hint") },
+  ];
+}

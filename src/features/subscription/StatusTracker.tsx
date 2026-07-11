@@ -1,23 +1,25 @@
 import { motion } from "framer-motion";
+import { useI18n } from "@/lib/i18n";
 
 type Status = "pending" | "approved" | "rejected" | null;
 
 export function StatusTracker({ status }: { status: Status }) {
+  const { t } = useI18n();
   const steps = status === "rejected"
     ? [
-        { label: "تم إرسال الطلب", done: true },
-        { label: "قيد المراجعة", done: true },
-        { label: "تم رفض الطلب", done: true, danger: true },
+        { label: t("s.step.submitted"), done: true },
+        { label: t("s.step.under_review"), done: true },
+        { label: t("s.step.rejected"), done: true, danger: true },
       ]
     : [
-        { label: "تم إرسال الطلب", done: true },
-        { label: "قيد المراجعة", done: status === "pending" || status === "approved" },
-        { label: "تمت الموافقة", done: status === "approved" },
-        { label: "تم تفعيل الاشتراك", done: status === "approved" },
+        { label: t("s.step.submitted"), done: true },
+        { label: t("s.step.under_review"), done: status === "pending" || status === "approved" },
+        { label: t("s.step.approved"), done: status === "approved" },
+        { label: t("s.step.activated"), done: status === "approved" },
       ];
   return (
     <div className="p-6 rounded-3xl bg-card border border-border shadow-soft">
-      <h3 className="font-bold text-primary mb-5">حالة الطلب</h3>
+      <h3 className="font-bold text-primary mb-5">{t("s.request_status")}</h3>
       <div className="relative flex justify-between items-start">
         <div className="absolute top-4 left-4 right-4 h-0.5 bg-border" />
         {steps.map((s, i) => (
