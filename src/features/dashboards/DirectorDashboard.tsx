@@ -42,9 +42,9 @@ export function DirectorDashboard() {
       ]);
       const attRows = att.data ?? [];
       const attBreakdown = [
-        { name: "Present", value: attRows.filter((a) => a.status === "present").length, color: "#10b981" },
-        { name: "Late", value: attRows.filter((a) => a.status === "late").length, color: "#f59e0b" },
-        { name: "Absent", value: attRows.filter((a) => a.status === "absent").length, color: "#ef4444" },
+        { name: t("common.present"), value: attRows.filter((a) => a.status === "present").length, color: "#10b981" },
+        { name: t("common.late"), value: attRows.filter((a) => a.status === "late").length, color: "#f59e0b" },
+        { name: t("common.absent"), value: attRows.filter((a) => a.status === "absent").length, color: "#ef4444" },
       ];
       const evalRows = evals.data ?? [];
       const avg = (k: keyof typeof evalRows[number]) => {
@@ -52,10 +52,10 @@ export function DirectorDashboard() {
         return vals.length ? Math.round(vals.reduce((a: number, b: number) => a + b, 0) / vals.length) : 0;
       };
       const evalAverages = [
-        { name: "Tajweed", score: avg("tajweed_score") },
-        { name: "Memorization", score: avg("memorization_score") },
-        { name: "Fluency", score: avg("fluency_score") },
-        { name: "Participation", score: avg("participation_score") },
+        { name: t("d.score.tajweed"), score: avg("tajweed_score") },
+        { name: t("d.score.memorization"), score: avg("memorization_score") },
+        { name: t("d.score.fluency"), score: avg("fluency_score") },
+        { name: t("d.score.participation"), score: avg("participation_score") },
       ];
       const levelCounts: Record<string, number> = {};
       (halaqasByLevel.data ?? []).forEach((h: any) => { levelCounts[h.level] = (levelCounts[h.level] ?? 0) + 1; });
@@ -77,7 +77,7 @@ export function DirectorDashboard() {
       const { error } = await supabase.from("profiles").update({ status: approve ? "approved" : "rejected" }).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["dir-pending"] }); qc.invalidateQueries({ queryKey: ["dir-stats"] }); toast.success("✓"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["dir-pending"] }); qc.invalidateQueries({ queryKey: ["dir-stats"] }); toast.success(t("common.saved")); },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -110,24 +110,24 @@ export function DirectorDashboard() {
   return (
     <div className="space-y-6">
       <DashboardHeader
-        badge="Director · Control center"
+        badge={t("d.director.badge")}
         title={`${t("nav.admin")} · ${t("nav.dashboard")}`}
-        subtitle="رواء — أكاديمية القرآن الكريم"
+        subtitle={t("d.academy_subtitle")}
         actions={
           liveHalaqas && liveHalaqas.length > 0 ? (
             <span className="px-3 py-1.5 rounded-full bg-green-500/20 text-green-600 text-xs font-bold animate-pulse">
-              ● {liveHalaqas.length} LIVE
+              ● {liveHalaqas.length} {t("d.live")}
             </span>
           ) : null
         }
       />
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <Link to="/admin" className="p-4 rounded-2xl bg-gradient-royal text-primary-foreground shadow-glow text-center font-semibold text-sm hover:opacity-90 transition">👥 Users</Link>
-        <Link to="/halaqas" className="p-4 rounded-2xl glass-card text-primary text-center font-semibold text-sm hover:shadow-glow transition">🕌 Halaqas</Link>
-        <Link to="/events" className="p-4 rounded-2xl glass-card text-primary text-center font-semibold text-sm hover:shadow-glow transition">🎉 Events</Link>
-        <Link to="/admin" className="p-4 rounded-2xl glass-card text-primary text-center font-semibold text-sm hover:shadow-glow transition">💳 Payments</Link>
-        <Link to="/notifications" className="p-4 rounded-2xl glass-card text-primary text-center font-semibold text-sm hover:shadow-glow transition">🔔 Notify</Link>
+        <Link to="/admin" className="p-4 rounded-2xl bg-gradient-royal text-primary-foreground shadow-glow text-center font-semibold text-sm hover:opacity-90 transition">👥 {t("d.director.users")}</Link>
+        <Link to="/halaqas" className="p-4 rounded-2xl glass-card text-primary text-center font-semibold text-sm hover:shadow-glow transition">🕌 {t("nav.halaqas")}</Link>
+        <Link to="/events" className="p-4 rounded-2xl glass-card text-primary text-center font-semibold text-sm hover:shadow-glow transition">🎉 {t("nav.events")}</Link>
+        <Link to="/admin" className="p-4 rounded-2xl glass-card text-primary text-center font-semibold text-sm hover:shadow-glow transition">💳 {t("d.director.payments")}</Link>
+        <Link to="/notifications" className="p-4 rounded-2xl glass-card text-primary text-center font-semibold text-sm hover:shadow-glow transition">🔔 {t("d.director.notify")}</Link>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
@@ -135,12 +135,12 @@ export function DirectorDashboard() {
         <Stat icon="👨‍🏫" label={t("common.teacher")} value={String(stats?.teachers ?? 0)} />
         <Stat icon="👁️" label={t("common.supervisor")} value={String(stats?.supervisors ?? 0)} />
         <Stat icon="🕌" label={t("nav.halaqas")} value={String(stats?.halaqas ?? 0)} />
-        <Stat icon="💳" label="Pending pay" value={String(stats?.pendingPayments ?? 0)} accent />
+        <Stat icon="💳" label={t("d.director.pending_pay")} value={String(stats?.pendingPayments ?? 0)} accent />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4">
         <div className="p-5 rounded-2xl bg-card border border-border shadow-soft">
-          <h3 className="font-bold text-primary mb-3">📊 Attendance</h3>
+          <h3 className="font-bold text-primary mb-3">📊 {t("dash.attendance")}</h3>
           <div style={{ width: "100%", height: 220 }}>
             <ResponsiveContainer>
               <PieChart>
@@ -154,7 +154,7 @@ export function DirectorDashboard() {
           </div>
         </div>
         <div className="p-5 rounded-2xl bg-card border border-border shadow-soft">
-          <h3 className="font-bold text-primary mb-3">⭐ Evaluation Averages</h3>
+          <h3 className="font-bold text-primary mb-3">⭐ {t("d.director.eval_averages")}</h3>
           <div style={{ width: "100%", height: 220 }}>
             <ResponsiveContainer>
               <BarChart data={analytics?.evalAverages ?? []}>
@@ -168,7 +168,7 @@ export function DirectorDashboard() {
           </div>
         </div>
         <div className="p-5 rounded-2xl bg-card border border-border shadow-soft">
-          <h3 className="font-bold text-primary mb-3">🕌 Halaqas by Level</h3>
+          <h3 className="font-bold text-primary mb-3">🕌 {t("d.director.halaqas_by_level")}</h3>
           <div style={{ width: "100%", height: 220 }}>
             <ResponsiveContainer>
               <BarChart data={analytics?.levels ?? []}>
@@ -202,15 +202,15 @@ export function DirectorDashboard() {
             <EmptyState
               compact
               variant="students"
-              title="No pending students"
-              description="All caught up — new registrations will appear here for review."
+              title={t("d.director.no_pending_students")}
+              description={t("d.director.no_pending_students_desc")}
             />
           )}
         </div>
       </div>
 
       <div className="p-6 rounded-2xl bg-card border border-border shadow-soft">
-        <h2 className="text-xl font-bold text-primary mb-4">📅 Upcoming events</h2>
+        <h2 className="text-xl font-bold text-primary mb-4">📅 {t("d.upcoming_events")}</h2>
         {upcomingEvents && upcomingEvents.length > 0 ? (
           <div className="divide-y divide-border">
             {upcomingEvents.map((e) => (
@@ -224,9 +224,9 @@ export function DirectorDashboard() {
           <EmptyState
             compact
             variant="events"
-            title="No upcoming events"
-            description="Publish an event from the admin panel — it will surface here for everyone."
-            action={<Link to="/admin" className="px-4 py-2 rounded-full bg-gradient-royal text-primary-foreground text-xs font-semibold shadow-glow">+ Create event</Link>}
+            title={t("d.no_upcoming_events")}
+            description={t("d.director.no_upcoming_events_desc")}
+            action={<Link to="/admin" className="px-4 py-2 rounded-full bg-gradient-royal text-primary-foreground text-xs font-semibold shadow-glow">+ {t("d.director.create_event")}</Link>}
           />
         )}
       </div>

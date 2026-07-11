@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/halaqas")({
 });
 
 function HalaqasPage() {
-  const { t, dir } = useI18n();
+  const { t } = useI18n();
   const { primaryRole } = useAuth();
 
   const { data, error, isLoading } = useQuery({
@@ -39,13 +39,13 @@ function HalaqasPage() {
       <div className="space-y-6">
         <DashboardHeader
           title={t("nav.halaqas")}
-          subtitle={dir === "rtl" ? "حلقات القرآن الكريم النشطة" : "Active Qur'an study circles"}
-          badge={dir === "rtl" ? `${data?.length ?? 0} حلقة` : `${data?.length ?? 0} halaqas`}
+          subtitle={t("f.halaqas.subtitle")}
+          badge={t("f.halaqas.badge", { count: data?.length ?? 0 })}
         />
         <SubscriptionGate>
           {error && (
             <div role="alert" className="rounded-2xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-              {dir === "rtl" ? "تعذر تحميل الحلقات: " : "Failed to load halaqas: "}{(error as Error).message}
+              {t("f.halaqas.load_error")}{(error as Error).message}
             </div>
           )}
           {isLoading && (
@@ -63,7 +63,7 @@ function HalaqasPage() {
                     <div className="min-w-0">
                       <h2 className="text-base font-bold text-primary truncate">{h.name}</h2>
                       <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
-                        {h.level} · {h.gender === "male" ? (dir === "rtl" ? "ذكور" : "Boys") : (dir === "rtl" ? "إناث" : "Girls")}
+                        {h.level} · {h.gender === "male" ? t("f.halaqas.gender.male") : t("f.halaqas.gender.female")}
                       </div>
                     </div>
                   </div>
@@ -93,8 +93,8 @@ function HalaqasPage() {
               <div className="sm:col-span-2 xl:col-span-3">
                 <EmptyState
                   variant="halaqas"
-                  title={dir === "rtl" ? "لا توجد حلقات متاحة" : "No halaqas available"}
-                  description={dir === "rtl" ? "ستظهر هنا الحلقات حالما يتم إنشاؤها بواسطة الإدارة." : "Halaqas will appear here once administrators create them."}
+                  title={t("f.halaqas.empty_title")}
+                  description={t("f.halaqas.empty_desc")}
                 />
               </div>
             )}

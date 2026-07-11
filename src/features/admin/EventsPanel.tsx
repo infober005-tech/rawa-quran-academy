@@ -99,7 +99,7 @@ export function EventsPanel() {
             <div className="flex justify-between items-start flex-wrap gap-2">
               <div className="min-w-0">
                 <div className="flex gap-2 items-center flex-wrap">
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${e.status === "published" ? "bg-green-500/20 text-green-600" : e.status === "cancelled" ? "bg-red-500/20 text-red-600" : "bg-muted text-muted-foreground"}`}>{e.status}</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${e.status === "published" ? "bg-green-500/20 text-green-600" : e.status === "cancelled" ? "bg-red-500/20 text-red-600" : "bg-muted text-muted-foreground"}`}>{t(`a.events.status.${e.status}`)}</span>
                   {e.event_type && <span className="text-[10px] px-2 py-0.5 rounded-full bg-gold/20 text-gold">{e.event_type}</span>}
                 </div>
                 <div className="text-lg font-bold text-primary mt-1">{e.title}</div>
@@ -107,19 +107,19 @@ export function EventsPanel() {
                 {e.registration_required && <div className="text-xs text-gold mt-1">🎟️ {regs?.[e.id] ?? 0}{e.max_participants ? ` / ${e.max_participants}` : ""}</div>}
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                <select aria-label={`Status for ${e.title}`} value={e.status} onChange={(ev) => setStatus.mutate({ id: e.id, status: ev.target.value as EventRow["status"] })} className="px-2 py-1.5 min-h-9 rounded-lg border border-input bg-background text-xs">
-                  <option value="draft">draft</option>
-                  <option value="published">published</option>
-                  <option value="cancelled">cancelled</option>
-                  <option value="completed">completed</option>
+                <select aria-label={`${t("a.events.status_label")} ${e.title}`} value={e.status} onChange={(ev) => setStatus.mutate({ id: e.id, status: ev.target.value as EventRow["status"] })} className="px-2 py-1.5 min-h-9 rounded-lg border border-input bg-background text-xs">
+                  <option value="draft">{t("a.events.status.draft")}</option>
+                  <option value="published">{t("a.events.status.published")}</option>
+                  <option value="cancelled">{t("a.events.status.cancelled")}</option>
+                  <option value="completed">{t("a.events.status.completed")}</option>
                 </select>
                 <button aria-label={`${t("common.edit")} ${e.title}`} onClick={() => { setEditing(e); setShowForm(true); }} className="px-3 py-1.5 min-h-9 rounded-full text-xs bg-muted hover:bg-muted/70">{t("common.edit")}</button>
-                <button aria-label={`${t("common.delete")} ${e.title}`} onClick={() => { if (confirm("Delete?")) del.mutate(e.id); }} className="px-3 py-1.5 min-h-9 rounded-full text-xs bg-destructive/10 text-destructive hover:bg-destructive/20">{t("common.delete")}</button>
+                <button aria-label={`${t("common.delete")} ${e.title}`} onClick={() => { if (confirm(t("a.confirm.delete"))) del.mutate(e.id); }} className="px-3 py-1.5 min-h-9 rounded-full text-xs bg-destructive/10 text-destructive hover:bg-destructive/20">{t("common.delete")}</button>
               </div>
             </div>
           </div>
         ))}
-        {(!events || events.length === 0) && <div className="p-10 text-center text-muted-foreground border border-dashed rounded-2xl">—</div>}
+        {(!events || events.length === 0) && <div className="p-10 text-center text-muted-foreground border border-dashed rounded-2xl">{t("a.events.empty")}</div>}
       </div>
     </div>
   );
@@ -182,16 +182,16 @@ function EventForm({ initial, onClose }: { initial: EventRow | null; onClose: ()
       <select value={form.meeting_provider ?? "google_meet"} onChange={(e) => setForm((f) => ({ ...f, meeting_provider: e.target.value }))} className={input}>
         <option value="google_meet">Google Meet</option><option value="zoom">Zoom</option>
       </select>
-      <input placeholder="Meeting link" value={form.meeting_link ?? ""} onChange={(e) => setForm((f) => ({ ...f, meeting_link: e.target.value }))} className={input + " md:col-span-3"} />
-      <input placeholder="Cover image URL" value={form.cover_url ?? ""} onChange={(e) => setForm((f) => ({ ...f, cover_url: e.target.value }))} className={input + " md:col-span-2"} />
-      <input type="number" min={1} placeholder="Max participants" value={form.max_participants ?? ""} onChange={(e) => setForm((f) => ({ ...f, max_participants: e.target.value ? Number(e.target.value) : null }))} className={input} />
+      <input placeholder={t("a.events.meeting_link")} value={form.meeting_link ?? ""} onChange={(e) => setForm((f) => ({ ...f, meeting_link: e.target.value }))} className={input + " md:col-span-3"} />
+      <input placeholder={t("a.events.cover_url")} value={form.cover_url ?? ""} onChange={(e) => setForm((f) => ({ ...f, cover_url: e.target.value }))} className={input + " md:col-span-2"} />
+      <input type="number" min={1} placeholder={t("a.events.max_participants")} value={form.max_participants ?? ""} onChange={(e) => setForm((f) => ({ ...f, max_participants: e.target.value ? Number(e.target.value) : null }))} className={input} />
       <label className="flex items-center gap-2 text-sm md:col-span-2">
         <input type="checkbox" checked={form.registration_required} onChange={(e) => setForm((f) => ({ ...f, registration_required: e.target.checked }))} />
         {t("ev.registration_required")}
       </label>
       <select value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as FormState["status"] }))} className={input}>
-        <option value="draft">draft</option>
-        <option value="published">published</option>
+        <option value="draft">{t("a.events.status.draft")}</option>
+        <option value="published">{t("a.events.status.published")}</option>
       </select>
       <textarea placeholder={t("common.description")} value={form.description ?? ""} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} className={input + " md:col-span-3"} rows={3} />
       <div className="md:col-span-3 flex gap-2">

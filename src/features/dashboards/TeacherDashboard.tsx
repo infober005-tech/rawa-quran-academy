@@ -47,7 +47,7 @@ export function TeacherDashboard() {
       });
       if (h.meeting_link) window.open(h.meeting_link, "_blank", "noopener");
     },
-    onSuccess: () => { toast.success("Live session started"); qc.invalidateQueries({ queryKey: ["teacher-halaqas"] }); },
+    onSuccess: () => { toast.success(t("d.teacher.session_started")); qc.invalidateQueries({ queryKey: ["teacher-halaqas"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -60,28 +60,28 @@ export function TeacherDashboard() {
         .order("started_at", { ascending: false }).limit(1).maybeSingle();
       if (open) await supabase.from("halaqa_sessions").update({ ended_at: new Date().toISOString() }).eq("id", open.id);
     },
-    onSuccess: () => { toast.success("Session ended"); qc.invalidateQueries({ queryKey: ["teacher-halaqas"] }); },
+    onSuccess: () => { toast.success(t("d.teacher.session_ended")); qc.invalidateQueries({ queryKey: ["teacher-halaqas"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
   return (
     <div className="space-y-6">
       <DashboardHeader
-        badge="Teacher · Halaqat"
+        badge={t("d.teacher.badge")}
         title={`${t("common.teacher")} · ${t("nav.dashboard")}`}
-        subtitle="Manage your halaqas, students and live sessions"
+        subtitle={t("d.teacher.subtitle")}
         actions={
           halaqas && halaqas.some((h) => h.live_session_active) ? (
-            <span className="px-3 py-1.5 rounded-full bg-green-500/20 text-green-600 text-xs font-bold animate-pulse">● LIVE</span>
+            <span className="px-3 py-1.5 rounded-full bg-green-500/20 text-green-600 text-xs font-bold animate-pulse">● {t("d.live")}</span>
           ) : null
         }
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatTile icon="🕌" label="Halaqas" value={String(halaqas?.length ?? 0)} />
-        <StatTile icon="🟢" label="Active" value={String(halaqas?.filter((h) => h.status === "active").length ?? 0)} />
-        <StatTile icon="🎙" label="Live now" value={String(halaqas?.filter((h) => h.live_session_active).length ?? 0)} />
-        <StatTile icon="📅" label="With link" value={String(halaqas?.filter((h) => !!h.meeting_link).length ?? 0)} />
+        <StatTile icon="🕌" label={t("nav.halaqas")} value={String(halaqas?.length ?? 0)} />
+        <StatTile icon="🟢" label={t("d.active")} value={String(halaqas?.filter((h) => h.status === "active").length ?? 0)} />
+        <StatTile icon="🎙" label={t("d.live_now")} value={String(halaqas?.filter((h) => h.live_session_active).length ?? 0)} />
+        <StatTile icon="📅" label={t("d.teacher.with_link")} value={String(halaqas?.filter((h) => !!h.meeting_link).length ?? 0)} />
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -98,24 +98,24 @@ export function TeacherDashboard() {
             <div className="mt-3">
               {h.live_session_active ? (
                 <div className="flex gap-2">
-                  <a href={h.meeting_link ?? "#"} target="_blank" rel="noreferrer" className="flex-1 px-3 py-2 rounded-xl bg-green-500/20 text-green-600 text-xs font-bold text-center animate-pulse">● LIVE — Open</a>
-                  <button onClick={() => endSession.mutate(h.id)} className="px-3 py-2 rounded-xl bg-destructive/10 text-destructive text-xs font-semibold">End</button>
+                  <a href={h.meeting_link ?? "#"} target="_blank" rel="noreferrer" className="flex-1 px-3 py-2 rounded-xl bg-green-500/20 text-green-600 text-xs font-bold text-center animate-pulse">● {t("d.teacher.live_open")}</a>
+                  <button onClick={() => endSession.mutate(h.id)} className="px-3 py-2 rounded-xl bg-destructive/10 text-destructive text-xs font-semibold">{t("d.teacher.end")}</button>
                 </div>
               ) : (
                 <button
                   disabled={!h.meeting_link || startSession.isPending}
                   onClick={() => startSession.mutate({ id: h.id, meeting_link: h.meeting_link })}
                   className="w-full px-3 py-2 rounded-xl bg-gradient-royal text-primary-foreground text-xs font-semibold disabled:opacity-50"
-                  title={!h.meeting_link ? "Set a meeting link first (Director)" : ""}
+                  title={!h.meeting_link ? t("d.teacher.set_link_first") : ""}
                 >
-                  ▶ Start live session
+                  ▶ {t("d.teacher.start_live_session")}
                 </button>
               )}
             </div>
             <div className="mt-4 grid grid-cols-3 gap-1.5">
-              <button onClick={() => setStudentsId(h.id)} className="px-2 py-2 rounded-xl bg-muted text-foreground text-xs font-semibold hover:bg-muted/70">👥 Students</button>
-              <button onClick={() => setOpenId(h.id)} className="px-2 py-2 rounded-xl bg-gradient-royal text-primary-foreground text-xs font-semibold">⭐ Evaluate</button>
-              <button onClick={() => setHomeworkId(h.id)} className="px-2 py-2 rounded-xl bg-gold/20 text-gold text-xs font-semibold hover:bg-gold/30">📝 Homework</button>
+              <button onClick={() => setStudentsId(h.id)} className="px-2 py-2 rounded-xl bg-muted text-foreground text-xs font-semibold hover:bg-muted/70">👥 {t("common.students")}</button>
+              <button onClick={() => setOpenId(h.id)} className="px-2 py-2 rounded-xl bg-gradient-royal text-primary-foreground text-xs font-semibold">⭐ {t("d.teacher.evaluate")}</button>
+              <button onClick={() => setHomeworkId(h.id)} className="px-2 py-2 rounded-xl bg-gold/20 text-gold text-xs font-semibold hover:bg-gold/30">📝 {t("d.homework")}</button>
             </div>
           </div>
         ))}
@@ -123,8 +123,8 @@ export function TeacherDashboard() {
           <div className="md:col-span-3">
             <EmptyState
               variant="halaqas"
-              title="No halaqas assigned yet"
-              description="Once the director assigns you a halaqa, you'll be able to evaluate students, manage homework and start live sessions from here."
+              title={t("d.teacher.no_halaqas")}
+              description={t("d.teacher.no_halaqas_desc")}
             />
           </div>
         )}
@@ -166,6 +166,7 @@ function ModalShell({ title, onClose, children }: { title: string; onClose: () =
 }
 
 function StudentsModal({ halaqaId, onClose }: { halaqaId: string; onClose: () => void }) {
+  const { t } = useI18n();
   const { data: students } = useQuery({
     queryKey: ["t-students", halaqaId],
     queryFn: async () => {
@@ -180,9 +181,9 @@ function StudentsModal({ halaqaId, onClose }: { halaqaId: string; onClose: () =>
     },
   });
   return (
-    <ModalShell title="Students" onClose={onClose}>
+    <ModalShell title={t("common.students")} onClose={onClose}>
       <table className="w-full text-sm">
-        <thead className="bg-muted/40 text-xs text-muted-foreground"><tr><th className="p-2 text-start">Name</th><th className="p-2 text-start">Email</th><th className="p-2 text-start">Age</th><th className="p-2 text-start">Phone</th></tr></thead>
+        <thead className="bg-muted/40 text-xs text-muted-foreground"><tr><th className="p-2 text-start">{t("common.name")}</th><th className="p-2 text-start">{t("d.teacher.email")}</th><th className="p-2 text-start">{t("d.teacher.age")}</th><th className="p-2 text-start">{t("d.teacher.phone")}</th></tr></thead>
         <tbody>
           {students?.map((s: any) => (
             <tr key={s.id} className="border-t border-border"><td className="p-2 font-semibold">{s.full_name}</td><td className="p-2 text-xs">{s.email}</td><td className="p-2">{s.age ?? "—"}</td><td className="p-2 text-xs">{s.phone ?? "—"}</td></tr>
@@ -196,6 +197,7 @@ function StudentsModal({ halaqaId, onClose }: { halaqaId: string; onClose: () =>
 
 function HomeworkModal({ halaqaId, onClose }: { halaqaId: string; onClose: () => void }) {
   const { user } = useAuth();
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [form, setForm] = useState({ title: "", description: "", due_date: "" });
 
@@ -209,11 +211,11 @@ function HomeworkModal({ halaqaId, onClose }: { halaqaId: string; onClose: () =>
 
   const create = useMutation({
     mutationFn: async () => {
-      if (!form.title.trim()) throw new Error("Title required");
+      if (!form.title.trim()) throw new Error(t("d.teacher.title_required"));
       const { error } = await supabase.from("assignments").insert({ halaqa_id: halaqaId, teacher_id: user!.id, title: form.title, description: form.description || null, due_date: form.due_date || null });
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("✓"); setForm({ title: "", description: "", due_date: "" }); qc.invalidateQueries({ queryKey: ["t-homework", halaqaId] }); },
+    onSuccess: () => { toast.success(t("common.saved")); setForm({ title: "", description: "", due_date: "" }); qc.invalidateQueries({ queryKey: ["t-homework", halaqaId] }); },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -223,13 +225,13 @@ function HomeworkModal({ halaqaId, onClose }: { halaqaId: string; onClose: () =>
   });
 
   return (
-    <ModalShell title="Homework" onClose={onClose}>
+    <ModalShell title={t("d.homework")} onClose={onClose}>
       <div className="p-4 rounded-2xl bg-muted/40 border border-border space-y-2">
-        <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Title" className="w-full px-3 py-2 rounded-xl border border-input bg-background text-sm" />
-        <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description" rows={2} className="w-full px-3 py-2 rounded-xl border border-input bg-background text-sm" />
+        <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={t("d.teacher.title")} className="w-full px-3 py-2 rounded-xl border border-input bg-background text-sm" />
+        <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder={t("common.description")} rows={2} className="w-full px-3 py-2 rounded-xl border border-input bg-background text-sm" />
         <div className="flex gap-2">
           <input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} className="px-3 py-2 rounded-xl border border-input bg-background text-sm" />
-          <button onClick={() => create.mutate()} disabled={create.isPending} className="px-4 py-2 rounded-full bg-gradient-royal text-primary-foreground text-sm font-semibold">+ Add</button>
+          <button onClick={() => create.mutate()} disabled={create.isPending} className="px-4 py-2 rounded-full bg-gradient-royal text-primary-foreground text-sm font-semibold">+ {t("common.add")}</button>
         </div>
       </div>
       <div className="divide-y divide-border">
@@ -238,12 +240,12 @@ function HomeworkModal({ halaqaId, onClose }: { halaqaId: string; onClose: () =>
             <div>
               <div className="font-semibold text-primary">{h.title}</div>
               {h.description && <div className="text-xs text-muted-foreground mt-1">{h.description}</div>}
-              {h.due_date && <div className="text-xs text-gold mt-1">Due: {h.due_date}</div>}
+              {h.due_date && <div className="text-xs text-gold mt-1">{t("d.due")}: {h.due_date}</div>}
             </div>
-            <button onClick={() => del.mutate(h.id)} className="text-xs text-red-500 hover:underline">Delete</button>
+            <button onClick={() => del.mutate(h.id)} className="text-xs text-red-500 hover:underline">{t("common.delete")}</button>
           </div>
         ))}
-        {(!list || list.length === 0) && <div className="py-6 text-center text-muted-foreground text-sm">No homework yet</div>}
+        {(!list || list.length === 0) && <div className="py-6 text-center text-muted-foreground text-sm">{t("d.student.no_homework")}</div>}
       </div>
     </ModalShell>
   );
@@ -298,7 +300,7 @@ function StudentEvalRow({ student, halaqaId, teacherId }: { student: { id: strin
       });
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("✓"); setScores({ tajweed_score: "", memorization_score: "", fluency_score: "", participation_score: "", notes: "" }); },
+    onSuccess: () => { toast.success(t("common.saved")); setScores({ tajweed_score: "", memorization_score: "", fluency_score: "", participation_score: "", notes: "" }); },
     onError: (e: any) => toast.error(e.message),
   });
   return (

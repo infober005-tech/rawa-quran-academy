@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from "framer-motion";
 import logoAsset from "@/assets/rawa-logo-clean.png.asset.json";
+import { useI18n } from "@/lib/i18n";
 
 type Size = "sm" | "md" | "lg" | "xl";
 
@@ -39,9 +40,11 @@ export function LogoPremium3D({
   particles,
   intro = false,
   halo = true,
-  alt = "شعار رواء",
+  alt,
   className = "",
 }: LogoPremium3DProps) {
+  const { t } = useI18n();
+  const resolvedAlt = alt ?? t("p.logo.alt");
   const reduce = useReducedMotion();
   const px = SIZE_PX[size];
   const isInteractive = interactive ?? (size === "lg" || size === "xl");
@@ -174,7 +177,7 @@ export function LogoPremium3D({
         {/* Front crisp logo */}
         <img
           src={logoAsset.url}
-          alt={alt}
+          alt={resolvedAlt}
           className="relative w-full h-full object-contain"
           style={{
             transform: "translateZ(8px)",

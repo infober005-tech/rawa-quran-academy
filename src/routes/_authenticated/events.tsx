@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/events")({
 });
 
 function EventsPage() {
-  const { t, dir } = useI18n();
+  const { t } = useI18n();
   const { user } = useAuth();
   const qc = useQueryClient();
   const { data } = useQuery({
@@ -45,7 +45,7 @@ function EventsPage() {
         if (error) throw error;
       }
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["my-regs", user?.id] }); toast.success("✓"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["my-regs", user?.id] }); toast.success(t("f.events.registered_toast")); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -54,8 +54,8 @@ function EventsPage() {
       <div className="space-y-6">
         <DashboardHeader
           title={t("nav.events")}
-          subtitle={dir === "rtl" ? "فعاليات ومحاضرات الأكاديمية" : "Academy events & lectures"}
-          badge={dir === "rtl" ? `${data?.length ?? 0} فعالية` : `${data?.length ?? 0} events`}
+          subtitle={t("f.events.subtitle")}
+          badge={t("f.events.badge", { count: data?.length ?? 0 })}
         />
         <SubscriptionGate>
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -73,7 +73,7 @@ function EventsPage() {
                   <div className="p-5">
                     <div className="flex gap-2 flex-wrap mb-2">
                       {e.event_type && <span className="text-[10px] px-2 py-0.5 rounded-full bg-gold/20 text-gold font-semibold">{e.event_type}</span>}
-                      {e.status === "completed" && <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{dir === "rtl" ? "مكتمل" : "Completed"}</span>}
+                      {e.status === "completed" && <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{t("f.events.completed")}</span>}
                     </div>
                     <h2 className="text-lg font-bold text-primary leading-snug">{e.title}</h2>
                     <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-x-2 gap-y-1">
@@ -108,8 +108,8 @@ function EventsPage() {
               <div className="sm:col-span-2 xl:col-span-3">
                 <EmptyState
                   variant="events"
-                  title={dir === "rtl" ? "لا توجد فعاليات قادمة" : "No upcoming events"}
-                  description={dir === "rtl" ? "ستُعرض هنا الدورات والمحاضرات والمسابقات حين تُنشر." : "Courses, lectures and competitions will appear once published."}
+                  title={t("f.events.empty_title")}
+                  description={t("f.events.empty_desc")}
                 />
               </div>
             )}

@@ -31,7 +31,7 @@ function DashboardRouter() {
       <DashboardShell>
         <div className="max-w-2xl mx-auto mt-12 p-10 rounded-3xl bg-card border border-gold/30 text-center shadow-soft">
           <div className="text-5xl mb-4">⏳</div>
-          <h1 className="text-2xl font-bold text-primary mb-3">{t("dash.welcome")}، {profile.full_name}</h1>
+          <h1 className="text-2xl font-bold text-primary mb-3">{t("dash.welcome")}{t("f.dashboard.comma")}{profile.full_name}</h1>
           <p className="text-muted-foreground">{msg}</p>
         </div>
       </DashboardShell>

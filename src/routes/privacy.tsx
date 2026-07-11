@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({
@@ -15,18 +16,19 @@ export const Route = createFileRoute("/privacy")({
 });
 
 function PrivacyPage() {
+  const { t } = useI18n();
   return (
     <main className="min-h-dvh bg-hero px-4 py-12">
       <article className="mx-auto max-w-3xl prose prose-slate bg-card/80 backdrop-blur-xl rounded-3xl border border-border shadow-soft p-6 sm:p-10">
-        <Link to="/" className="text-xs text-gold font-semibold">← رواء</Link>
-        <h1 className="text-3xl font-black text-primary mt-2">سياسة الخصوصية</h1>
-        <p className="text-sm text-muted-foreground">آخر تحديث: 2026</p>
-        <h2 className="text-primary">المعلومات التي نجمعها</h2>
-        <p>نجمع المعلومات اللازمة لتشغيل خدمة الحلقات القرآنية: الاسم، البريد الإلكتروني، الهاتف، الجنس، البلد، المستوى القرآني، وسجلات الحضور والتقييمات.</p>
-        <h2 className="text-primary">كيف نستخدم البيانات</h2>
-        <p>تُستخدم البيانات حصراً لإدارة الحلقات، الإشعارات، الفواتير، وتقارير الأداء لولي الأمر والإدارة. لا نبيع بياناتك لأي طرف ثالث.</p>
-        <h2 className="text-primary">حقوقك</h2>
-        <p>يمكنك طلب الوصول إلى بياناتك أو تصحيحها أو حذفها بمراسلة الإدارة.</p>
+        <Link to="/" className="text-xs text-gold font-semibold">{t("p.privacy.back")}</Link>
+        <h1 className="text-3xl font-black text-primary mt-2">{t("p.privacy.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("p.privacy.updated")}</p>
+        <h2 className="text-primary">{t("p.privacy.info_title")}</h2>
+        <p>{t("p.privacy.info_body")}</p>
+        <h2 className="text-primary">{t("p.privacy.use_title")}</h2>
+        <p>{t("p.privacy.use_body")}</p>
+        <h2 className="text-primary">{t("p.privacy.rights_title")}</h2>
+        <p>{t("p.privacy.rights_body")}</p>
       </article>
     </main>
   );

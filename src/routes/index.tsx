@@ -358,15 +358,16 @@ function HowItWorks() {
 
 /* =========================== LIVE HALAQAS ========================= */
 function LiveHalaqas() {
+  const { t } = useI18n();
   const halaqas = [
-    { teacher: "الشيخ عبدالرحمن", level: "متقدم — حفص", time: "السبت · 18:00", seats: 3, gender: "ذكور" },
-    { teacher: "الأستاذة فاطمة", level: "متوسط — تجويد", time: "الأحد · 16:00", seats: 5, gender: "إناث" },
-    { teacher: "الشيخ يوسف", level: "حفظ المتون", time: "الإثنين · 20:00", seats: 2, gender: "ذكور" },
-    { teacher: "الأستاذة مريم", level: "مبتدئ — تلاوة", time: "الثلاثاء · 17:00", seats: 7, gender: "إناث" },
+    { teacher: t("p.home.halaqas.t1.teacher"), level: t("p.home.halaqas.t1.level"), time: t("p.home.halaqas.t1.time"), seats: 3, gender: t("p.home.halaqas.t1.gender") },
+    { teacher: t("p.home.halaqas.t2.teacher"), level: t("p.home.halaqas.t2.level"), time: t("p.home.halaqas.t2.time"), seats: 5, gender: t("p.home.halaqas.t2.gender") },
+    { teacher: t("p.home.halaqas.t3.teacher"), level: t("p.home.halaqas.t3.level"), time: t("p.home.halaqas.t3.time"), seats: 2, gender: t("p.home.halaqas.t3.gender") },
+    { teacher: t("p.home.halaqas.t4.teacher"), level: t("p.home.halaqas.t4.level"), time: t("p.home.halaqas.t4.time"), seats: 7, gender: t("p.home.halaqas.t4.gender") },
   ];
   return (
     <section id="halaqas" className="max-w-7xl mx-auto px-6 py-24 md:py-32">
-      <SectionHeader tag="حلقات قادمة" title="انضم لحلقة تناسبك" desc="حلقات حية أسبوعية بإشراف نخبة من المعلمين والمعلمات." />
+      <SectionHeader tag={t("p.home.halaqas.tag")} title={t("p.home.halaqas.title")} desc={t("p.home.halaqas.desc")} />
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
         {halaqas.map((h, i) => (
           <motion.div
@@ -385,10 +386,10 @@ function LiveHalaqas() {
             <div className="text-sm text-muted-foreground mb-4">{h.level}</div>
             <div className="flex items-center justify-between text-xs border-t border-border pt-3">
               <span className="text-muted-foreground">{h.time}</span>
-              <span className="font-bold text-gold">{h.seats} مقاعد</span>
+              <span className="font-bold text-gold">{h.seats} {t("p.home.halaqas.seats")}</span>
             </div>
             <Link to="/auth" className="mt-4 block text-center text-sm px-4 py-2.5 rounded-xl bg-primary/5 text-primary font-semibold hover:bg-primary hover:text-primary-foreground transition-all">
-              احجز مقعدك
+              {t("p.home.halaqas.book")}
             </Link>
           </motion.div>
         ))}
@@ -457,11 +458,12 @@ function Stats() {
 
 /* ============================ PARENTS ============================= */
 function Parents() {
+  const { t } = useI18n();
   const items = [
-    { icon: CalendarCheck, title: "متابعة الحضور", desc: "اطّلع على حضور وغياب أبنائك لحظة بلحظة." },
-    { icon: BarChart3, title: "متابعة التقييمات", desc: "تقارير دورية لأداء الطالب والمعلم." },
-    { icon: BookOpen, title: "متابعة الحفظ", desc: "خط سير الحفظ والمراجعة الأسبوعي." },
-    { icon: Mail, title: "استقبال التنبيهات", desc: "إشعارات فورية بأي جديد يخص ابنك." },
+    { icon: CalendarCheck, title: t("p.home.parents.item1.title"), desc: t("p.home.parents.item1.desc") },
+    { icon: BarChart3, title: t("p.home.parents.item2.title"), desc: t("p.home.parents.item2.desc") },
+    { icon: BookOpen, title: t("p.home.parents.item3.title"), desc: t("p.home.parents.item3.desc") },
+    { icon: Mail, title: t("p.home.parents.item4.title"), desc: t("p.home.parents.item4.desc") },
   ];
   return (
     <section className="max-w-7xl mx-auto px-6 py-24 md:py-32">
@@ -479,21 +481,21 @@ function Parents() {
               <div className="absolute top-6 right-6 left-6 flex items-center gap-3">
                 <img src={logoAsset.url} alt="" className="w-12 h-12 rounded-full" />
                 <div className="text-primary-foreground">
-                  <div className="font-bold">لوحة وليّ الأمر</div>
-                  <div className="text-xs text-primary-foreground/70">رواء</div>
+                  <div className="font-bold">{t("p.home.parents.card.title")}</div>
+                  <div className="text-xs text-primary-foreground/70">{t("app.name")}</div>
                 </div>
               </div>
               <div className="relative space-y-3">
-                {["الحفظ هذا الأسبوع: سورة الكهف", "الحضور: 98%", "آخر تقييم: ممتاز"].map((t, i) => (
+                {[t("p.home.parents.card.line1"), t("p.home.parents.card.line2"), t("p.home.parents.card.line3")].map((line, i) => (
                   <motion.div
-                    key={t}
+                    key={line}
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.15 }}
                     className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 text-primary-foreground text-sm"
                   >
-                    {t}
+                    {line}
                   </motion.div>
                 ))}
               </div>
@@ -501,12 +503,12 @@ function Parents() {
           </div>
         </motion.div>
         <div className="space-y-6">
-          <span className="text-sm text-gold font-semibold tracking-[0.3em]">لأولياء الأمور</span>
+          <span className="text-sm text-gold font-semibold tracking-[0.3em]">{t("p.home.parents.tag")}</span>
           <h2 className="text-3xl md:text-5xl font-bold text-primary leading-tight" style={{ fontFamily: "var(--font-display-ar)" }}>
-            تابع رحلة أبنائك القرآنية
+            {t("p.home.parents.title")}
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            بوابة مخصّصة لولي الأمر تمنحك رؤية كاملة على تقدّم أبنائك في الحفظ والتجويد والحضور.
+            {t("p.home.parents.desc")}
           </p>
           <div className="grid sm:grid-cols-2 gap-4 pt-4">
             {items.map((it, i) => (

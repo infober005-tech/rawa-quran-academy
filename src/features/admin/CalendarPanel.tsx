@@ -83,7 +83,7 @@ export function CalendarPanel() {
       </div>
 
       <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold text-muted-foreground">
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => <div key={d} className="p-1">{d}</div>)}
+        {[t("a.calendar.day.sun"), t("a.calendar.day.mon"), t("a.calendar.day.tue"), t("a.calendar.day.wed"), t("a.calendar.day.thu"), t("a.calendar.day.fri"), t("a.calendar.day.sat")].map((d) => <div key={d} className="p-1">{d}</div>)}
       </div>
 
       {view === "month" ? (

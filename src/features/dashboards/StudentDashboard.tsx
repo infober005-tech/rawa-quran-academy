@@ -189,12 +189,12 @@ export function StudentDashboard() {
   return (
     <div className="space-y-6">
       <DashboardHeader
-        badge="Student · رحلة القرآن"
+        badge={t("d.student.badge")}
         title={`${t("dash.welcome")}، ${profile?.full_name ?? ""}`}
-        subtitle={halaqa?.name ? `${halaqa.name} · ${halaqa.level ?? ""}` : "رواء — أكاديمية القرآن الكريم"}
+        subtitle={halaqa?.name ? `${halaqa.name} · ${halaqa.level ?? ""}` : t("d.academy_subtitle")}
         actions={
           halaqa?.live_session_active ? (
-            <span className="px-3 py-1.5 rounded-full bg-green-500/20 text-green-600 text-xs font-bold animate-pulse">● LIVE NOW</span>
+            <span className="px-3 py-1.5 rounded-full bg-green-500/20 text-green-600 text-xs font-bold animate-pulse">● {t("d.live_now")}</span>
           ) : null
         }
       />
@@ -221,7 +221,7 @@ export function StudentDashboard() {
           {halaqa.meeting_link && (
             <div className="mt-5 flex items-center gap-3 flex-wrap">
               {halaqa.live_session_active && (
-                <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-600 text-xs font-bold animate-pulse">● LIVE NOW</span>
+                <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-600 text-xs font-bold animate-pulse">● {t("d.live_now")}</span>
               )}
               <a
                 href={halaqa.meeting_link}
@@ -233,7 +233,7 @@ export function StudentDashboard() {
                     : "bg-gradient-royal text-primary-foreground"
                 }`}
               >
-                ▶ {halaqa.live_session_active ? "Join live session" : t("dash.join")}
+                ▶ {halaqa.live_session_active ? t("d.join_live_session") : t("dash.join")}
               </a>
             </div>
           )}
@@ -242,13 +242,13 @@ export function StudentDashboard() {
         <EmptyState
           variant="halaqas"
           title={t("dash.no_halaqa")}
-          description="You're not in a halaqa yet. The director will assign you to one — you'll see your teacher, schedule and live session button here."
+          description={t("d.student.no_halaqa_desc")}
         />
       )}
 
       {chartData.length > 0 && (
         <div className="p-6 rounded-2xl bg-card border border-border shadow-soft">
-          <h2 className="text-xl font-bold text-primary mb-4">📈 Progress</h2>
+          <h2 className="text-xl font-bold text-primary mb-4">📈 {t("d.progress")}</h2>
           <div style={{ width: "100%", height: 240 }}>
             <ResponsiveContainer>
               <LineChart data={chartData}>
@@ -267,17 +267,17 @@ export function StudentDashboard() {
 
       <div className="grid md:grid-cols-2 gap-4">
         <div className="p-6 rounded-2xl bg-card border border-border shadow-soft">
-          <h2 className="text-xl font-bold text-primary mb-4">📝 Homework</h2>
+          <h2 className="text-xl font-bold text-primary mb-4">📝 {t("d.homework")}</h2>
           <div className="divide-y divide-border">
             {homework?.map((h: any) => (
               <div key={h.id} className="py-2.5">
                 <div className="font-semibold text-sm">{h.title}</div>
-                {h.due_date && <div className="text-xs text-gold">Due: {h.due_date}</div>}
+                {h.due_date && <div className="text-xs text-gold">{t("d.due")}: {h.due_date}</div>}
                 {h.description && <div className="text-xs text-muted-foreground mt-1">{h.description}</div>}
               </div>
             ))}
             {(!homework || homework.length === 0) && (
-              <EmptyState compact variant="homework" title="No homework yet" description="Assignments from your teacher will appear here." />
+              <EmptyState compact variant="homework" title={t("d.student.no_homework")} description={t("d.student.no_homework_desc")} />
             )}
           </div>
         </div>
@@ -291,7 +291,7 @@ export function StudentDashboard() {
               </div>
             ))}
             {(!upcoming || upcoming.length === 0) && (
-              <EmptyState compact variant="events" title="No upcoming events" description="Watch this space — events and ceremonies will be announced here." />
+              <EmptyState compact variant="events" title={t("d.no_upcoming_events")} description={t("d.no_upcoming_events_desc")} />
             )}
           </div>
         </div>
@@ -299,7 +299,7 @@ export function StudentDashboard() {
 
       {att && att.length > 0 && (
         <div className="p-6 rounded-2xl bg-card border border-border shadow-soft">
-          <h2 className="text-xl font-bold text-primary mb-4">✅ Attendance History</h2>
+          <h2 className="text-xl font-bold text-primary mb-4">✅ {t("d.attendance_history")}</h2>
           <div className="grid grid-cols-7 sm:grid-cols-10 gap-1.5">
             {att.slice(0, 40).map((a: any, i: number) => (
               <div key={i} className={`aspect-square rounded-md text-[10px] flex flex-col items-center justify-center font-semibold ${a.status === "present" ? "bg-green-500/20 text-green-600" : a.status === "late" ? "bg-amber-500/20 text-amber-600" : "bg-red-500/20 text-red-600"}`} title={`${a.date}: ${a.status}`}>
@@ -320,11 +320,11 @@ export function StudentDashboard() {
           <div className="space-y-3">
             {mergedEvals.map((e: any) => (
               <div key={e.id} className="p-3 rounded-xl bg-muted/40 text-sm grid grid-cols-2 md:grid-cols-6 gap-2">
-                <div><span className="text-xs text-muted-foreground">تجويد</span><div className="font-bold text-primary">{e.tajweed_score ?? "—"}</div></div>
-                <div><span className="text-xs text-muted-foreground">حفظ</span><div className="font-bold text-primary">{e.memorization_score ?? "—"}</div></div>
-                <div><span className="text-xs text-muted-foreground">سلوك</span><div className="font-bold text-primary">{e.behavior_score ?? "—"}</div></div>
-                <div><span className="text-xs text-muted-foreground">طلاقة</span><div className="font-bold text-primary">{e.fluency_score ?? "—"}</div></div>
-                <div><span className="text-xs text-muted-foreground">مشاركة</span><div className="font-bold text-primary">{e.participation_score ?? "—"}</div></div>
+                <div><span className="text-xs text-muted-foreground">{t("d.score.tajweed")}</span><div className="font-bold text-primary">{e.tajweed_score ?? "—"}</div></div>
+                <div><span className="text-xs text-muted-foreground">{t("d.score.memorization")}</span><div className="font-bold text-primary">{e.memorization_score ?? "—"}</div></div>
+                <div><span className="text-xs text-muted-foreground">{t("d.score.behavior")}</span><div className="font-bold text-primary">{e.behavior_score ?? "—"}</div></div>
+                <div><span className="text-xs text-muted-foreground">{t("d.score.fluency")}</span><div className="font-bold text-primary">{e.fluency_score ?? "—"}</div></div>
+                <div><span className="text-xs text-muted-foreground">{t("d.score.participation")}</span><div className="font-bold text-primary">{e.participation_score ?? "—"}</div></div>
                 <div className="col-span-2 md:col-span-1 text-xs text-muted-foreground">{new Date(e.created_at).toLocaleDateString()}</div>
                 {e.notes && <div className="col-span-full text-xs text-muted-foreground">{e.notes}</div>}
               </div>

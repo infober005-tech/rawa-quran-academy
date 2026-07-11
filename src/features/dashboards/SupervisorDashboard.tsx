@@ -39,9 +39,9 @@ export function SupervisorDashboard() {
   return (
     <div className="space-y-6">
       <DashboardHeader
-        badge="Halaqa supervisor"
+        badge={t("d.supervisor.badge")}
         title={`${t("common.supervisor")} · ${t("dash.attendance")}`}
-        subtitle="Attendance, session monitoring and student follow-up"
+        subtitle={t("d.supervisor.subtitle")}
       />
 
       <div className="grid md:grid-cols-3 gap-4">
@@ -81,8 +81,8 @@ export function SupervisorDashboard() {
           <div className="md:col-span-3">
             <EmptyState
               variant="halaqas"
-              title="No halaqas assigned"
-              description="You haven't been assigned to a halaqa yet. The director will link supervised halaqas to your account."
+              title={t("d.supervisor.no_halaqas")}
+              description={t("d.supervisor.no_halaqas_desc")}
             />
           </div>
         )}
@@ -196,7 +196,7 @@ function NoteInput({ initial, onSave }: { initial: string; onSave: (v: string) =
   const [v, setV] = useState(initial);
   return (
     <div className="flex gap-1">
-      <input value={v} onChange={(e) => setV(e.target.value)} placeholder="—" className="px-2 py-1 rounded-lg border border-input bg-background text-xs w-40" />
+      <input value={v} onChange={(e) => setV(e.target.value)} placeholder={t("d.supervisor.dash")} className="px-2 py-1 rounded-lg border border-input bg-background text-xs w-40" />
       {v !== initial && <button onClick={() => onSave(v)} className="px-2 py-1 rounded-lg bg-primary text-primary-foreground text-xs">✓</button>}
     </div>
   );
@@ -226,11 +226,11 @@ function NotesModal({ halaqaId, onClose }: { halaqaId: string; onClose: () => vo
 
   const create = useMutation({
     mutationFn: async () => {
-      if (!form.student_id || !form.note.trim()) throw new Error("Required");
+      if (!form.student_id || !form.note.trim()) throw new Error(t("d.supervisor.required"));
       const { error } = await supabase.from("supervisor_notes").insert({ halaqa_id: halaqaId, author_id: user!.id, student_id: form.student_id, category: form.category, note: form.note });
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("✓"); setForm({ student_id: "", category: "follow_up", note: "" }); qc.invalidateQueries({ queryKey: ["sup-notes", halaqaId] }); },
+    onSuccess: () => { toast.success(t("common.saved")); setForm({ student_id: "", category: "follow_up", note: "" }); qc.invalidateQueries({ queryKey: ["sup-notes", halaqaId] }); },
     onError: (e: any) => toast.error(e.message),
   });
 
