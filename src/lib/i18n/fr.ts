@@ -264,5 +264,11 @@ const dict = {
     "settings.language.title": "Langue",
     "settings.new_password": "Nouveau mot de passe",
     "settings.confirm_password": "Confirmer le mot de passe",
+    "notif.unread_count": "{{count}} non lues",
+    "notif.all_caught_up": "Tout est à jour",
+    "notif.mark_all_read": "Tout marquer comme lu",
+    "notif.mark_all_short": "Tout marquer",
+    "notif.empty_title": "Aucune notification",
+    "notif.empty_desc": "Les mises à jour des halaqas, événements et évaluations s'afficheront ici.",
 };
 export default dict;

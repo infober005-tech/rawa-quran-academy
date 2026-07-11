@@ -264,5 +264,11 @@ const dict = {
     "settings.language.title": "اللغة",
     "settings.new_password": "كلمة المرور الجديدة",
     "settings.confirm_password": "تأكيد كلمة المرور",
+    "notif.unread_count": "{{count}} غير مقروءة",
+    "notif.all_caught_up": "كل شيء محدث",
+    "notif.mark_all_read": "تعليم الكل كمقروء",
+    "notif.mark_all_short": "تعليم الكل",
+    "notif.empty_title": "لا توجد إشعارات بعد",
+    "notif.empty_desc": "ستظهر هنا تحديثات الحلقات، الفعاليات، والتقييمات.",
 };
 export default dict;

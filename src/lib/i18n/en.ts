@@ -264,5 +264,11 @@ const dict = {
     "settings.language.title": "Language",
     "settings.new_password": "New password",
     "settings.confirm_password": "Confirm password",
+    "notif.unread_count": "{{count}} unread",
+    "notif.all_caught_up": "All caught up",
+    "notif.mark_all_read": "Mark all as read",
+    "notif.mark_all_short": "Mark all read",
+    "notif.empty_title": "No notifications yet",
+    "notif.empty_desc": "Halaqa updates, events, and evaluations will appear here.",
 };
 export default dict;
