@@ -31,15 +31,14 @@ function PaymentStatusPage() {
   const { subscription, isActive, daysRemaining } = useSubscription();
   const last = payments?.[0];
 
-  // Realtime: refetch on any change to my payments / subscriptions
+  // Realtime: payments are NOT published over realtime (PII); refetch payments
+  // whenever the user's subscription changes (approval/rejection flips it).
   useEffect(() => {
     if (!user) return;
     const channel = supabase
       .channel(`payment-status-${user.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "payments", filter: `student_id=eq.${user.id}` }, () => {
-        qc.invalidateQueries({ queryKey: ["my-payments", user.id] });
-      })
       .on("postgres_changes", { event: "*", schema: "public", table: "subscriptions", filter: `student_id=eq.${user.id}` }, () => {
+        qc.invalidateQueries({ queryKey: ["my-payments", user.id] });
         qc.invalidateQueries({ queryKey: ["subscription", user.id] });
       })
       .subscribe();
