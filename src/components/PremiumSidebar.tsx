@@ -23,7 +23,7 @@ export function usePremiumNav(): NavItem[] {
       { to: "/events", label: t("nav.events"), icon: Calendar },
     ];
     if (primaryRole === "student") {
-      items.push({ to: "/subscribe", label: dir === "rtl" ? "الاشتراك" : "Subscription", icon: CreditCard });
+      items.push({ to: "/subscribe", label: t("nav.subscription"), icon: CreditCard });
     }
     items.push(
       { to: "/notifications", label: t("nav.notifications"), icon: Bell },
@@ -122,14 +122,14 @@ function SidebarFooter({
   collapsed, onSignOut,
 }: { collapsed: boolean; onSignOut: () => void }) {
   const { profile, primaryRole } = useAuth();
-  const { t, dir } = useI18n();
+  const { t } = useI18n();
   const roleLabel: Record<string, string> = {
-    director: dir === "rtl" ? "مدير المنصة" : "Director",
-    general_supervisor: dir === "rtl" ? "مشرف عام" : "General Supervisor",
-    halaqa_supervisor: dir === "rtl" ? "مشرف حلقة" : "Halaqa Supervisor",
-    teacher: dir === "rtl" ? "معلم" : "Teacher",
-    student: dir === "rtl" ? "طالب" : "Student",
-    parent: dir === "rtl" ? "ولي أمر" : "Parent",
+    director: t("role.director"),
+    general_supervisor: t("role.general_supervisor"),
+    halaqa_supervisor: t("role.halaqa_supervisor"),
+    teacher: t("role.teacher"),
+    student: t("role.student"),
+    parent: t("role.parent"),
   };
   return (
     <div className="border-t border-border/60 p-3 space-y-2">
@@ -180,7 +180,7 @@ export function PremiumSidebar({ onSignOut }: { onSignOut: () => void }) {
           "absolute top-8 z-10 grid h-7 w-7 place-items-center rounded-full border border-border bg-card text-muted-foreground shadow-soft transition-colors hover:bg-gold/15 hover:text-gold",
           dir === "rtl" ? "-left-3" : "-right-3",
         )}
-        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        aria-label={collapsed ? tt("nav.expand_sidebar") : tt("nav.collapse_sidebar")}
       >
         {(dir === "rtl" ? !collapsed : collapsed) ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
       </button>
