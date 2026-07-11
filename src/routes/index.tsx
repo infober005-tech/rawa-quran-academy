@@ -144,7 +144,7 @@ function Hero() {
             >
               <ShieldCheck className="text-gold" />
               <div className="text-[11px] sm:text-xs min-w-0">
-                <div className="font-bold text-primary">{t("home.hero.badge_teachers_count")}</div>
+                <div className="font-bold text-primary">{t("home.hero.badge_teachers_count", { count: heroStats?.teachers ?? 0 })}</div>
                 <div className="text-muted-foreground">{t("home.hero.badge_ijazat")}</div>
               </div>
             </motion.div>
