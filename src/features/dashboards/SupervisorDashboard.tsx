@@ -194,6 +194,7 @@ function AttendanceSheet({ halaqaId }: { halaqaId: string }) {
 
 function NoteInput({ initial, onSave }: { initial: string; onSave: (v: string) => void }) {
   const [v, setV] = useState(initial);
+  const { t } = useI18n();
   return (
     <div className="flex gap-1">
       <input value={v} onChange={(e) => setV(e.target.value)} placeholder={t("d.supervisor.dash")} className="px-2 py-1 rounded-lg border border-input bg-background text-xs w-40" />
