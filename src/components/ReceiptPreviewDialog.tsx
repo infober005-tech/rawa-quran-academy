@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/responsive-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Download, ExternalLink, RotateCw, X, ZoomIn, ZoomOut } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 type Props = {
   open: boolean;
@@ -41,8 +42,10 @@ export function ReceiptPreviewDialog({
   onOpenChange,
   receiptPath,
   bucket = "payment-receipts",
-  title = "معاينة الوصل",
+  title,
 }: Props) {
+  const { t } = useI18n();
+  const dialogTitle = title ?? t("s.preview_receipt");
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +62,7 @@ export function ReceiptPreviewDialog({
       return;
     }
     if (!path) {
-      setError("لا يوجد مسار للوصل.");
+      setError(t("s.no_receipt_path"));
       return;
     }
     const key = `${bucket}:${path}`;
@@ -76,16 +79,16 @@ export function ReceiptPreviewDialog({
       .createSignedUrl(path, 60 * 10);
     setLoading(false);
     if (err || !data?.signedUrl) {
-      const msg = err?.message ?? "خطأ غير معروف";
+      const msg = err?.message ?? t("s.unknown_error");
       if (import.meta.env.DEV) console.error("[ReceiptPreview] createSignedUrl failed", { bucket, path, err });
-      setError(`تعذر تحميل الوصل: ${msg}`);
+      setError(t("s.load_failed", { msg }));
       return;
     }
     urlCache.set(key, { url: data.signedUrl, expiresAt: Date.now() + 60 * 9 * 1000 });
     setUrl(data.signedUrl);
     setDownloadHref(data.signedUrl);
     if (import.meta.env.DEV) console.info("[ReceiptPreview] signed URL", data.signedUrl);
-  }, [bucket, receiptPath]);
+  }, [bucket, receiptPath, t]);
 
   useEffect(() => {
     if (!open) return;
@@ -103,10 +106,10 @@ export function ReceiptPreviewDialog({
     if (import.meta.env.DEV) console.error("[ReceiptPreview] image load failed", url, e);
     if (url) {
       fetch(url, { method: "HEAD" })
-        .then((r) => setError(`تعذر عرض الصورة (HTTP ${r.status}).`))
-        .catch((fetchErr) => setError(`تعذر عرض الصورة: ${fetchErr?.message ?? "شبكة"}`));
+        .then((r) => setError(t("s.image_load_failed_http", { status: r.status })))
+        .catch((fetchErr) => setError(t("s.image_load_failed", { err: fetchErr?.message ?? t("s.network") })));
     } else {
-      setError("تعذر عرض الصورة.");
+      setError(t("s.image_load_failed_generic"));
     }
   };
 
@@ -128,9 +131,9 @@ export function ReceiptPreviewDialog({
       className="sm:max-w-[900px] p-0"
     >
       <ResponsiveDialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6">
-        <ResponsiveDialogTitle>{title}</ResponsiveDialogTitle>
+        <ResponsiveDialogTitle>{dialogTitle}</ResponsiveDialogTitle>
         <ResponsiveDialogDescription className="sr-only">
-          معاينة وصل الدفع
+          {t("s.preview_desc")}
         </ResponsiveDialogDescription>
       </ResponsiveDialogHeader>
 
@@ -141,7 +144,7 @@ export function ReceiptPreviewDialog({
           className="relative flex min-h-[50vh] max-h-[70vh] items-center justify-center overflow-auto rounded-2xl bg-muted/40"
           style={{ touchAction: "pinch-zoom" }}
           role="region"
-          aria-label={title}
+          aria-label={dialogTitle}
         >
           {loading && (
             <div className="w-full space-y-3 p-6">
@@ -157,21 +160,21 @@ export function ReceiptPreviewDialog({
                 onClick={() => void load()}
                 className="px-4 py-2 rounded-full bg-gradient-royal text-primary-foreground text-xs font-bold min-h-11"
               >
-                إعادة المحاولة
+                {t("s.retry")}
               </button>
             </div>
           )}
           {!loading && !error && url && showAsPdf && (
             <iframe
               src={url}
-              title={title}
+              title={dialogTitle}
               className="w-full h-[65vh] rounded-xl bg-background"
             />
           )}
           {!loading && !error && url && !showAsPdf && (
             <img
               src={url}
-              alt={title}
+              alt={dialogTitle}
               draggable={false}
               onError={onImgError}
               style={{
@@ -190,7 +193,7 @@ export function ReceiptPreviewDialog({
           <div className="me-auto flex items-center gap-1">
             <button
               type="button"
-              aria-label="تصغير"
+              aria-label={t("s.zoom_out")}
               onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.25).toFixed(2)))}
               className="grid place-items-center h-11 w-11 rounded-full bg-muted hover:bg-muted/70"
             >
@@ -201,7 +204,7 @@ export function ReceiptPreviewDialog({
             </span>
             <button
               type="button"
-              aria-label="تكبير"
+              aria-label={t("s.zoom_in")}
               onClick={() => setZoom((z) => Math.min(4, +(z + 0.25).toFixed(2)))}
               className="grid place-items-center h-11 w-11 rounded-full bg-muted hover:bg-muted/70"
             >
@@ -209,7 +212,7 @@ export function ReceiptPreviewDialog({
             </button>
             <button
               type="button"
-              aria-label="تدوير"
+              aria-label={t("s.rotate")}
               onClick={() => setRotation((r) => (r + 90) % 360)}
               className="grid place-items-center h-11 w-11 rounded-full bg-muted hover:bg-muted/70"
             >
@@ -224,19 +227,19 @@ export function ReceiptPreviewDialog({
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 h-11 px-4 rounded-full bg-muted hover:bg-muted/70 text-xs font-semibold"
-              aria-label="فتح في نافذة جديدة"
+              aria-label={t("s.open_new_window")}
             >
               <ExternalLink className="h-4 w-4" aria-hidden />
-              <span className="hidden sm:inline">فتح</span>
+              <span className="hidden sm:inline">{t("s.open")}</span>
             </a>
             <a
               href={(downloadHref || url) as string}
               download
               className="inline-flex items-center gap-1.5 h-11 px-4 rounded-full bg-gradient-royal text-primary-foreground text-xs font-bold shadow-glow"
-              aria-label="تنزيل"
+              aria-label={t("s.download")}
             >
               <Download className="h-4 w-4" aria-hidden />
-              <span>تنزيل</span>
+              <span>{t("s.download")}</span>
             </a>
           </>
         )}
@@ -244,10 +247,10 @@ export function ReceiptPreviewDialog({
           type="button"
           onClick={() => onOpenChange(false)}
           className="inline-flex items-center gap-1.5 h-11 px-4 rounded-full bg-muted hover:bg-muted/70 text-xs font-semibold"
-          aria-label="إغلاق"
+          aria-label={t("s.close")}
         >
           <X className="h-4 w-4" aria-hidden />
-          <span>إغلاق</span>
+          <span>{t("s.close")}</span>
         </button>
       </div>
     </ResponsiveDialog>
