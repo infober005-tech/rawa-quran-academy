@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import logoAsset from "@/assets/rawa-logo.png.asset.json";
 import { LogoPremium3D } from "@/components/LogoPremium3D";
+import { useI18n, LangSwitcher } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -28,8 +29,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const { dir } = useI18n();
   return (
-    <div dir="rtl" className="min-h-dvh bg-background text-foreground overflow-x-hidden">
+    <div dir={dir} className="min-h-dvh bg-background text-foreground overflow-x-hidden">
       <Nav />
       <Hero />
       <Features />
@@ -48,6 +50,7 @@ function Index() {
 
 /* ============================== NAV ============================== */
 function Nav() {
+  const { t } = useI18n();
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -67,24 +70,25 @@ function Nav() {
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="absolute inset-0 rounded-full bg-gold/40 blur-md animate-pulse" />
-            <img src={logoAsset.url} alt="شعار رواء" className="relative w-11 h-11 rounded-full" />
+            <img src={logoAsset.url} alt={t("home.hero.logo_alt")} className="relative w-11 h-11 rounded-full" />
           </div>
           <div className="leading-tight">
-            <div className="font-bold text-lg text-primary" style={{ fontFamily: "var(--font-display-ar)" }}>رواء</div>
-            <div className="text-[11px] text-muted-foreground">أكاديمية القرآن الكريم</div>
+            <div className="font-bold text-lg text-primary" style={{ fontFamily: "var(--font-display-ar)" }}>{t("app.name")}</div>
+            <div className="text-[11px] text-muted-foreground">{t("home.hero.title2")}</div>
           </div>
         </div>
         <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-          <a href="#features" className="hover:text-primary transition">المنصة</a>
-          <a href="#how" className="hover:text-primary transition">كيف نعمل</a>
-          <a href="#halaqas" className="hover:text-primary transition">الحلقات</a>
-          <a href="#teachers" className="hover:text-primary transition">المعلمون</a>
-          <a href="#faq" className="hover:text-primary transition">الأسئلة</a>
+          <a href="#features" className="hover:text-primary transition">{t("home.nav.platform")}</a>
+          <a href="#how" className="hover:text-primary transition">{t("home.nav.how")}</a>
+          <a href="#halaqas" className="hover:text-primary transition">{t("home.nav.halaqas")}</a>
+          <a href="#teachers" className="hover:text-primary transition">{t("home.nav.teachers")}</a>
+          <a href="#faq" className="hover:text-primary transition">{t("home.nav.faq")}</a>
         </nav>
         <div className="flex items-center gap-2">
-          <Link to="/auth" className="text-sm px-4 py-2 rounded-full text-primary hover:bg-muted transition hidden sm:inline-block">تسجيل الدخول</Link>
+          <LangSwitcher />
+          <Link to="/auth" className="text-sm px-4 py-2 rounded-full text-primary hover:bg-muted transition hidden sm:inline-block">{t("home.cta.signin")}</Link>
           <Link to="/auth" className="text-sm px-5 py-2.5 rounded-full bg-gradient-to-br from-primary via-secondary to-primary text-primary-foreground shadow-[0_8px_24px_-8px_rgba(94,75,123,0.6)] hover:shadow-[0_12px_32px_-8px_rgba(199,163,92,0.5)] hover:-translate-y-0.5 transition-all">
-            سجل الآن
+            {t("home.cta.register_now")}
           </Link>
         </div>
       </div>
@@ -94,6 +98,7 @@ function Nav() {
 
 /* ============================== HERO ============================= */
 function Hero() {
+  const { t } = useI18n();
   const { scrollY } = useScroll();
   const patternY = useTransform(scrollY, [0, 800], [0, 200]);
   return (
@@ -125,8 +130,8 @@ function Hero() {
             >
               <ShieldCheck className="text-gold" />
               <div className="text-xs">
-                <div className="font-bold text-primary">+45 معلم معتمد</div>
-                <div className="text-muted-foreground">إجازات شرعية</div>
+                <div className="font-bold text-primary">{t("home.hero.badge_teachers_count")}</div>
+                <div className="text-muted-foreground">{t("home.hero.badge_ijazat")}</div>
               </div>
             </motion.div>
             <motion.div
@@ -137,8 +142,8 @@ function Hero() {
             >
               <Sparkles className="text-gold" />
               <div className="text-xs">
-                <div className="font-bold text-primary">حلقات حيّة الآن</div>
-                <div className="text-muted-foreground">انضم اليوم</div>
+                <div className="font-bold text-primary">{t("home.hero.badge_live")}</div>
+                <div className="text-muted-foreground">{t("home.hero.badge_join")}</div>
               </div>
             </motion.div>
           </div>
@@ -152,7 +157,7 @@ function Hero() {
             className="inline-flex items-center gap-2 text-xs px-4 py-2 rounded-full bg-gradient-to-l from-gold/20 to-gold/5 text-dark border border-gold/40 backdrop-blur"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
-            منزِل الإتقان · لارتواء الجنان
+            {t("app.tagline")}
           </motion.span>
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
@@ -161,7 +166,7 @@ function Hero() {
             className="text-6xl md:text-7xl lg:text-8xl font-bold leading-[0.95] bg-gradient-to-br from-primary via-secondary to-primary bg-clip-text text-transparent"
             style={{ fontFamily: "var(--font-display-ar)" }}
           >
-            رواء
+            {t("app.name")}
           </motion.h1>
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
@@ -169,7 +174,7 @@ function Hero() {
             transition={{ delay: 0.3, duration: 0.8 }}
             className="text-2xl md:text-4xl font-bold text-primary leading-tight"
           >
-            أكاديمية القرآن الكريم<span className="text-gold"> وعلومه</span>
+            {t("home.hero.title2")}<span className="text-gold">{t("home.hero.title2_suffix")}</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 30 }}
@@ -177,7 +182,7 @@ function Hero() {
             transition={{ delay: 0.45, duration: 0.8 }}
             className="text-base md:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0"
           >
-            رحلة متكاملة لحفظ القرآن الكريم، تصحيح التلاوة، دراسة التجويد والمتون العلمية بإشراف نخبة من المعلمين والمشرفين.
+            {t("home.hero.subtitle")}
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -190,7 +195,7 @@ function Hero() {
               className="group relative px-8 py-4 rounded-full bg-gradient-to-br from-primary via-secondary to-primary text-primary-foreground font-bold shadow-[0_15px_40px_-10px_rgba(94,75,123,0.6)] hover:shadow-[0_20px_50px_-10px_rgba(199,163,92,0.6)] transition-all hover:-translate-y-1 overflow-hidden"
             >
               <span className="relative z-10 flex items-center gap-2">
-                سجل الآن <Sparkles className="w-4 h-4" />
+                {t("home.cta.register_now")} <Sparkles className="w-4 h-4" />
               </span>
               <span className="absolute inset-0 bg-gradient-to-r from-gold/0 via-gold/30 to-gold/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
             </Link>
@@ -198,7 +203,7 @@ function Hero() {
               href="#halaqas"
               className="px-8 py-4 rounded-full border-2 border-primary/30 text-primary font-bold hover:bg-primary/5 hover:border-primary/60 transition-all backdrop-blur"
             >
-              استكشف الحلقات
+              {t("home.cta.explore_halaqas")}
             </a>
           </motion.div>
           <motion.div
@@ -207,9 +212,14 @@ function Hero() {
             transition={{ delay: 0.9, duration: 1 }}
             className="flex flex-wrap gap-6 pt-4 justify-center lg:justify-start text-sm text-muted-foreground"
           >
-            {["تصحيح مباشر", "فصل الجنسين", "متابعة وليّ الأمر", "إجازات معتمدة"].map((t) => (
-              <div key={t} className="flex items-center gap-2">
-                <span className="text-gold text-base">✦</span> {t}
+            {[
+              t("home.hero.chip.live_correction"),
+              t("home.hero.chip.gender_separation"),
+              t("home.hero.chip.parent_tracking"),
+              t("home.hero.chip.ijazat"),
+            ].map((chip) => (
+              <div key={chip} className="flex items-center gap-2">
+                <span className="text-gold text-base">✦</span> {chip}
               </div>
             ))}
           </motion.div>
@@ -260,17 +270,18 @@ function SectionHeader({ tag, title, desc }: { tag: string; title: string; desc?
 
 /* ============================ FEATURES =========================== */
 function Features() {
+  const { t } = useI18n();
   const features = [
-    { icon: PlayCircle, title: "حلقات قرآنية مباشرة", desc: "تعلم مع معلمين مؤهلين عبر حلقات إلكترونية تفاعلية." },
-    { icon: Mic, title: "تصحيح التلاوة", desc: "متابعة فردية وتصحيح الأخطاء مباشرة." },
-    { icon: BookOpen, title: "متابعة الحفظ", desc: "خطة حفظ ومراجعة لكل طالب." },
-    { icon: CalendarCheck, title: "إدارة حضور ذكية", desc: "متابعة دقيقة للحضور والغياب." },
-    { icon: BarChart3, title: "تقارير دورية", desc: "تقارير مفصلة للطالب وولي الأمر." },
-    { icon: GraduationCap, title: "فعاليات ودورات", desc: "لقاءات مباشرة ودورات علمية دورية." },
+    { icon: PlayCircle, title: t("home.feat.live.title"), desc: t("home.feat.live.desc") },
+    { icon: Mic, title: t("home.feat.correction.title"), desc: t("home.feat.correction.desc") },
+    { icon: BookOpen, title: t("home.feat.memorize.title"), desc: t("home.feat.memorize.desc") },
+    { icon: CalendarCheck, title: t("home.feat.attend.title"), desc: t("home.feat.attend.desc") },
+    { icon: BarChart3, title: t("home.feat.reports.title"), desc: t("home.feat.reports.desc") },
+    { icon: GraduationCap, title: t("home.feat.events.title"), desc: t("home.feat.events.desc") },
   ];
   return (
     <section id="features" className="max-w-7xl mx-auto px-6 py-24 md:py-32 relative">
-      <SectionHeader tag="المنصّة" title="منظومة قرآنية متكاملة" desc="كل ما يحتاجه الطالب والمعلم وإدارة الأكاديمية في مكان واحد." />
+      <SectionHeader tag={t("home.features.tag")} title={t("home.features.title")} desc={t("home.features.desc")} />
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {features.map((f, i) => (
           <motion.div
@@ -298,17 +309,18 @@ function Features() {
 
 /* =========================== HOW IT WORKS ========================= */
 function HowItWorks() {
+  const { t } = useI18n();
   const steps = [
-    { icon: UserPlus, title: "التسجيل في المنصة", desc: "أنشئ حسابك خلال دقائق بمعلومات بسيطة." },
-    { icon: ShieldCheck, title: "مراجعة الطلب من الإدارة", desc: "تتأكد الإدارة من بياناتك وملاءمتك." },
-    { icon: Users, title: "إسناد الطالب للحلقة المناسبة", desc: "نختار لك حلقة تناسب مستواك وجدولك." },
-    { icon: Sparkles, title: "بدء رحلة التعلم", desc: "ابدأ مسيرتك مع كتاب الله بصحبة معلميك." },
+    { icon: UserPlus, title: t("home.how.s1.title"), desc: t("home.how.s1.desc") },
+    { icon: ShieldCheck, title: t("home.how.s2.title"), desc: t("home.how.s2.desc") },
+    { icon: Users, title: t("home.how.s3.title"), desc: t("home.how.s3.desc") },
+    { icon: Sparkles, title: t("home.how.s4.title"), desc: t("home.how.s4.desc") },
   ];
   return (
     <section id="how" className="bg-gradient-to-b from-muted/30 via-background to-background py-24 md:py-32 relative overflow-hidden">
       <div className="absolute inset-0 opacity-[0.04] pointer-events-none"><IslamicPattern /></div>
       <div className="max-w-7xl mx-auto px-6 relative">
-        <SectionHeader tag="خطواتك معنا" title="رحلتك في رواء" desc="أربع خطوات بسيطة تفصلك عن بدء حلقتك القرآنية." />
+        <SectionHeader tag={t("home.how.tag")} title={t("home.how.title")} desc={t("home.how.desc")} />
         <div className="relative">
           <div className="hidden lg:block absolute top-12 right-0 left-0 h-0.5 bg-gradient-to-l from-transparent via-gold/40 to-transparent" />
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
