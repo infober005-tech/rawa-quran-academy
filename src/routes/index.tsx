@@ -116,27 +116,27 @@ function Hero() {
       <div className="absolute -top-20 right-1/4 w-[500px] h-[500px] bg-primary/25 rounded-full blur-[120px] animate-pulse" />
       <div className="absolute -bottom-20 left-1/4 w-[500px] h-[500px] bg-gold/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: "1.5s" }} />
 
-      <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-8 lg:gap-16 items-center relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center relative">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
-          className="relative order-2 lg:order-1 max-w-[520px] mx-auto w-full"
+          className="relative order-2 lg:order-1 w-full max-w-[300px] sm:max-w-[420px] lg:max-w-[520px] mx-auto"
         >
-          <div className="relative rounded-[2.5rem] p-4 bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-xl border border-white/50 shadow-[0_30px_80px_-20px_rgba(94,75,123,0.4)]">
+          <div className="relative rounded-[2rem] lg:rounded-[2.5rem] p-3 sm:p-4 bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-xl border border-white/50 shadow-[0_30px_80px_-20px_rgba(94,75,123,0.4)]">
             <div className="rounded-[2rem] overflow-hidden bg-gradient-to-br from-primary/5 via-transparent to-gold/10">
-              <div className="w-full aspect-square grid place-items-center p-4 sm:p-6">
-                <LogoPremium3D size="xl" intro particles interactive className="w-full max-w-[460px] h-auto aspect-square" />
+              <div className="w-full aspect-square grid place-items-center p-3 sm:p-6">
+                <LogoPremium3D size="xl" intro particles interactive className="w-full h-auto aspect-square object-contain max-w-[260px] sm:max-w-[380px] lg:max-w-[460px]" />
               </div>
             </div>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.9 }}
-              className="absolute -bottom-4 right-6 px-4 py-2.5 rounded-2xl bg-card/95 backdrop-blur-xl border border-border shadow-xl flex items-center gap-2"
+              className="absolute -bottom-3 right-3 sm:-bottom-4 sm:right-6 px-3 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-card/95 backdrop-blur-xl border border-border shadow-xl flex items-center gap-2 max-w-[calc(100%-1.5rem)]"
             >
               <ShieldCheck className="text-gold" />
-              <div className="text-xs">
+              <div className="text-[11px] sm:text-xs min-w-0">
                 <div className="font-bold text-primary">{t("home.hero.badge_teachers_count")}</div>
                 <div className="text-muted-foreground">{t("home.hero.badge_ijazat")}</div>
               </div>
@@ -145,10 +145,10 @@ function Hero() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.1 }}
-              className="absolute -top-4 left-6 px-4 py-2.5 rounded-2xl bg-card/95 backdrop-blur-xl border border-border shadow-xl flex items-center gap-2"
+              className="absolute -top-3 left-3 sm:-top-4 sm:left-6 px-3 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-card/95 backdrop-blur-xl border border-border shadow-xl flex items-center gap-2 max-w-[calc(100%-1.5rem)]"
             >
               <Sparkles className="text-gold" />
-              <div className="text-xs">
+              <div className="text-[11px] sm:text-xs min-w-0">
                 <div className="font-bold text-primary">{t("home.hero.badge_live")}</div>
                 <div className="text-muted-foreground">{t("home.hero.badge_join")}</div>
               </div>
@@ -156,7 +156,7 @@ function Hero() {
           </div>
         </motion.div>
 
-        <div className="order-1 lg:order-2 text-center lg:text-right space-y-7">
+        <div className="order-1 lg:order-2 text-center lg:text-right space-y-6 lg:space-y-7">
           <motion.span
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -170,7 +170,7 @@ function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.8 }}
-            className="text-6xl md:text-7xl lg:text-8xl font-bold leading-[0.95] bg-gradient-to-br from-primary via-secondary to-primary bg-clip-text text-transparent"
+            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-[0.95] bg-gradient-to-br from-primary via-secondary to-primary bg-clip-text text-transparent"
             style={{ fontFamily: "var(--font-display-ar)" }}
           >
             {t("app.name")}
@@ -179,7 +179,7 @@ function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="text-2xl md:text-4xl font-bold text-primary leading-tight"
+            className="text-xl sm:text-2xl md:text-4xl font-bold text-primary leading-tight"
           >
             {t("home.hero.title2")}<span className="text-gold">{t("home.hero.title2_suffix")}</span>
           </motion.h2>
@@ -187,7 +187,7 @@ function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.45, duration: 0.8 }}
-            className="text-base md:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0"
+            className="text-sm sm:text-base md:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0"
           >
             {t("home.hero.subtitle")}
           </motion.p>
@@ -195,20 +195,20 @@ function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
-            className="flex flex-wrap gap-4 justify-center lg:justify-start pt-2"
+            className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start pt-2"
           >
             <Link
               to="/auth"
-              className="group relative px-8 py-4 rounded-full bg-gradient-to-br from-primary via-secondary to-primary text-primary-foreground font-bold shadow-[0_15px_40px_-10px_rgba(94,75,123,0.6)] hover:shadow-[0_20px_50px_-10px_rgba(199,163,92,0.6)] transition-all hover:-translate-y-1 overflow-hidden"
+              className="group relative w-full sm:w-auto text-center px-8 py-4 rounded-full bg-gradient-to-br from-primary via-secondary to-primary text-primary-foreground font-bold shadow-[0_15px_40px_-10px_rgba(94,75,123,0.6)] hover:shadow-[0_20px_50px_-10px_rgba(199,163,92,0.6)] transition-all hover:-translate-y-1 overflow-hidden"
             >
-              <span className="relative z-10 flex items-center gap-2">
+              <span className="relative z-10 flex items-center justify-center gap-2">
                 {t("home.cta.register_now")} <Sparkles className="w-4 h-4" />
               </span>
               <span className="absolute inset-0 bg-gradient-to-r from-gold/0 via-gold/30 to-gold/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
             </Link>
             <a
               href="#halaqas"
-              className="px-8 py-4 rounded-full border-2 border-primary/30 text-primary font-bold hover:bg-primary/5 hover:border-primary/60 transition-all backdrop-blur"
+              className="w-full sm:w-auto text-center px-8 py-4 rounded-full border-2 border-primary/30 text-primary font-bold hover:bg-primary/5 hover:border-primary/60 transition-all backdrop-blur"
             >
               {t("home.cta.explore_halaqas")}
             </a>
@@ -217,7 +217,7 @@ function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.9, duration: 1 }}
-            className="flex flex-wrap gap-6 pt-4 justify-center lg:justify-start text-sm text-muted-foreground"
+            className="flex flex-wrap gap-x-5 gap-y-3 pt-4 justify-center lg:justify-start text-xs sm:text-sm text-muted-foreground"
           >
             {[
               t("home.hero.chip.live_correction"),
