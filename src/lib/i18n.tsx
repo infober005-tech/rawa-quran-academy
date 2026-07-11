@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import ar from "./i18n/ar";
 import fr from "./i18n/fr";
 import en from "./i18n/en";
@@ -8,7 +9,12 @@ export type Lang = "ar" | "fr" | "en";
 const DICT: Record<Lang, Record<string, string>> = { ar, fr, en };
 
 
-type Ctx = { lang: Lang; setLang: (l: Lang) => void; t: (k: string) => string; dir: "rtl" | "ltr" };
+type Ctx = {
+  lang: Lang;
+  setLang: (l: Lang) => void;
+  t: (k: string, vars?: Record<string, string | number>) => string;
+  dir: "rtl" | "ltr";
+};
 const I18nContext = createContext<Ctx | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
@@ -20,6 +26,24 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     setLangState(saved);
   }, []);
 
+  // Sync language from user's profile after login and on auth state changes.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let cancelled = false;
+    const applyFromProfile = async (uid: string | undefined) => {
+      if (!uid) return;
+      const { data } = await supabase.from("profiles").select("language").eq("id", uid).maybeSingle();
+      const remote = (data as { language?: Lang } | null)?.language;
+      if (!cancelled && remote && (remote === "ar" || remote === "fr" || remote === "en")) {
+        setLangState(remote);
+        localStorage.setItem("rawa.lang", remote);
+      }
+    };
+    supabase.auth.getSession().then(({ data }) => applyFromProfile(data.session?.user.id));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => applyFromProfile(s?.user?.id));
+    return () => { cancelled = true; sub.subscription.unsubscribe(); };
+  }, []);
+
   useEffect(() => {
     if (typeof document === "undefined") return;
     document.documentElement.lang = lang;
@@ -29,9 +53,21 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const setLang = (l: Lang) => {
     setLangState(l);
     if (typeof window !== "undefined") localStorage.setItem("rawa.lang", l);
+    // Persist to profile if signed in (fire-and-forget).
+    void (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        const uid = data.user?.id;
+        if (uid) await supabase.from("profiles").update({ language: l }).eq("id", uid);
+      } catch { /* ignore */ }
+    })();
   };
 
-  const t = (k: string) => DICT[lang][k] ?? DICT.ar[k] ?? k;
+  const t = (k: string, vars?: Record<string, string | number>) => {
+    let s = DICT[lang][k] ?? DICT.ar[k] ?? k;
+    if (vars) for (const [key, val] of Object.entries(vars)) s = s.replace(new RegExp(`{{\\s*${key}\\s*}}`, "g"), String(val));
+    return s;
+  };
   const dir: "rtl" | "ltr" = lang === "ar" ? "rtl" : "ltr";
 
   return <I18nContext.Provider value={{ lang, setLang, t, dir }}>{children}</I18nContext.Provider>;
