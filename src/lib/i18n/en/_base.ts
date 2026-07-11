@@ -222,7 +222,7 @@ const dict = {
     "home.hero.title2": "Qur'an Academy",
     "home.hero.title2_suffix": " & Sciences",
     "home.hero.subtitle": "A complete journey to memorize the Qur'an, correct your recitation, master Tajweed and study classical texts under a selection of qualified teachers.",
-    "home.hero.badge_teachers_count": "+45 certified teachers",
+    "home.hero.badge_teachers_count": "{{count}} certified teachers",
     "home.hero.badge_ijazat": "Recognized Ijazat",
     "home.hero.badge_live": "Live halaqas now",
     "home.hero.badge_join": "Join today",

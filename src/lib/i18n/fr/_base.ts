@@ -222,7 +222,7 @@ const dict = {
     "home.hero.title2": "Académie du Coran",
     "home.hero.title2_suffix": " et de ses Sciences",
     "home.hero.subtitle": "Un parcours complet pour mémoriser le Coran, corriger votre récitation, maîtriser le Tajwid et étudier les textes classiques auprès d'enseignants qualifiés.",
-    "home.hero.badge_teachers_count": "+45 enseignants certifiés",
+    "home.hero.badge_teachers_count": "{{count}} enseignants certifiés",
     "home.hero.badge_ijazat": "Ijazat reconnues",
     "home.hero.badge_live": "Halaqas en direct",
     "home.hero.badge_join": "Rejoignez-nous",
