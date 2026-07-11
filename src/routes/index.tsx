@@ -414,11 +414,18 @@ function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
 }
 
 function Stats() {
+  const { t } = useI18n();
+  const fn = useServerFn(getLandingStats);
+  const { data } = useQuery({
+    queryKey: ["landing", "stats"],
+    queryFn: () => fn(),
+    staleTime: 5 * 60 * 1000,
+  });
   const stats = [
-    { value: 1200, suffix: "+", label: "طلاب مسجلون" },
-    { value: 80, suffix: "+", label: "حلقات نشطة" },
-    { value: 45, suffix: "+", label: "معلمون" },
-    { value: 12000, suffix: "+", label: "ساعات تعليم" },
+    { value: data?.students ?? 0, label: t("home.stats.students") },
+    { value: data?.halaqas ?? 0, label: t("home.stats.halaqas") },
+    { value: data?.teachers ?? 0, label: t("home.stats.teachers") },
+    { value: data?.hours ?? 0, label: t("home.stats.hours") },
   ];
   return (
     <section className="max-w-7xl mx-auto px-6 py-16">
@@ -437,7 +444,7 @@ function Stats() {
               className="text-center"
             >
               <div className="text-4xl md:text-6xl font-bold bg-gradient-to-br from-gold to-[#F0D78C] bg-clip-text text-transparent" style={{ fontFamily: "var(--font-display-ar)" }}>
-                <Counter to={s.value} suffix={s.suffix} />
+                <Counter to={s.value} />
               </div>
               <div className="text-sm md:text-base text-primary-foreground/90 mt-2">{s.label}</div>
             </motion.div>
