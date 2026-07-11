@@ -279,5 +279,16 @@ const dict = {
     "sub.status.rejected": "Refusé",
     "sub.status.expired": "Expiré",
     "sub.status.inactive": "Inactif",
+    "home.stats.students": "Étudiants inscrits",
+    "home.stats.halaqas": "Halaqas actives",
+    "home.stats.teachers": "Enseignants",
+    "home.stats.hours": "Heures d'enseignement",
+    "home.teachers.tag": "Nos enseignants",
+    "home.teachers.title": "Enseignants certifiés du Coran",
+    "home.teachers.desc": "Enseignants et enseignantes expérimentés dédiés au Coran et à ses sciences.",
+    "home.teachers.empty": "Les enseignants certifiés seront affichés prochainement.",
+    "home.testimonials.tag": "Ils en parlent",
+    "home.testimonials.title": "Des mots venus de cœurs liés au Coran",
+    "home.testimonials.empty": "Aucun témoignage pour le moment.",
 };
 export default dict;
