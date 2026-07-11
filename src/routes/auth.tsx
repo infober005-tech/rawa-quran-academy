@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/use-auth";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, LangSwitcher } from "@/lib/i18n";
 import { toast } from "sonner";
 import { LogoPremium3D } from "@/components/LogoPremium3D";
 
@@ -35,6 +35,7 @@ function AuthPage() {
   return (
     <div dir={dir} className="min-h-dvh bg-hero islamic-pattern flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        <div className="flex justify-center mb-4"><LangSwitcher /></div>
         <Link to="/" className="flex flex-col items-center justify-center gap-2 mb-6">
           <LogoPremium3D size="md" intro />
           <div className="text-center">
@@ -205,8 +206,8 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (form.password !== form.confirm) { toast.error("Passwords don't match"); return; }
-    if (form.password.length < 8) { toast.error("Password must be at least 8 characters"); return; }
+    if (form.password !== form.confirm) { toast.error(t("common.password_mismatch")); return; }
+    if (form.password.length < 8) { toast.error(t("common.password_min")); return; }
     setBusy(true);
     const { error } = await supabase.auth.signUp({
       email: form.email,
