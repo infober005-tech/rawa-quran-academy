@@ -279,5 +279,16 @@ const dict = {
     "sub.status.rejected": "Rejected",
     "sub.status.expired": "Expired",
     "sub.status.inactive": "Inactive",
+    "home.stats.students": "Registered students",
+    "home.stats.halaqas": "Active halaqas",
+    "home.stats.teachers": "Teachers",
+    "home.stats.hours": "Teaching hours",
+    "home.teachers.tag": "Our teachers",
+    "home.teachers.title": "Certified Quran teachers",
+    "home.teachers.desc": "Experienced male and female teachers dedicated to Quran and its sciences.",
+    "home.teachers.empty": "Certified teachers will appear soon.",
+    "home.testimonials.tag": "What they say",
+    "home.testimonials.title": "Words from hearts connected to the Quran",
+    "home.testimonials.empty": "No testimonials yet.",
 };
 export default dict;

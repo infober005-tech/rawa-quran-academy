@@ -9,6 +9,13 @@ import {
 import logoAsset from "@/assets/rawa-logo.png.asset.json";
 import { LogoPremium3D } from "@/components/LogoPremium3D";
 import { useI18n, LangSwitcher } from "@/lib/i18n";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  getLandingStats,
+  getLandingTeachers,
+  getLandingTestimonials,
+} from "@/lib/landing.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -109,27 +116,27 @@ function Hero() {
       <div className="absolute -top-20 right-1/4 w-[500px] h-[500px] bg-primary/25 rounded-full blur-[120px] animate-pulse" />
       <div className="absolute -bottom-20 left-1/4 w-[500px] h-[500px] bg-gold/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: "1.5s" }} />
 
-      <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-8 lg:gap-16 items-center relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center relative">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
-          className="relative order-2 lg:order-1 max-w-[520px] mx-auto w-full"
+          className="relative order-2 lg:order-1 w-full max-w-[300px] sm:max-w-[420px] lg:max-w-[520px] mx-auto"
         >
-          <div className="relative rounded-[2.5rem] p-4 bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-xl border border-white/50 shadow-[0_30px_80px_-20px_rgba(94,75,123,0.4)]">
+          <div className="relative rounded-[2rem] lg:rounded-[2.5rem] p-3 sm:p-4 bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-xl border border-white/50 shadow-[0_30px_80px_-20px_rgba(94,75,123,0.4)]">
             <div className="rounded-[2rem] overflow-hidden bg-gradient-to-br from-primary/5 via-transparent to-gold/10">
-              <div className="w-full aspect-square grid place-items-center p-4 sm:p-6">
-                <LogoPremium3D size="xl" intro particles interactive className="w-full max-w-[460px] h-auto aspect-square" />
+              <div className="w-full aspect-square grid place-items-center p-3 sm:p-6">
+                <LogoPremium3D size="xl" intro particles interactive className="w-full h-auto aspect-square object-contain max-w-[260px] sm:max-w-[380px] lg:max-w-[460px]" />
               </div>
             </div>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.9 }}
-              className="absolute -bottom-4 right-6 px-4 py-2.5 rounded-2xl bg-card/95 backdrop-blur-xl border border-border shadow-xl flex items-center gap-2"
+              className="absolute -bottom-3 right-3 sm:-bottom-4 sm:right-6 px-3 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-card/95 backdrop-blur-xl border border-border shadow-xl flex items-center gap-2 max-w-[calc(100%-1.5rem)]"
             >
               <ShieldCheck className="text-gold" />
-              <div className="text-xs">
+              <div className="text-[11px] sm:text-xs min-w-0">
                 <div className="font-bold text-primary">{t("home.hero.badge_teachers_count")}</div>
                 <div className="text-muted-foreground">{t("home.hero.badge_ijazat")}</div>
               </div>
@@ -138,10 +145,10 @@ function Hero() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.1 }}
-              className="absolute -top-4 left-6 px-4 py-2.5 rounded-2xl bg-card/95 backdrop-blur-xl border border-border shadow-xl flex items-center gap-2"
+              className="absolute -top-3 left-3 sm:-top-4 sm:left-6 px-3 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-card/95 backdrop-blur-xl border border-border shadow-xl flex items-center gap-2 max-w-[calc(100%-1.5rem)]"
             >
               <Sparkles className="text-gold" />
-              <div className="text-xs">
+              <div className="text-[11px] sm:text-xs min-w-0">
                 <div className="font-bold text-primary">{t("home.hero.badge_live")}</div>
                 <div className="text-muted-foreground">{t("home.hero.badge_join")}</div>
               </div>
@@ -149,7 +156,7 @@ function Hero() {
           </div>
         </motion.div>
 
-        <div className="order-1 lg:order-2 text-center lg:text-right space-y-7">
+        <div className="order-1 lg:order-2 text-center lg:text-right space-y-6 lg:space-y-7">
           <motion.span
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -163,7 +170,7 @@ function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.8 }}
-            className="text-6xl md:text-7xl lg:text-8xl font-bold leading-[0.95] bg-gradient-to-br from-primary via-secondary to-primary bg-clip-text text-transparent"
+            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-[0.95] bg-gradient-to-br from-primary via-secondary to-primary bg-clip-text text-transparent"
             style={{ fontFamily: "var(--font-display-ar)" }}
           >
             {t("app.name")}
@@ -172,7 +179,7 @@ function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="text-2xl md:text-4xl font-bold text-primary leading-tight"
+            className="text-xl sm:text-2xl md:text-4xl font-bold text-primary leading-tight"
           >
             {t("home.hero.title2")}<span className="text-gold">{t("home.hero.title2_suffix")}</span>
           </motion.h2>
@@ -180,7 +187,7 @@ function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.45, duration: 0.8 }}
-            className="text-base md:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0"
+            className="text-sm sm:text-base md:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0"
           >
             {t("home.hero.subtitle")}
           </motion.p>
@@ -188,20 +195,20 @@ function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
-            className="flex flex-wrap gap-4 justify-center lg:justify-start pt-2"
+            className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start pt-2"
           >
             <Link
               to="/auth"
-              className="group relative px-8 py-4 rounded-full bg-gradient-to-br from-primary via-secondary to-primary text-primary-foreground font-bold shadow-[0_15px_40px_-10px_rgba(94,75,123,0.6)] hover:shadow-[0_20px_50px_-10px_rgba(199,163,92,0.6)] transition-all hover:-translate-y-1 overflow-hidden"
+              className="group relative w-full sm:w-auto text-center px-8 py-4 rounded-full bg-gradient-to-br from-primary via-secondary to-primary text-primary-foreground font-bold shadow-[0_15px_40px_-10px_rgba(94,75,123,0.6)] hover:shadow-[0_20px_50px_-10px_rgba(199,163,92,0.6)] transition-all hover:-translate-y-1 overflow-hidden"
             >
-              <span className="relative z-10 flex items-center gap-2">
+              <span className="relative z-10 flex items-center justify-center gap-2">
                 {t("home.cta.register_now")} <Sparkles className="w-4 h-4" />
               </span>
               <span className="absolute inset-0 bg-gradient-to-r from-gold/0 via-gold/30 to-gold/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
             </Link>
             <a
               href="#halaqas"
-              className="px-8 py-4 rounded-full border-2 border-primary/30 text-primary font-bold hover:bg-primary/5 hover:border-primary/60 transition-all backdrop-blur"
+              className="w-full sm:w-auto text-center px-8 py-4 rounded-full border-2 border-primary/30 text-primary font-bold hover:bg-primary/5 hover:border-primary/60 transition-all backdrop-blur"
             >
               {t("home.cta.explore_halaqas")}
             </a>
@@ -210,7 +217,7 @@ function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.9, duration: 1 }}
-            className="flex flex-wrap gap-6 pt-4 justify-center lg:justify-start text-sm text-muted-foreground"
+            className="flex flex-wrap gap-x-5 gap-y-3 pt-4 justify-center lg:justify-start text-xs sm:text-sm text-muted-foreground"
           >
             {[
               t("home.hero.chip.live_correction"),
@@ -407,11 +414,18 @@ function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
 }
 
 function Stats() {
+  const { t } = useI18n();
+  const fn = useServerFn(getLandingStats);
+  const { data } = useQuery({
+    queryKey: ["landing", "stats"],
+    queryFn: () => fn(),
+    staleTime: 5 * 60 * 1000,
+  });
   const stats = [
-    { value: 1200, suffix: "+", label: "طلاب مسجلون" },
-    { value: 80, suffix: "+", label: "حلقات نشطة" },
-    { value: 45, suffix: "+", label: "معلمون" },
-    { value: 12000, suffix: "+", label: "ساعات تعليم" },
+    { value: data?.students ?? 0, label: t("home.stats.students") },
+    { value: data?.halaqas ?? 0, label: t("home.stats.halaqas") },
+    { value: data?.teachers ?? 0, label: t("home.stats.teachers") },
+    { value: data?.hours ?? 0, label: t("home.stats.hours") },
   ];
   return (
     <section className="max-w-7xl mx-auto px-6 py-16">
@@ -430,7 +444,7 @@ function Stats() {
               className="text-center"
             >
               <div className="text-4xl md:text-6xl font-bold bg-gradient-to-br from-gold to-[#F0D78C] bg-clip-text text-transparent" style={{ fontFamily: "var(--font-display-ar)" }}>
-                <Counter to={s.value} suffix={s.suffix} />
+                <Counter to={s.value} />
               </div>
               <div className="text-sm md:text-base text-primary-foreground/90 mt-2">{s.label}</div>
             </motion.div>
@@ -522,20 +536,27 @@ function Parents() {
 
 /* ============================ TEACHERS ============================ */
 function Teachers() {
-  const teachers = [
-    { name: "الشيخ عبدالرحمن المصري", spec: "حفص عن عاصم · إجازة", exp: "15 سنة خبرة", initials: "ع" },
-    { name: "الأستاذة فاطمة الزهراء", spec: "تجويد ومتون", exp: "10 سنوات خبرة", initials: "ف" },
-    { name: "الشيخ يوسف القاسمي", spec: "قراءات عشر · إجازة", exp: "20 سنة خبرة", initials: "ي" },
-    { name: "الأستاذة مريم الحسني", spec: "تحفيظ المبتدئين", exp: "8 سنوات خبرة", initials: "م" },
-  ];
+  const { t } = useI18n();
+  const fn = useServerFn(getLandingTeachers);
+  const { data: teachers } = useQuery({
+    queryKey: ["landing", "teachers"],
+    queryFn: () => fn(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const list = teachers ?? [];
   return (
     <section id="teachers" className="bg-gradient-to-b from-background via-muted/30 to-background py-24 md:py-32">
       <div className="max-w-7xl mx-auto px-6">
-        <SectionHeader tag="نخبة المعلمين" title="معلمون بإجازات معتمدة" desc="أساتذة وأستاذات ذوو خبرة طويلة في تعليم القرآن وعلومه." />
+        <SectionHeader tag={t("home.teachers.tag")} title={t("home.teachers.title")} desc={t("home.teachers.desc")} />
+        {list.length === 0 ? (
+          <div className="text-center text-muted-foreground py-10 rounded-3xl border border-dashed border-border bg-card/50">
+            {t("home.teachers.empty")}
+          </div>
+        ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {teachers.map((t, i) => (
+          {list.map((tc, i) => (
             <motion.div
-              key={t.name}
+              key={tc.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
@@ -544,19 +565,23 @@ function Teachers() {
             >
               <div className="relative w-28 h-28 mx-auto mb-5">
                 <div className="absolute inset-0 rounded-full bg-gradient-to-br from-gold/30 to-primary/30 blur-xl group-hover:blur-2xl transition-all" />
-                <div className="relative w-full h-full rounded-full bg-gradient-to-br from-primary to-secondary text-primary-foreground flex items-center justify-center text-4xl font-bold shadow-xl" style={{ fontFamily: "var(--font-display-ar)" }}>
-                  {t.initials}
-                </div>
+                {tc.avatar_url ? (
+                  <img src={tc.avatar_url} alt={tc.full_name} className="relative w-full h-full rounded-full object-cover shadow-xl" />
+                ) : (
+                  <div className="relative w-full h-full rounded-full bg-gradient-to-br from-primary to-secondary text-primary-foreground flex items-center justify-center text-4xl font-bold shadow-xl" style={{ fontFamily: "var(--font-display-ar)" }}>
+                    {(tc.full_name || "?").trim().charAt(0)}
+                  </div>
+                )}
                 <span className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-gold text-gold-foreground flex items-center justify-center text-xs shadow-md">
                   <ShieldCheck className="w-4 h-4" />
                 </span>
               </div>
-              <div className="font-bold text-primary text-lg mb-1">{t.name}</div>
-              <div className="text-sm text-gold font-semibold mb-1">{t.spec}</div>
-              <div className="text-xs text-muted-foreground">{t.exp}</div>
+              <div className="font-bold text-primary text-lg mb-1">{tc.full_name}</div>
+              {tc.bio && <div className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{tc.bio}</div>}
             </motion.div>
           ))}
         </div>
+        )}
       </div>
     </section>
   );
@@ -564,18 +589,26 @@ function Teachers() {
 
 /* ========================== TESTIMONIALS ========================== */
 function Testimonials() {
-  const items = [
-    { name: "أم خالد", role: "وليّة أمر", text: "منصة رواء غيرت علاقة ابني بكتاب الله، أصبح متحمساً للحلقة كل يوم." },
-    { name: "محمد، 17 سنة", role: "طالب", text: "تصحيح المعلم المباشر ساعدني أتقن أحكام التجويد بسرعة." },
-    { name: "الشيخ أحمد", role: "معلم في رواء", text: "أدوات التقييم والمتابعة وفّرت عليّ وقتاً كبيراً وزادت تركيزي مع الطلاب." },
-  ];
+  const { t } = useI18n();
+  const fn = useServerFn(getLandingTestimonials);
+  const { data } = useQuery({
+    queryKey: ["landing", "testimonials"],
+    queryFn: () => fn(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const items = data ?? [];
   return (
     <section className="max-w-7xl mx-auto px-6 py-24 md:py-32">
-      <SectionHeader tag="آراء طلابنا" title="كلمات من قلوب موصولة بالقرآن" />
+      <SectionHeader tag={t("home.testimonials.tag")} title={t("home.testimonials.title")} />
+      {items.length === 0 ? (
+        <div className="text-center text-muted-foreground py-10 rounded-3xl border border-dashed border-border bg-card/50 max-w-2xl mx-auto">
+          {t("home.testimonials.empty")}
+        </div>
+      ) : (
       <div className="grid md:grid-cols-3 gap-6">
         {items.map((it, i) => (
           <motion.div
-            key={it.name}
+            key={it.id}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
@@ -600,6 +633,7 @@ function Testimonials() {
           </motion.div>
         ))}
       </div>
+      )}
     </section>
   );
 }
