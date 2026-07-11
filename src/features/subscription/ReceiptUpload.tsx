@@ -22,6 +22,8 @@ const schema = z.object({
 
 export function ReceiptUpload({ qrPayload, onSubmitted }: { qrPayload: QrPayload | null; onSubmitted: () => void }) {
   const { user, profile } = useAuth();
+  const { t } = useI18n();
+  const PAYMENT_METHODS = getPaymentMethods(t);
   const qc = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
