@@ -270,17 +270,18 @@ function SectionHeader({ tag, title, desc }: { tag: string; title: string; desc?
 
 /* ============================ FEATURES =========================== */
 function Features() {
+  const { t } = useI18n();
   const features = [
-    { icon: PlayCircle, title: "حلقات قرآنية مباشرة", desc: "تعلم مع معلمين مؤهلين عبر حلقات إلكترونية تفاعلية." },
-    { icon: Mic, title: "تصحيح التلاوة", desc: "متابعة فردية وتصحيح الأخطاء مباشرة." },
-    { icon: BookOpen, title: "متابعة الحفظ", desc: "خطة حفظ ومراجعة لكل طالب." },
-    { icon: CalendarCheck, title: "إدارة حضور ذكية", desc: "متابعة دقيقة للحضور والغياب." },
-    { icon: BarChart3, title: "تقارير دورية", desc: "تقارير مفصلة للطالب وولي الأمر." },
-    { icon: GraduationCap, title: "فعاليات ودورات", desc: "لقاءات مباشرة ودورات علمية دورية." },
+    { icon: PlayCircle, title: t("home.feat.live.title"), desc: t("home.feat.live.desc") },
+    { icon: Mic, title: t("home.feat.correction.title"), desc: t("home.feat.correction.desc") },
+    { icon: BookOpen, title: t("home.feat.memorize.title"), desc: t("home.feat.memorize.desc") },
+    { icon: CalendarCheck, title: t("home.feat.attend.title"), desc: t("home.feat.attend.desc") },
+    { icon: BarChart3, title: t("home.feat.reports.title"), desc: t("home.feat.reports.desc") },
+    { icon: GraduationCap, title: t("home.feat.events.title"), desc: t("home.feat.events.desc") },
   ];
   return (
     <section id="features" className="max-w-7xl mx-auto px-6 py-24 md:py-32 relative">
-      <SectionHeader tag="المنصّة" title="منظومة قرآنية متكاملة" desc="كل ما يحتاجه الطالب والمعلم وإدارة الأكاديمية في مكان واحد." />
+      <SectionHeader tag={t("home.features.tag")} title={t("home.features.title")} desc={t("home.features.desc")} />
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {features.map((f, i) => (
           <motion.div
@@ -308,17 +309,18 @@ function Features() {
 
 /* =========================== HOW IT WORKS ========================= */
 function HowItWorks() {
+  const { t } = useI18n();
   const steps = [
-    { icon: UserPlus, title: "التسجيل في المنصة", desc: "أنشئ حسابك خلال دقائق بمعلومات بسيطة." },
-    { icon: ShieldCheck, title: "مراجعة الطلب من الإدارة", desc: "تتأكد الإدارة من بياناتك وملاءمتك." },
-    { icon: Users, title: "إسناد الطالب للحلقة المناسبة", desc: "نختار لك حلقة تناسب مستواك وجدولك." },
-    { icon: Sparkles, title: "بدء رحلة التعلم", desc: "ابدأ مسيرتك مع كتاب الله بصحبة معلميك." },
+    { icon: UserPlus, title: t("home.how.s1.title"), desc: t("home.how.s1.desc") },
+    { icon: ShieldCheck, title: t("home.how.s2.title"), desc: t("home.how.s2.desc") },
+    { icon: Users, title: t("home.how.s3.title"), desc: t("home.how.s3.desc") },
+    { icon: Sparkles, title: t("home.how.s4.title"), desc: t("home.how.s4.desc") },
   ];
   return (
     <section id="how" className="bg-gradient-to-b from-muted/30 via-background to-background py-24 md:py-32 relative overflow-hidden">
       <div className="absolute inset-0 opacity-[0.04] pointer-events-none"><IslamicPattern /></div>
       <div className="max-w-7xl mx-auto px-6 relative">
-        <SectionHeader tag="خطواتك معنا" title="رحلتك في رواء" desc="أربع خطوات بسيطة تفصلك عن بدء حلقتك القرآنية." />
+        <SectionHeader tag={t("home.how.tag")} title={t("home.how.title")} desc={t("home.how.desc")} />
         <div className="relative">
           <div className="hidden lg:block absolute top-12 right-0 left-0 h-0.5 bg-gradient-to-l from-transparent via-gold/40 to-transparent" />
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
