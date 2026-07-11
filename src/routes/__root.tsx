@@ -12,13 +12,24 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/hooks/use-auth";
-import { I18nProvider, useI18n } from "@/lib/i18n";
+import { I18nProvider } from "@/lib/i18n";
+import ar from "@/lib/i18n/ar";
+import fr from "@/lib/i18n/fr";
+import en from "@/lib/i18n/en";
 import { Toaster } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OfflineBanner } from "@/components/OfflineBanner";
 
+// Root-level error/not-found boundaries render OUTSIDE I18nProvider, so read the dict directly.
+function pickDict() {
+  const lang = typeof document !== "undefined" ? document.documentElement.lang : "ar";
+  if (lang === "en") return en;
+  if (lang === "fr") return fr;
+  return ar;
+}
+
 function NotFoundComponent() {
-  const { t } = useI18n();
+  const t = (k: string) => (pickDict() as Record<string, string>)[k] ?? k;
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
@@ -43,7 +54,7 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
-  const { t } = useI18n();
+  const t = (k: string) => (pickDict() as Record<string, string>)[k] ?? k;
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
