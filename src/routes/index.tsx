@@ -536,20 +536,27 @@ function Parents() {
 
 /* ============================ TEACHERS ============================ */
 function Teachers() {
-  const teachers = [
-    { name: "الشيخ عبدالرحمن المصري", spec: "حفص عن عاصم · إجازة", exp: "15 سنة خبرة", initials: "ع" },
-    { name: "الأستاذة فاطمة الزهراء", spec: "تجويد ومتون", exp: "10 سنوات خبرة", initials: "ف" },
-    { name: "الشيخ يوسف القاسمي", spec: "قراءات عشر · إجازة", exp: "20 سنة خبرة", initials: "ي" },
-    { name: "الأستاذة مريم الحسني", spec: "تحفيظ المبتدئين", exp: "8 سنوات خبرة", initials: "م" },
-  ];
+  const { t } = useI18n();
+  const fn = useServerFn(getLandingTeachers);
+  const { data: teachers } = useQuery({
+    queryKey: ["landing", "teachers"],
+    queryFn: () => fn(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const list = teachers ?? [];
   return (
     <section id="teachers" className="bg-gradient-to-b from-background via-muted/30 to-background py-24 md:py-32">
       <div className="max-w-7xl mx-auto px-6">
-        <SectionHeader tag="نخبة المعلمين" title="معلمون بإجازات معتمدة" desc="أساتذة وأستاذات ذوو خبرة طويلة في تعليم القرآن وعلومه." />
+        <SectionHeader tag={t("home.teachers.tag")} title={t("home.teachers.title")} desc={t("home.teachers.desc")} />
+        {list.length === 0 ? (
+          <div className="text-center text-muted-foreground py-10 rounded-3xl border border-dashed border-border bg-card/50">
+            {t("home.teachers.empty")}
+          </div>
+        ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {teachers.map((t, i) => (
+          {list.map((tc, i) => (
             <motion.div
-              key={t.name}
+              key={tc.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
@@ -558,19 +565,23 @@ function Teachers() {
             >
               <div className="relative w-28 h-28 mx-auto mb-5">
                 <div className="absolute inset-0 rounded-full bg-gradient-to-br from-gold/30 to-primary/30 blur-xl group-hover:blur-2xl transition-all" />
-                <div className="relative w-full h-full rounded-full bg-gradient-to-br from-primary to-secondary text-primary-foreground flex items-center justify-center text-4xl font-bold shadow-xl" style={{ fontFamily: "var(--font-display-ar)" }}>
-                  {t.initials}
-                </div>
+                {tc.avatar_url ? (
+                  <img src={tc.avatar_url} alt={tc.full_name} className="relative w-full h-full rounded-full object-cover shadow-xl" />
+                ) : (
+                  <div className="relative w-full h-full rounded-full bg-gradient-to-br from-primary to-secondary text-primary-foreground flex items-center justify-center text-4xl font-bold shadow-xl" style={{ fontFamily: "var(--font-display-ar)" }}>
+                    {(tc.full_name || "?").trim().charAt(0)}
+                  </div>
+                )}
                 <span className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-gold text-gold-foreground flex items-center justify-center text-xs shadow-md">
                   <ShieldCheck className="w-4 h-4" />
                 </span>
               </div>
-              <div className="font-bold text-primary text-lg mb-1">{t.name}</div>
-              <div className="text-sm text-gold font-semibold mb-1">{t.spec}</div>
-              <div className="text-xs text-muted-foreground">{t.exp}</div>
+              <div className="font-bold text-primary text-lg mb-1">{tc.full_name}</div>
+              {tc.bio && <div className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{tc.bio}</div>}
             </motion.div>
           ))}
         </div>
+        )}
       </div>
     </section>
   );
@@ -578,18 +589,26 @@ function Teachers() {
 
 /* ========================== TESTIMONIALS ========================== */
 function Testimonials() {
-  const items = [
-    { name: "أم خالد", role: "وليّة أمر", text: "منصة رواء غيرت علاقة ابني بكتاب الله، أصبح متحمساً للحلقة كل يوم." },
-    { name: "محمد، 17 سنة", role: "طالب", text: "تصحيح المعلم المباشر ساعدني أتقن أحكام التجويد بسرعة." },
-    { name: "الشيخ أحمد", role: "معلم في رواء", text: "أدوات التقييم والمتابعة وفّرت عليّ وقتاً كبيراً وزادت تركيزي مع الطلاب." },
-  ];
+  const { t } = useI18n();
+  const fn = useServerFn(getLandingTestimonials);
+  const { data } = useQuery({
+    queryKey: ["landing", "testimonials"],
+    queryFn: () => fn(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const items = data ?? [];
   return (
     <section className="max-w-7xl mx-auto px-6 py-24 md:py-32">
-      <SectionHeader tag="آراء طلابنا" title="كلمات من قلوب موصولة بالقرآن" />
+      <SectionHeader tag={t("home.testimonials.tag")} title={t("home.testimonials.title")} />
+      {items.length === 0 ? (
+        <div className="text-center text-muted-foreground py-10 rounded-3xl border border-dashed border-border bg-card/50 max-w-2xl mx-auto">
+          {t("home.testimonials.empty")}
+        </div>
+      ) : (
       <div className="grid md:grid-cols-3 gap-6">
         {items.map((it, i) => (
           <motion.div
-            key={it.name}
+            key={it.id}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
@@ -614,6 +633,7 @@ function Testimonials() {
           </motion.div>
         ))}
       </div>
+      )}
     </section>
   );
 }
