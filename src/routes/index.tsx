@@ -487,6 +487,106 @@ function Stats() {
 }
 
 /* ============================ PARENTS ============================= */
+function useParentPreviewLines() {
+  const { t } = useI18n();
+  const { data } = useQuery({
+    queryKey: ["parent-portal-preview"],
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data: userRes } = await supabase.auth.getUser();
+      const parentId = userRes.user?.id;
+      if (!parentId) return null;
+      const { data: link } = await supabase
+        .from("parent_links")
+        .select("student_user_id")
+        .eq("parent_user_id", parentId)
+        .limit(1)
+        .maybeSingle();
+      const studentId = link?.student_user_id;
+      if (!studentId) return null;
+      const [{ data: profile }, { data: sh }, { data: att }, { data: evalRow }, { data: notif }] =
+        await Promise.all([
+          supabase.from("profiles").select("full_name").eq("id", studentId).maybeSingle(),
+          supabase
+            .from("student_halaqas")
+            .select("halaqa_id, halaqas(id, name)")
+            .eq("student_id", studentId)
+            .limit(1)
+            .maybeSingle(),
+          supabase.from("attendance").select("status").eq("student_id", studentId).limit(500),
+          supabase
+            .from("evaluations")
+            .select("tajweed_score, memorization_score, fluency_score, participation_score, behavior_score, created_at")
+            .eq("student_id", studentId)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase
+            .from("notifications")
+            .select("title, created_at")
+            .eq("user_id", parentId)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+        ]);
+      const halaqaId = (sh as { halaqa_id?: string | null } | null)?.halaqa_id ?? null;
+      const halaqaName =
+        (sh as { halaqas?: { name?: string | null } | null } | null)?.halaqas?.name ?? null;
+      let assignmentTitle: string | null = null;
+      if (halaqaId) {
+        const { data: assign } = await supabase
+          .from("assignments")
+          .select("title")
+          .eq("halaqa_id", halaqaId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        assignmentTitle = assign?.title ?? null;
+      }
+      const attRows = att ?? [];
+      const attendancePct = attRows.length
+        ? Math.round(
+            (attRows.filter((r) => r.status === "present" || r.status === "late").length /
+              attRows.length) *
+              100,
+          )
+        : null;
+      let evalAvg: number | null = null;
+      if (evalRow) {
+        const scores = [
+          evalRow.tajweed_score,
+          evalRow.memorization_score,
+          evalRow.fluency_score,
+          evalRow.participation_score,
+          evalRow.behavior_score,
+        ].filter((n): n is number => typeof n === "number");
+        if (scores.length) evalAvg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+      }
+      return {
+        studentName: profile?.full_name ?? null,
+        halaqaName,
+        assignmentTitle,
+        attendancePct,
+        evalAvg,
+        notificationTitle: notif?.title ?? null,
+      };
+    },
+  });
+
+  const lines: string[] = [];
+  if (data) {
+    if (data.halaqaName) lines.push(`${t("nav.halaqas")}: ${data.halaqaName}`);
+    if (data.assignmentTitle) lines.push(`📖 ${data.assignmentTitle}`);
+    if (typeof data.attendancePct === "number")
+      lines.push(`${t("dash.attendance")}: ${data.attendancePct}%`);
+    if (typeof data.evalAvg === "number") lines.push(`⭐ ${data.evalAvg}/100`);
+    if (data.notificationTitle)
+      lines.push(`${t("nav.notifications")}: ${data.notificationTitle}`);
+  }
+  if (lines.length === 0) lines.push(t("common.no_data"));
+  return { studentName: data?.studentName ?? null, lines };
+}
+
 function Parents() {
   const { t } = useI18n();
   const preview = useParentPreviewLines();
