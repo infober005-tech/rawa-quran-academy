@@ -11,6 +11,7 @@ import { LogoPremium3D } from "@/components/LogoPremium3D";
 import { useI18n, LangSwitcher } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { supabase } from "@/integrations/supabase/client";
 import {
   getLandingStats,
   getLandingTeachers,
@@ -486,8 +487,109 @@ function Stats() {
 }
 
 /* ============================ PARENTS ============================= */
+function useParentPreviewLines() {
+  const { t } = useI18n();
+  const { data } = useQuery({
+    queryKey: ["parent-portal-preview"],
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data: userRes } = await supabase.auth.getUser();
+      const parentId = userRes.user?.id;
+      if (!parentId) return null;
+      const { data: link } = await supabase
+        .from("parent_links")
+        .select("student_user_id")
+        .eq("parent_user_id", parentId)
+        .limit(1)
+        .maybeSingle();
+      const studentId = link?.student_user_id;
+      if (!studentId) return null;
+      const [{ data: profile }, { data: sh }, { data: att }, { data: evalRow }, { data: notif }] =
+        await Promise.all([
+          supabase.from("profiles").select("full_name").eq("id", studentId).maybeSingle(),
+          supabase
+            .from("student_halaqas")
+            .select("halaqa_id, halaqas(id, name)")
+            .eq("student_id", studentId)
+            .limit(1)
+            .maybeSingle(),
+          supabase.from("attendance").select("status").eq("student_id", studentId).limit(500),
+          supabase
+            .from("evaluations")
+            .select("tajweed_score, memorization_score, fluency_score, participation_score, behavior_score, created_at")
+            .eq("student_id", studentId)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase
+            .from("notifications")
+            .select("title, created_at")
+            .eq("user_id", parentId)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+        ]);
+      const halaqaId = (sh as { halaqa_id?: string | null } | null)?.halaqa_id ?? null;
+      const halaqaName =
+        (sh as { halaqas?: { name?: string | null } | null } | null)?.halaqas?.name ?? null;
+      let assignmentTitle: string | null = null;
+      if (halaqaId) {
+        const { data: assign } = await supabase
+          .from("assignments")
+          .select("title")
+          .eq("halaqa_id", halaqaId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        assignmentTitle = assign?.title ?? null;
+      }
+      const attRows = att ?? [];
+      const attendancePct = attRows.length
+        ? Math.round(
+            (attRows.filter((r) => r.status === "present" || r.status === "late").length /
+              attRows.length) *
+              100,
+          )
+        : null;
+      let evalAvg: number | null = null;
+      if (evalRow) {
+        const scores = [
+          evalRow.tajweed_score,
+          evalRow.memorization_score,
+          evalRow.fluency_score,
+          evalRow.participation_score,
+          evalRow.behavior_score,
+        ].filter((n): n is number => typeof n === "number");
+        if (scores.length) evalAvg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+      }
+      return {
+        studentName: profile?.full_name ?? null,
+        halaqaName,
+        assignmentTitle,
+        attendancePct,
+        evalAvg,
+        notificationTitle: notif?.title ?? null,
+      };
+    },
+  });
+
+  const lines: string[] = [];
+  if (data) {
+    if (data.halaqaName) lines.push(`${t("nav.halaqas")}: ${data.halaqaName}`);
+    if (data.assignmentTitle) lines.push(`📖 ${data.assignmentTitle}`);
+    if (typeof data.attendancePct === "number")
+      lines.push(`${t("dash.attendance")}: ${data.attendancePct}%`);
+    if (typeof data.evalAvg === "number") lines.push(`⭐ ${data.evalAvg}/100`);
+    if (data.notificationTitle)
+      lines.push(`${t("nav.notifications")}: ${data.notificationTitle}`);
+  }
+  if (lines.length === 0) lines.push(t("common.no_data"));
+  return { studentName: data?.studentName ?? null, lines };
+}
+
 function Parents() {
   const { t } = useI18n();
+  const preview = useParentPreviewLines();
   const items = [
     { icon: CalendarCheck, title: t("p.home.parents.item1.title"), desc: t("p.home.parents.item1.desc") },
     { icon: BarChart3, title: t("p.home.parents.item2.title"), desc: t("p.home.parents.item2.desc") },
@@ -510,12 +612,12 @@ function Parents() {
               <div className="absolute top-6 right-6 left-6 flex items-center gap-3">
                 <img src={logoAsset.url} alt="" className="w-12 h-12 rounded-full" />
                 <div className="text-primary-foreground">
-                  <div className="font-bold">{t("p.home.parents.card.title")}</div>
+                  <div className="font-bold">{preview.studentName ?? t("p.home.parents.card.title")}</div>
                   <div className="text-xs text-primary-foreground/70">{t("app.name")}</div>
                 </div>
               </div>
               <div className="relative space-y-3">
-                {[t("p.home.parents.card.line1"), t("p.home.parents.card.line2"), t("p.home.parents.card.line3")].map((line, i) => (
+                {preview.lines.map((line, i) => (
                   <motion.div
                     key={line}
                     initial={{ opacity: 0, x: -20 }}
