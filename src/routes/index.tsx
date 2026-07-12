@@ -488,6 +488,7 @@ function Stats() {
 /* ============================ PARENTS ============================= */
 function Parents() {
   const { t } = useI18n();
+  const preview = useParentPreviewLines();
   const items = [
     { icon: CalendarCheck, title: t("p.home.parents.item1.title"), desc: t("p.home.parents.item1.desc") },
     { icon: BarChart3, title: t("p.home.parents.item2.title"), desc: t("p.home.parents.item2.desc") },
@@ -510,12 +511,12 @@ function Parents() {
               <div className="absolute top-6 right-6 left-6 flex items-center gap-3">
                 <img src={logoAsset.url} alt="" className="w-12 h-12 rounded-full" />
                 <div className="text-primary-foreground">
-                  <div className="font-bold">{t("p.home.parents.card.title")}</div>
+                  <div className="font-bold">{preview.studentName ?? t("p.home.parents.card.title")}</div>
                   <div className="text-xs text-primary-foreground/70">{t("app.name")}</div>
                 </div>
               </div>
               <div className="relative space-y-3">
-                {[t("p.home.parents.card.line1"), t("p.home.parents.card.line2"), t("p.home.parents.card.line3")].map((line, i) => (
+                {preview.lines.map((line, i) => (
                   <motion.div
                     key={line}
                     initial={{ opacity: 0, x: -20 }}
