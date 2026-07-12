@@ -188,5 +188,12 @@ const dict: Record<string, string> = {
   "a.nav.parents": "Parent links",
   "a.nav.payments": "💳 Payments",
   "a.nav.payment_settings": "⚙️ Payment settings",
+  "admin.users.actions": "Actions",
+  "admin.users.delete.button": "Delete",
+  "admin.users.delete.title": "Delete User",
+  "admin.users.delete.message": "Are you sure you want to permanently delete this account? This action cannot be undone.",
+  "admin.users.delete.cancel": "Cancel",
+  "admin.users.delete.confirm": "Delete Permanently",
+  "admin.users.delete.success": "User deleted successfully.",
 };
 export default dict;
