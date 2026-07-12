@@ -1,14 +1,33 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import type { AppRole } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
+import { useServerFn } from "@tanstack/react-start";
+import { deleteUserAccount } from "@/lib/admin-users.functions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const ROLES: AppRole[] = ["student", "teacher", "halaqa_supervisor", "general_supervisor", "director", "parent"];
 
 export function UsersPanel() {
   const { t } = useI18n();
   const qc = useQueryClient();
+  const { user, hasRole } = useAuth();
+  const canDelete = hasRole("director");
+  const deleteFn = useServerFn(deleteUserAccount);
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
 
   const { data: users } = useQuery({
     queryKey: ["admin-users"],
@@ -45,11 +64,23 @@ export function UsersPanel() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      await deleteFn({ data: { userId } });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+      toast.success(t("admin.users.delete.success"));
+      setPendingDelete(null);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   return (
     <div className="overflow-x-auto rounded-2xl border border-border bg-card">
       <table className="w-full text-sm">
         <thead className="bg-muted/50 text-muted-foreground text-xs">
-          <tr><th className="p-3 text-start">{t("common.name")}</th><th className="p-3 text-start">{t("auth.email")}</th><th className="p-3 text-start">{t("auth.gender")}</th><th className="p-3 text-start">{t("common.status")}</th><th className="p-3 text-start">{t("dir.role")}</th></tr>
+          <tr><th className="p-3 text-start">{t("common.name")}</th><th className="p-3 text-start">{t("auth.email")}</th><th className="p-3 text-start">{t("auth.gender")}</th><th className="p-3 text-start">{t("common.status")}</th><th className="p-3 text-start">{t("dir.role")}</th><th className="p-3 text-start">{t("admin.users.actions")}</th></tr>
         </thead>
         <tbody>
           {users?.map((u) => (
@@ -70,10 +101,47 @@ export function UsersPanel() {
                   {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
               </td>
+              <td className="p-3">
+                <button
+                  type="button"
+                  disabled={!canDelete || u.id === user?.id}
+                  onClick={() => setPendingDelete({ id: u.id, name: u.full_name || u.email || "" })}
+                  aria-label={t("admin.users.delete.button")}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-9 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  {t("admin.users.delete.button")}
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      <AlertDialog open={!!pendingDelete} onOpenChange={(o) => !o && setPendingDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-primary">{t("admin.users.delete.title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("admin.users.delete.message")}
+              {pendingDelete?.name ? <><br /><span className="font-semibold text-foreground">{pendingDelete.name}</span></> : null}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>{t("admin.users.delete.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                if (pendingDelete) deleteMutation.mutate(pendingDelete.id);
+              }}
+              disabled={deleteMutation.isPending}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              {deleteMutation.isPending ? "…" : t("admin.users.delete.confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
