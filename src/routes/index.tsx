@@ -11,6 +11,7 @@ import { LogoPremium3D } from "@/components/LogoPremium3D";
 import { useI18n, LangSwitcher } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { supabase } from "@/integrations/supabase/client";
 import {
   getLandingStats,
   getLandingTeachers,
