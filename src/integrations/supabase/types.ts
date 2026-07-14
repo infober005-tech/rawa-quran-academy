@@ -176,6 +176,47 @@ export type Database = {
           },
         ]
       }
+      attendance_sessions: {
+        Row: {
+          active: boolean
+          created_at: string
+          ended_at: string | null
+          expires_at: string
+          halaqa_id: string
+          id: string
+          teacher_id: string
+          token: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          ended_at?: string | null
+          expires_at: string
+          halaqa_id: string
+          id?: string
+          teacher_id: string
+          token: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          ended_at?: string | null
+          expires_at?: string
+          halaqa_id?: string
+          id?: string
+          teacher_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_sessions_halaqa_id_fkey"
+            columns: ["halaqa_id"]
+            isOneToOne: false
+            referencedRelation: "halaqas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
