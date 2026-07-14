@@ -5,6 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SessionCaptureModal } from "./SessionCaptureModal";
+import { QRAttendanceModal } from "./QRAttendanceModal";
 import { RecordingsPanel } from "@/features/recordings/RecordingsPanel";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { EmptyState } from "@/components/EmptyState";
@@ -33,6 +34,7 @@ export function TeacherDashboard() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [homeworkId, setHomeworkId] = useState<string | null>(null);
   const [studentsId, setStudentsId] = useState<string | null>(null);
+  const [qrHalaqa, setQrHalaqa] = useState<{ id: string; name: string } | null>(null);
 
   const startSession = useMutation({
     mutationFn: async (h: { id: string; meeting_link: string | null }) => {
@@ -112,10 +114,11 @@ export function TeacherDashboard() {
                 </button>
               )}
             </div>
-            <div className="mt-4 grid grid-cols-3 gap-1.5">
+            <div className="mt-4 grid grid-cols-2 gap-1.5">
               <button onClick={() => setStudentsId(h.id)} className="px-2 py-2 rounded-xl bg-muted text-foreground text-xs font-semibold hover:bg-muted/70">👥 {t("common.students")}</button>
               <button onClick={() => setOpenId(h.id)} className="px-2 py-2 rounded-xl bg-gradient-royal text-primary-foreground text-xs font-semibold">⭐ {t("d.teacher.evaluate")}</button>
               <button onClick={() => setHomeworkId(h.id)} className="px-2 py-2 rounded-xl bg-gold/20 text-gold text-xs font-semibold hover:bg-gold/30">📝 {t("d.homework")}</button>
+              <button onClick={() => setQrHalaqa({ id: h.id, name: h.name })} className="px-2 py-2 rounded-xl bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20">📱 QR Attendance</button>
             </div>
           </div>
         ))}
@@ -133,6 +136,7 @@ export function TeacherDashboard() {
       {openId && <SessionCaptureModal halaqaId={openId} teacherId={user!.id} onClose={() => { setOpenId(null); qc.invalidateQueries(); }} />}
       {studentsId && <StudentsModal halaqaId={studentsId} onClose={() => setStudentsId(null)} />}
       {homeworkId && <HomeworkModal halaqaId={homeworkId} onClose={() => { setHomeworkId(null); qc.invalidateQueries(); }} />}
+      {qrHalaqa && <QRAttendanceModal halaqaId={qrHalaqa.id} halaqaName={qrHalaqa.name} onClose={() => { setQrHalaqa(null); qc.invalidateQueries(); }} />}
 
       {halaqas?.[0] && (
         <RecordingsPanel halaqaId={halaqas[0].id} allowUpload allowModerate={false} />
