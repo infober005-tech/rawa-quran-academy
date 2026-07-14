@@ -25,6 +25,7 @@ import { Route as AuthenticatedHalaqasRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated/events'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAttendanceCheckinRouteImport } from './routes/_authenticated/attendance.checkin'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -107,6 +108,12 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAttendanceCheckinRoute =
+  AuthenticatedAttendanceCheckinRouteImport.update({
+    id: '/attendance/checkin',
+    path: '/attendance/checkin',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/payment-status': typeof AuthenticatedPaymentStatusRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/subscribe': typeof AuthenticatedSubscribeRoute
+  '/attendance/checkin': typeof AuthenticatedAttendanceCheckinRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -141,6 +149,7 @@ export interface FileRoutesByTo {
   '/payment-status': typeof AuthenticatedPaymentStatusRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/subscribe': typeof AuthenticatedSubscribeRoute
+  '/attendance/checkin': typeof AuthenticatedAttendanceCheckinRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -160,6 +169,7 @@ export interface FileRoutesById {
   '/_authenticated/payment-status': typeof AuthenticatedPaymentStatusRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/subscribe': typeof AuthenticatedSubscribeRoute
+  '/_authenticated/attendance/checkin': typeof AuthenticatedAttendanceCheckinRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -179,6 +189,7 @@ export interface FileRouteTypes {
     | '/payment-status'
     | '/settings'
     | '/subscribe'
+    | '/attendance/checkin'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -196,6 +207,7 @@ export interface FileRouteTypes {
     | '/payment-status'
     | '/settings'
     | '/subscribe'
+    | '/attendance/checkin'
   id:
     | '__root__'
     | '/'
@@ -214,6 +226,7 @@ export interface FileRouteTypes {
     | '/_authenticated/payment-status'
     | '/_authenticated/settings'
     | '/_authenticated/subscribe'
+    | '/_authenticated/attendance/checkin'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -341,6 +354,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/attendance/checkin': {
+      id: '/_authenticated/attendance/checkin'
+      path: '/attendance/checkin'
+      fullPath: '/attendance/checkin'
+      preLoaderRoute: typeof AuthenticatedAttendanceCheckinRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -353,6 +373,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPaymentStatusRoute: typeof AuthenticatedPaymentStatusRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSubscribeRoute: typeof AuthenticatedSubscribeRoute
+  AuthenticatedAttendanceCheckinRoute: typeof AuthenticatedAttendanceCheckinRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -364,6 +385,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPaymentStatusRoute: AuthenticatedPaymentStatusRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSubscribeRoute: AuthenticatedSubscribeRoute,
+  AuthenticatedAttendanceCheckinRoute: AuthenticatedAttendanceCheckinRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
