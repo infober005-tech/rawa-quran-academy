@@ -109,7 +109,10 @@ export const checkInAttendance = createServerFn({ method: "POST" })
       return { success: true, alreadyMarked: true };
     }
 
-    const { error: insErr } = await supabase.from("attendance").insert({
+    // Insert with service role: student self-insert is not allowed by RLS,
+    // but the server has fully verified the token, session, and membership.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error: insErr } = await supabaseAdmin.from("attendance").insert({
       halaqa_id: session.halaqa_id,
       student_id: userId,
       status: "present",
