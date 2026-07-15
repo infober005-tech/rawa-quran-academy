@@ -9,6 +9,7 @@ import {
 import logoAsset from "@/assets/rawa-logo.png.asset.json";
 import { LogoPremium3D } from "@/components/LogoPremium3D";
 import { useI18n, LangSwitcher } from "@/lib/i18n";
+import { IslamicDashboardCard } from "@/components/islamic/IslamicDashboardCard";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +44,7 @@ function Index() {
     <div dir={dir} className="min-h-dvh bg-background text-foreground overflow-x-hidden">
       <Nav />
       <Hero />
+      <IslamicDashboardCard />
       <Features />
       <HowItWorks />
       <LiveHalaqas />
