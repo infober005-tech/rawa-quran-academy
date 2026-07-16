@@ -117,7 +117,7 @@ export function AttendancePanel() {
   }, [filtered]);
 
   const chartByDay = useMemo(() => {
-    const map: Record<string, { date: string; present: number; late: number; absent: number; excused: number }> = {};
+    const map: Record<string, { date: string; present: number; late: number; absent: number }> = {};
     for (const r of filtered) {
       map[r.date] ??= { date: r.date, present: 0, late: 0, absent: 0 };
       map[r.date][r.status]++;
@@ -156,7 +156,7 @@ export function AttendancePanel() {
     doc.text(`Attendance report  ${from} → ${to}`, 14, 14);
     doc.setFontSize(10);
     doc.text(
-      `Total: ${stats.total}   Present: ${stats.by.present}   Late: ${stats.by.late}   Absent: ${stats.by.absent}   Excused: ${stats.by.excused}   Rate: ${stats.rate}%`,
+      `Total: ${stats.total}   Present: ${stats.by.present}   Late: ${stats.by.late}   Absent: ${stats.by.absent}   Rate: ${stats.rate}%`,
       14,
       22,
     );
