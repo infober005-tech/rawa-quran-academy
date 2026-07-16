@@ -32,7 +32,7 @@ const UpdateStatusInput = z.object({
   studentId: z.string().uuid().optional(),
   halaqaId: z.string().uuid().optional(),
   date: z.string().optional(),
-  status: z.enum(["present", "late", "absent", "excused"]),
+  status: z.enum(["present", "late", "absent"]),
   notes: z.string().max(500).optional(),
 });
 
