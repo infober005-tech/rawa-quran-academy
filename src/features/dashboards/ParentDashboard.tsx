@@ -150,7 +150,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
     queryFn: async () => {
       const { data } = await supabase
         .from("attendance")
-        .select("status, date")
+        .select("id, status, date, notes, checked_in_at, is_manual, halaqa:halaqas!attendance_halaqa_id_fkey(name)")
         .eq("student_id", child.id)
         .order("date", { ascending: false })
         .limit(120);
