@@ -21,7 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { upsertAttendanceRecord } from "@/lib/attendance.functions";
 
-type Status = "present" | "late" | "absent" | "excused";
+type Status = "present" | "late" | "absent";
 
 type Row = {
   id: string;
@@ -111,7 +111,7 @@ export function AttendancePanel() {
 
   const stats = useMemo(() => {
     const total = filtered.length;
-    const by: Record<Status, number> = { present: 0, late: 0, absent: 0, excused: 0 };
+    const by: Record<Status, number> = { present: 0, late: 0, absent: 0 };
     for (const r of filtered) by[r.status] = (by[r.status] ?? 0) + 1;
     const rate = total ? Math.round((by.present / total) * 100) : 0;
     return { total, by, rate };
@@ -120,14 +120,14 @@ export function AttendancePanel() {
   const chartByDay = useMemo(() => {
     const map: Record<string, { date: string; present: number; late: number; absent: number; excused: number }> = {};
     for (const r of filtered) {
-      map[r.date] ??= { date: r.date, present: 0, late: 0, absent: 0, excused: 0 };
+      map[r.date] ??= { date: r.date, present: 0, late: 0, absent: 0 };
       map[r.date][r.status]++;
     }
     return Object.values(map).sort((a, b) => a.date.localeCompare(b.date));
   }, [filtered]);
 
   const pieData = useMemo(() =>
-    (["present", "late", "absent", "excused"] as Status[])
+    (["present", "late", "absent"] as Status[])
       .map((s) => ({ name: s, value: stats.by[s] }))
       .filter((d) => d.value > 0),
   [stats]);
