@@ -227,7 +227,6 @@ export function AttendancePanel() {
               <option value="present">Present</option>
               <option value="late">Late</option>
               <option value="absent">Absent</option>
-              <option value="excused">Excused</option>
             </select>
           </label>
         </div>
@@ -261,7 +260,6 @@ export function AttendancePanel() {
                 <Bar dataKey="present" stackId="a" fill={STATUS_COLORS.present} />
                 <Bar dataKey="late" stackId="a" fill={STATUS_COLORS.late} />
                 <Bar dataKey="absent" stackId="a" fill={STATUS_COLORS.absent} />
-                <Bar dataKey="excused" stackId="a" fill={STATUS_COLORS.excused} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -373,7 +371,6 @@ function EditModal({ record, onClose, onSave }: { record: Row; onClose: () => vo
             <option value="present">Present</option>
             <option value="late">Late</option>
             <option value="absent">Absent</option>
-            <option value="excused">Excused</option>
           </select>
         </label>
         <label className="block text-xs font-semibold text-muted-foreground">
