@@ -150,7 +150,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
     queryFn: async () => {
       const { data } = await supabase
         .from("attendance")
-        .select("status, date")
+        .select("id, status, date, notes, checked_in_at, is_manual, halaqa:halaqas!attendance_halaqa_id_fkey(name)")
         .eq("student_id", child.id)
         .order("date", { ascending: false })
         .limit(120);
@@ -374,6 +374,58 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
       </div>
 
       {/* Evaluations table + teacher notes */}
+      {/* Attendance history */}
+      <div className="rounded-3xl border border-border bg-card/60 backdrop-blur-xl p-6 shadow-soft">
+        <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
+          🗓️ {t("d.parent.view_attendance")}
+        </h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-xs text-muted-foreground border-b border-border">
+                <th className="text-start py-2 font-semibold">{t("common.date")}</th>
+                <th className="text-start py-2 font-semibold">{t("dash.attendance")}</th>
+                <th className="text-start py-2 font-semibold">Halaqa</th>
+                <th className="text-start py-2 font-semibold">Check-in</th>
+                <th className="text-start py-2 font-semibold">{t("common.notes")}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/60">
+              {(att ?? []).slice(0, 20).map((a) => {
+                const row = a as unknown as {
+                  id: string;
+                  date: string;
+                  status: string;
+                  notes: string | null;
+                  checked_in_at: string | null;
+                  is_manual: boolean | null;
+                  halaqa: { name: string } | null;
+                };
+                const tone =
+                  row.status === "present" ? "bg-emerald-500/15 text-emerald-600"
+                  : row.status === "late" ? "bg-amber-500/15 text-amber-600"
+                  : "bg-rose-500/15 text-rose-600";
+                return (
+                  <tr key={row.id}>
+                    <td className="py-2.5 text-xs text-muted-foreground">{new Date(row.date).toLocaleDateString("ar")}</td>
+                    <td className="py-2.5 text-xs">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${tone}`}>{row.status}</span>
+                      {row.is_manual && <span className="ms-1 text-[9px] text-muted-foreground">(manual)</span>}
+                    </td>
+                    <td className="py-2.5 text-xs">{row.halaqa?.name ?? "—"}</td>
+                    <td className="py-2.5 text-xs">{row.checked_in_at ? new Date(row.checked_in_at).toLocaleTimeString("ar") : "—"}</td>
+                    <td className="py-2.5 text-xs text-muted-foreground">{row.notes ?? "—"}</td>
+                  </tr>
+                );
+              })}
+              {(!att || att.length === 0) && (
+                <tr><td colSpan={5} className="py-6 text-center text-xs text-muted-foreground">No attendance yet</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div className="grid lg:grid-cols-[1.6fr_1fr] gap-6">
         <div className="rounded-3xl border border-border bg-card/60 backdrop-blur-xl p-6 shadow-soft">
           <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">

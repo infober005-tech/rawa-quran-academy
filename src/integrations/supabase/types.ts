@@ -113,37 +113,64 @@ export type Database = {
       }
       attendance: {
         Row: {
+          checked_in_at: string | null
           created_at: string
           date: string
+          device_info: Json | null
           halaqa_id: string
           id: string
+          ip_address: string | null
+          is_manual: boolean
+          latitude: number | null
+          longitude: number | null
           notes: string | null
           recorded_by: string | null
           session_id: string | null
           status: Database["public"]["Enums"]["attendance_status"]
           student_id: string
+          updated_at: string | null
+          updated_by: string | null
+          user_agent: string | null
         }
         Insert: {
+          checked_in_at?: string | null
           created_at?: string
           date?: string
+          device_info?: Json | null
           halaqa_id: string
           id?: string
+          ip_address?: string | null
+          is_manual?: boolean
+          latitude?: number | null
+          longitude?: number | null
           notes?: string | null
           recorded_by?: string | null
           session_id?: string | null
           status: Database["public"]["Enums"]["attendance_status"]
           student_id: string
+          updated_at?: string | null
+          updated_by?: string | null
+          user_agent?: string | null
         }
         Update: {
+          checked_in_at?: string | null
           created_at?: string
           date?: string
+          device_info?: Json | null
           halaqa_id?: string
           id?: string
+          ip_address?: string | null
+          is_manual?: boolean
+          latitude?: number | null
+          longitude?: number | null
           notes?: string | null
           recorded_by?: string | null
           session_id?: string | null
           status?: Database["public"]["Enums"]["attendance_status"]
           student_id?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          user_agent?: string | null
         }
         Relationships: [
           {

@@ -33,8 +33,25 @@ function CheckinPage() {
     if (!token) { setState("error"); setMessage("Missing QR token."); return; }
     let cancelled = false;
     (async () => {
+      const device = {
+        userAgent: navigator.userAgent,
+        platform: (navigator as Navigator & { platform?: string }).platform,
+        language: navigator.language,
+        screen: `${window.screen.width}x${window.screen.height}`,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        vendor: (navigator as Navigator & { vendor?: string }).vendor,
+      };
+      const location = await new Promise<{ latitude: number; longitude: number; accuracy: number } | undefined>((resolve) => {
+        if (!("geolocation" in navigator)) return resolve(undefined);
+        const t = setTimeout(() => resolve(undefined), 4000);
+        navigator.geolocation.getCurrentPosition(
+          (pos) => { clearTimeout(t); resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude, accuracy: pos.coords.accuracy }); },
+          () => { clearTimeout(t); resolve(undefined); },
+          { enableHighAccuracy: true, timeout: 3500, maximumAge: 60000 },
+        );
+      });
       try {
-        const res: any = await checkIn({ data: { token } });
+        const res: any = await checkIn({ data: { token, device, location } });
         if (cancelled) return;
         if (res?.alreadyMarked) { setState("already"); setMessage("You have already checked in today."); }
         else { setState("success"); setMessage("Attendance recorded. May Allah reward your effort."); }

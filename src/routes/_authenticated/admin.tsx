@@ -11,6 +11,7 @@ import { CalendarPanel } from "@/features/admin/CalendarPanel";
 import { ParentLinksPanel } from "@/features/admin/ParentLinksPanel";
 import { PaymentsPanel } from "@/features/admin/PaymentsPanel";
 import { PaymentSettingsPanel } from "@/features/admin/PaymentSettingsPanel";
+import { AttendancePanel } from "@/features/admin/AttendancePanel";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async () => {
@@ -29,7 +30,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "users" | "halaqas" | "events" | "calendar" | "parents" | "payments" | "payment_settings";
+type Tab = "users" | "halaqas" | "events" | "calendar" | "parents" | "payments" | "payment_settings" | "attendance";
 
 function AdminPage() {
   const { can, loading } = useAuth();
@@ -49,6 +50,7 @@ function AdminPage() {
     { id: "events", label: t("dir.events") },
     { id: "calendar", label: t("dir.calendar") },
     { id: "parents", label: "Parent Links" },
+    { id: "attendance", label: "Attendance" },
     { id: "payments", label: t("a.nav.payments") },
     { id: "payment_settings", label: t("a.nav.payment_settings") },
   ];
@@ -71,6 +73,7 @@ function AdminPage() {
       {tab === "events" && <EventsPanel />}
       {tab === "calendar" && <CalendarPanel />}
       {tab === "parents" && <ParentLinksPanel />}
+      {tab === "attendance" && <AttendancePanel />}
       {tab === "payments" && <PaymentsPanel />}
       {tab === "payment_settings" && <PaymentSettingsPanel />}
     </DashboardShell>
