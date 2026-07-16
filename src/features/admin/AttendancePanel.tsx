@@ -43,7 +43,6 @@ const STATUS_COLORS: Record<Status, string> = {
   present: "#10b981",
   late: "#f59e0b",
   absent: "#ef4444",
-  excused: "#8b5cf6",
 };
 
 function today() { return new Date().toISOString().slice(0, 10); }
