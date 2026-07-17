@@ -50,7 +50,13 @@ function AuthPage() {
             <button onClick={() => setTab("register")} className={`flex-1 py-2 rounded-full transition ${tab === "register" ? "bg-gradient-royal text-primary-foreground shadow-glow" : "text-muted-foreground"}`}>{t("auth.register")}</button>
           </div>
           {tab === "login" && <LoginForm onForgot={() => setTab("forgot")} />}
-          {tab === "register" && <RegisterForm onDone={() => setTab("login")} />}
+          {tab === "register" && (
+            <div className="space-y-3">
+              <GoogleBtn />
+              <div className="flex items-center gap-3"><div className="flex-1 h-px bg-border" /><span className="text-xs text-muted-foreground">{t("auth.or")}</span><div className="flex-1 h-px bg-border" /></div>
+              <RegisterForm onDone={() => setTab("login")} />
+            </div>
+          )}
           {tab === "forgot" && <ForgotForm onBack={() => setTab("login")} />}
         </div>
       </div>
