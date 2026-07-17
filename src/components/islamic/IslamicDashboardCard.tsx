@@ -177,6 +177,8 @@ function countdown(from: Date, to: Date) {
 
 export function IslamicDashboardCard() {
   const [now, setNow] = useState<Date>(() => new Date());
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); setNow(new Date()); }, []);
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
@@ -272,11 +274,17 @@ export function IslamicDashboardCard() {
             <div className="flex items-center gap-2 text-gold text-xs font-semibold uppercase tracking-widest">
               <Clock className="w-4 h-4" aria-hidden /> الوقت الآن
             </div>
-            <div className="mt-3 flex items-baseline gap-2 font-mono font-black leading-none">
-              <span className="text-6xl md:text-7xl bg-gradient-to-b from-white to-gold/80 bg-clip-text text-transparent">{h}</span>
+            <div
+              dir="ltr"
+              className="mt-3 flex items-baseline gap-2 font-mono font-black leading-none"
+              style={{ unicodeBidi: "isolate", fontVariantNumeric: "tabular-nums" }}
+              suppressHydrationWarning
+            >
+              <span className="text-6xl md:text-7xl bg-gradient-to-b from-white to-gold/80 bg-clip-text text-transparent">{mounted ? h : "--"}</span>
               <span className="text-4xl md:text-5xl opacity-70">:</span>
-              <span className="text-6xl md:text-7xl bg-gradient-to-b from-white to-gold/80 bg-clip-text text-transparent">{m}</span>
-              <span className="text-2xl md:text-3xl opacity-70 mr-1">:{s}</span>
+              <span className="text-6xl md:text-7xl bg-gradient-to-b from-white to-gold/80 bg-clip-text text-transparent">{mounted ? m : "--"}</span>
+              <span className="text-4xl md:text-5xl opacity-70">:</span>
+              <span className="text-6xl md:text-7xl bg-gradient-to-b from-white to-gold/80 bg-clip-text text-transparent">{mounted ? s : "--"}</span>
             </div>
             <div className="mt-4 text-2xl font-bold text-gold" style={{ fontFamily: "var(--font-display-ar)" }}>
               {greeting(now, "ar")}

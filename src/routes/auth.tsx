@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n, LangSwitcher } from "@/lib/i18n";
 import { toast } from "sonner";
 import { LogoPremium3D } from "@/components/LogoPremium3D";
+import RegisterForm from "@/features/auth/RegisterForm";
 
 const WEAK_PWD_PATTERNS = /pwned|leaked|compromis|breach|weak[_ ]?password|haveibeenpwned/i;
 function isWeakPasswordError(msg: string | undefined) {
@@ -49,7 +50,13 @@ function AuthPage() {
             <button onClick={() => setTab("register")} className={`flex-1 py-2 rounded-full transition ${tab === "register" ? "bg-gradient-royal text-primary-foreground shadow-glow" : "text-muted-foreground"}`}>{t("auth.register")}</button>
           </div>
           {tab === "login" && <LoginForm onForgot={() => setTab("forgot")} />}
-          {tab === "register" && <RegisterForm onDone={() => setTab("login")} />}
+          {tab === "register" && (
+            <div className="space-y-3">
+              <GoogleBtn />
+              <div className="flex items-center gap-3"><div className="flex-1 h-px bg-border" /><span className="text-xs text-muted-foreground">{t("auth.or")}</span><div className="flex-1 h-px bg-border" /></div>
+              <RegisterForm onDone={() => setTab("login")} />
+            </div>
+          )}
           {tab === "forgot" && <ForgotForm onBack={() => setTab("login")} />}
         </div>
       </div>
@@ -188,84 +195,6 @@ function LoginForm({ onForgot }: { onForgot: () => void }) {
         className={`w-full text-xs ${showResend ? "text-primary" : "text-muted-foreground"} hover:underline disabled:opacity-60`}
       >
         {resendBusy ? t("common.loading") : `✉ ${t("auth.resend_activation")}`}
-      </button>
-    </form>
-  );
-}
-
-function RegisterForm({ onDone }: { onDone: () => void }) {
-  const { t, lang } = useI18n();
-  const [form, setForm] = useState({
-    full_name: "", parent_name: "", email: "", phone: "",
-    password: "", confirm: "", gender: "male", age: "",
-    country: "", city: "", quran_level: "beginner",
-  });
-  const [busy, setBusy] = useState(false);
-
-  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (form.password !== form.confirm) { toast.error(t("common.password_mismatch")); return; }
-    if (form.password.length < 8) { toast.error(t("common.password_min")); return; }
-    setBusy(true);
-    const { error } = await supabase.auth.signUp({
-      email: form.email,
-      password: form.password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth`,
-        data: {
-          full_name: form.full_name,
-          parent_name: form.parent_name,
-          phone: form.phone,
-          gender: form.gender,
-          age: form.age,
-          country: form.country,
-          city: form.city,
-          quran_level: form.quran_level,
-          language: lang,
-        },
-      },
-    });
-    setBusy(false);
-    if (error) {
-      toast.error(isWeakPasswordError(error.message) ? t("auth.weak_password") : error.message);
-      return;
-    }
-    toast.success(t("auth.signup_confirm_sent"), { duration: 9000 });
-    onDone();
-  };
-
-  return (
-    <form onSubmit={submit} className="space-y-3" method="post" action="#" autoComplete="on">
-      <GoogleBtn />
-      <div className="flex items-center gap-3 my-2"><div className="flex-1 h-px bg-border" /><span className="text-xs text-muted-foreground">{t("auth.or")}</span><div className="flex-1 h-px bg-border" /></div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label={t("auth.full_name")}><input name="name" autoComplete="name" required value={form.full_name} onChange={(e) => set("full_name", e.target.value)} className={inputCls} /></Field>
-        <Field label={t("auth.parent_name")}><input name="parent_name" autoComplete="off" value={form.parent_name} onChange={(e) => set("parent_name", e.target.value)} className={inputCls} /></Field>
-        <Field label={t("auth.email")}><input name="email" type="email" inputMode="email" autoComplete="email" required value={form.email} onChange={(e) => set("email", e.target.value)} className={inputCls} /></Field>
-        <Field label={t("auth.phone")}><input name="tel" type="tel" inputMode="tel" autoComplete="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} className={inputCls} /></Field>
-        <Field label={t("auth.gender")}>
-          <select value={form.gender} onChange={(e) => set("gender", e.target.value)} className={inputCls}>
-            <option value="male">{t("auth.male")}</option>
-            <option value="female">{t("auth.female")}</option>
-          </select>
-        </Field>
-        <Field label={t("auth.age")}><input type="number" inputMode="numeric" min={3} max={120} value={form.age} onChange={(e) => set("age", e.target.value)} className={inputCls} /></Field>
-        <Field label={t("auth.country")}><input autoComplete="country-name" value={form.country} onChange={(e) => set("country", e.target.value)} className={inputCls} /></Field>
-        <Field label={t("auth.city")}><input autoComplete="address-level2" value={form.city} onChange={(e) => set("city", e.target.value)} className={inputCls} /></Field>
-        <Field label={t("auth.quran_level")}>
-          <select value={form.quran_level} onChange={(e) => set("quran_level", e.target.value)} className={inputCls}>
-            <option value="beginner">{t("auth.level.beginner")}</option>
-            <option value="intermediate">{t("auth.level.intermediate")}</option>
-            <option value="advanced">{t("auth.level.advanced")}</option>
-          </select>
-        </Field>
-        <Field label={t("auth.password")}><input name="new-password" type="password" required minLength={8} value={form.password} onChange={(e) => set("password", e.target.value)} className={inputCls} autoComplete="new-password" /></Field>
-        <Field label={t("auth.confirm_password")}><input name="confirm-password" type="password" required value={form.confirm} onChange={(e) => set("confirm", e.target.value)} className={inputCls} autoComplete="new-password" /></Field>
-      </div>
-      <button disabled={busy} className="w-full py-2.5 rounded-xl bg-gradient-royal text-primary-foreground font-semibold shadow-glow disabled:opacity-60 mt-2">
-        {busy ? t("common.loading") : t("auth.register")}
       </button>
     </form>
   );

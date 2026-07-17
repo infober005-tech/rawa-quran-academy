@@ -952,6 +952,7 @@ export type Database = {
           city: string | null
           country: string | null
           created_at: string
+          date_of_birth: string | null
           email: string | null
           full_name: string
           gender: Database["public"]["Enums"]["gender_type"] | null
@@ -959,8 +960,12 @@ export type Database = {
           language: Database["public"]["Enums"]["app_language"]
           parent_name: string | null
           phone: string | null
+          phone_code: string | null
+          phone_country: string | null
+          phone_number: string | null
           preferred_schedule: string | null
           quran_level: Database["public"]["Enums"]["quran_level"] | null
+          state: string | null
           status: Database["public"]["Enums"]["student_status"]
           updated_at: string
         }
@@ -971,6 +976,7 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string
+          date_of_birth?: string | null
           email?: string | null
           full_name?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
@@ -978,8 +984,12 @@ export type Database = {
           language?: Database["public"]["Enums"]["app_language"]
           parent_name?: string | null
           phone?: string | null
+          phone_code?: string | null
+          phone_country?: string | null
+          phone_number?: string | null
           preferred_schedule?: string | null
           quran_level?: Database["public"]["Enums"]["quran_level"] | null
+          state?: string | null
           status?: Database["public"]["Enums"]["student_status"]
           updated_at?: string
         }
@@ -990,6 +1000,7 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string
+          date_of_birth?: string | null
           email?: string | null
           full_name?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
@@ -997,8 +1008,12 @@ export type Database = {
           language?: Database["public"]["Enums"]["app_language"]
           parent_name?: string | null
           phone?: string | null
+          phone_code?: string | null
+          phone_country?: string | null
+          phone_number?: string | null
           preferred_schedule?: string | null
           quran_level?: Database["public"]["Enums"]["quran_level"] | null
+          state?: string | null
           status?: Database["public"]["Enums"]["student_status"]
           updated_at?: string
         }
