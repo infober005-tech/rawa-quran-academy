@@ -176,8 +176,9 @@ function countdown(from: Date, to: Date) {
 /* --------------------------------- widget --------------------------------- */
 
 export function IslamicDashboardCard() {
-  const [now, setNow] = useState<Date | null>(null);
-  useEffect(() => { setNow(new Date()); }, []);
+  const [now, setNow] = useState<Date>(() => new Date());
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); setNow(new Date()); }, []);
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
