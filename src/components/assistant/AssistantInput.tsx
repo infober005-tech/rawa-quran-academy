@@ -82,7 +82,7 @@ export default function AssistantInput({ disabled, onSend }: Props) {
         const file = new File([blob], `voice-${Date.now()}.webm`, { type: "audio/webm" });
         setAttachments((prev) => [
           ...prev,
-          { id: uid(), name: file.name, kind: "audio", size: file.size },
+          { id: uid(), name: file.name, kind: "audio" as const, size: file.size },
         ].slice(0, 4));
       };
       mr.start();
