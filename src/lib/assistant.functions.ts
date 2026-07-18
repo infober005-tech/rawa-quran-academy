@@ -27,7 +27,7 @@ type PlatformSnapshot = {
     teacher: string | null;
   }>;
   teachers: Array<{ name: string; city: string | null; country: string | null }>;
-  events: Array<{ title: string; starts_at: string | null }>;
+  events: Array<{ title: string; date: string | null }>;
   announcements: Array<{ title: string; body: string | null; created_at: string }>;
 };
 
@@ -47,13 +47,13 @@ async function fetchPlatformSnapshot(): Promise<PlatformSnapshot> {
       .limit(30),
     supabaseAdmin
       .from("events")
-      .select("title, starts_at")
-      .gte("starts_at", nowIso)
-      .order("starts_at", { ascending: true })
+      .select("title, date")
+      .gte("date", nowIso.slice(0, 10))
+      .order("date", { ascending: true })
       .limit(10),
     supabaseAdmin
       .from("notifications")
-      .select("title, body, created_at")
+      .select("title, content, created_at")
       .order("created_at", { ascending: false })
       .limit(5),
     supabaseAdmin.from("user_roles").select("user_id, role"),
@@ -83,10 +83,10 @@ async function fetchPlatformSnapshot(): Promise<PlatformSnapshot> {
       city: t.city ?? null,
       country: t.country ?? null,
     })),
-    events: (eventsRes.data ?? []).map((e) => ({ title: e.title, starts_at: e.starts_at })),
+    events: (eventsRes.data ?? []).map((e) => ({ title: e.title, date: e.date })),
     announcements: (notifRes.data ?? []).map((n) => ({
       title: n.title,
-      body: n.body,
+      body: n.content,
       created_at: n.created_at,
     })),
   };
