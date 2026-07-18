@@ -19,6 +19,7 @@ import en from "@/lib/i18n/en";
 import { Toaster } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OfflineBanner } from "@/components/OfflineBanner";
+import AssistantFAB from "@/components/assistant/AssistantFAB";
 
 // Root-level error/not-found boundaries render OUTSIDE I18nProvider, so read the dict directly.
 function pickDict() {
@@ -160,6 +161,7 @@ function RootComponent() {
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
             <Outlet />
           </ErrorBoundary>
+          <AssistantFAB />
           <Toaster richColors position="top-center" />
         </AuthProvider>
       </I18nProvider>
