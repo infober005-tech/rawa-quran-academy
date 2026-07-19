@@ -38,29 +38,29 @@ type FormState = {
 };
 
 const inputCls =
-  "peer w-full h-12 px-4 pt-4 pb-1 rounded-xl border border-input bg-background text-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary/40 transition";
+  "peer w-full h-12 min-w-0 px-3 pt-4 pb-1 rounded-xl border border-input bg-background text-foreground text-sm sm:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-primary/40 transition appearance-none";
 
 function FloatingField({
   id, label, error, ok, children,
 }: { id: string; label: string; error?: string; ok?: boolean; children: React.ReactNode }) {
   return (
-    <div className="relative">
-      <div className="relative">
+    <div className="relative min-w-0">
+      <div className="relative min-w-0">
         {children}
         <label
           htmlFor={id}
-          className="pointer-events-none absolute top-1 start-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider"
+          className="pointer-events-none absolute top-1 start-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate max-w-[calc(100%-2rem)]"
         >
           {label}
         </label>
         {ok && !error && (
-          <Check className="absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-emerald-500" aria-hidden />
+          <Check className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-emerald-500" aria-hidden />
         )}
         {error && (
-          <X className="absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-red-500" aria-hidden />
+          <X className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-red-500" aria-hidden />
         )}
       </div>
-      {error && <div className="mt-1 text-[11px] text-red-500">{error}</div>}
+      {error && <div className="mt-1 text-[11px] text-red-500 leading-snug">{error}</div>}
     </div>
   );
 }
@@ -115,22 +115,22 @@ function CountryPicker({
     );
   }, [q]);
   return (
-    <div className="relative">
+    <div className="relative min-w-0">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
             type="button"
-            className={cn(inputCls, "flex items-center gap-2 text-start")}
+            className={cn(inputCls, "flex items-center gap-2 text-start pe-8")}
             aria-label={label}
           >
-            <span className="text-lg">{c?.flag ?? "🏳️"}</span>
-            <span className="flex-1 truncate">{c ? `${c.name_ar} (+${c.dial})` : label}</span>
-            <ChevronDown className="h-4 w-4 opacity-60" />
+            <span className="text-lg shrink-0">{c?.flag ?? "🏳️"}</span>
+            <span className="flex-1 min-w-0 truncate">{c ? `${c.name_ar} (+${c.dial})` : label}</span>
           </button>
         </PopoverTrigger>
-        <label className="pointer-events-none absolute top-1 start-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+        <label className="pointer-events-none absolute top-1 start-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate max-w-[calc(100%-2rem)]">
           {label}
         </label>
+        <ChevronDown className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-2 h-4 w-4 opacity-60" />
         <PopoverContent align="start" className="p-0 w-[min(92vw,360px)]">
           <div className="p-2 border-b border-border flex items-center gap-2">
             <Search className="h-4 w-4 opacity-60" />
@@ -284,7 +284,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
 
   return (
     <form onSubmit={submit} className="space-y-4" method="post" autoComplete="on">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0">
         {/* Full name */}
         <FloatingField id="full_name" label={t("auth.full_name")} error={errors.full_name} ok={!!form.full_name && !errors.full_name}>
           <input id="full_name" name="name" autoComplete="name" required
@@ -322,16 +322,17 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
 
         {/* DOB */}
         <div className="sm:col-span-2">
-          <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
-            <Calendar className="w-3.5 h-3.5" /> تاريخ الميلاد
-            {age !== null && dobValid && <span className="ms-auto text-primary font-semibold">العمر: {age} سنة</span>}
+          <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground min-w-0">
+            <Calendar className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">تاريخ الميلاد</span>
+            {age !== null && dobValid && <span className="ms-auto shrink-0 text-primary font-semibold">العمر: {age} سنة</span>}
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2 min-w-0">
             <select
               aria-label="اليوم"
               value={form.dob_d}
               onChange={(e) => { set("dob_d", e.target.value); mark("dob_d"); }}
-              className={inputCls}
+              className={cn(inputCls, "text-center pt-0 pb-0")}
             >
               <option value="">اليوم</option>
               {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
@@ -342,7 +343,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
               aria-label="الشهر"
               value={form.dob_m}
               onChange={(e) => { set("dob_m", e.target.value); mark("dob_m"); }}
-              className={inputCls}
+              className={cn(inputCls, "text-center pt-0 pb-0")}
             >
               <option value="">الشهر</option>
               {MONTHS_AR.map((m, i) => (
@@ -353,7 +354,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
               aria-label="السنة"
               value={form.dob_y}
               onChange={(e) => { set("dob_y", e.target.value); mark("dob_y"); }}
-              className={inputCls}
+              className={cn(inputCls, "text-center pt-0 pb-0")}
             >
               <option value="">السنة</option>
               {years.map((y) => (
@@ -361,7 +362,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
               ))}
             </select>
           </div>
-          {errors.dob_y && <div className="mt-1 text-[11px] text-red-500">{errors.dob_y}</div>}
+          {errors.dob_y && <div className="mt-1 text-[11px] text-red-500 leading-snug">{errors.dob_y}</div>}
         </div>
 
         {/* Country */}
@@ -406,12 +407,15 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
         {/* Phone with country dial */}
         <div className="sm:col-span-2">
           <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t("auth.phone")}</div>
-          <div className="flex gap-2">
-            <div className="w-40">
+          <div className="grid grid-cols-[7rem_minmax(0,1fr)] sm:grid-cols-[9rem_minmax(0,1fr)] gap-2 min-w-0">
+            <div className="min-w-0">
               <CountryPicker value={form.phone_country} onChange={(code) => set("phone_country", code)} label="الدولة" />
             </div>
-            <div className="flex-1 flex items-stretch rounded-xl border border-input bg-background focus-within:ring-2 focus-within:ring-primary/40">
-              <span className="px-3 flex items-center text-sm text-muted-foreground border-e border-input font-mono" dir="ltr">
+            <div
+              dir="ltr"
+              className="flex items-stretch h-12 min-w-0 overflow-hidden rounded-xl border border-input bg-background focus-within:ring-2 focus-within:ring-primary/40"
+            >
+              <span className="shrink-0 px-2.5 flex items-center text-sm text-muted-foreground border-e border-input font-mono">
                 +{phoneCountry.dial}
               </span>
               <input
@@ -423,16 +427,16 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
                 onChange={(e) => set("phone_number", e.target.value.replace(/\D/g, ""))}
                 onBlur={() => mark("phone_number")}
                 placeholder="6 12 34 56 78"
-                className="flex-1 h-12 px-3 bg-transparent outline-none text-base font-mono"
+                className="flex-1 min-w-0 h-full px-2.5 bg-transparent outline-none text-sm sm:text-base font-mono"
               />
               {form.phone_number && (
                 phoneValid
-                  ? <Check className="mx-2 self-center h-4 w-4 text-emerald-500" />
-                  : <X className="mx-2 self-center h-4 w-4 text-red-500" />
+                  ? <Check className="mx-2 self-center shrink-0 h-4 w-4 text-emerald-500" />
+                  : <X className="mx-2 self-center shrink-0 h-4 w-4 text-red-500" />
               )}
             </div>
           </div>
-          {errors.phone_number && <div className="mt-1 text-[11px] text-red-500">{errors.phone_number}</div>}
+          {errors.phone_number && <div className="mt-1 text-[11px] text-red-500 leading-snug">{errors.phone_number}</div>}
         </div>
 
         {/* Password */}
