@@ -38,29 +38,29 @@ type FormState = {
 };
 
 const inputCls =
-  "peer w-full h-12 px-4 pt-4 pb-1 rounded-xl border border-input bg-background text-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary/40 transition";
+  "peer w-full h-12 min-w-0 px-3 pt-4 pb-1 rounded-xl border border-input bg-background text-foreground text-sm sm:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-primary/40 transition appearance-none";
 
 function FloatingField({
   id, label, error, ok, children,
 }: { id: string; label: string; error?: string; ok?: boolean; children: React.ReactNode }) {
   return (
-    <div className="relative">
-      <div className="relative">
+    <div className="relative min-w-0">
+      <div className="relative min-w-0">
         {children}
         <label
           htmlFor={id}
-          className="pointer-events-none absolute top-1 start-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider"
+          className="pointer-events-none absolute top-1 start-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate max-w-[calc(100%-2rem)]"
         >
           {label}
         </label>
         {ok && !error && (
-          <Check className="absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-emerald-500" aria-hidden />
+          <Check className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-emerald-500" aria-hidden />
         )}
         {error && (
-          <X className="absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-red-500" aria-hidden />
+          <X className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-red-500" aria-hidden />
         )}
       </div>
-      {error && <div className="mt-1 text-[11px] text-red-500">{error}</div>}
+      {error && <div className="mt-1 text-[11px] text-red-500 leading-snug">{error}</div>}
     </div>
   );
 }
@@ -115,22 +115,22 @@ function CountryPicker({
     );
   }, [q]);
   return (
-    <div className="relative">
+    <div className="relative min-w-0">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
             type="button"
-            className={cn(inputCls, "flex items-center gap-2 text-start")}
+            className={cn(inputCls, "flex items-center gap-2 text-start pe-8")}
             aria-label={label}
           >
-            <span className="text-lg">{c?.flag ?? "🏳️"}</span>
-            <span className="flex-1 truncate">{c ? `${c.name_ar} (+${c.dial})` : label}</span>
-            <ChevronDown className="h-4 w-4 opacity-60" />
+            <span className="text-lg shrink-0">{c?.flag ?? "🏳️"}</span>
+            <span className="flex-1 min-w-0 truncate">{c ? `${c.name_ar} (+${c.dial})` : label}</span>
           </button>
         </PopoverTrigger>
-        <label className="pointer-events-none absolute top-1 start-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+        <label className="pointer-events-none absolute top-1 start-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate max-w-[calc(100%-2rem)]">
           {label}
         </label>
+        <ChevronDown className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-2 h-4 w-4 opacity-60" />
         <PopoverContent align="start" className="p-0 w-[min(92vw,360px)]">
           <div className="p-2 border-b border-border flex items-center gap-2">
             <Search className="h-4 w-4 opacity-60" />
