@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAssistant } from "@/hooks/useAssistant";
+import { useI18n } from "@/lib/i18n";
 import AssistantHeader from "./AssistantHeader";
 import AssistantMessage from "./AssistantMessage";
 import AssistantTyping from "./AssistantTyping";
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export default function AssistantChatWidget({ open, onClose, onMinimize }: Props) {
+  const { t, dir } = useI18n();
   const { messages, send, isSending, clear, hasAnnouncement } = useAssistant();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
@@ -30,7 +32,7 @@ export default function AssistantChatWidget({ open, onClose, onMinimize }: Props
 
   return (
     <div
-      dir="rtl"
+      dir={dir}
       aria-hidden={!open}
       className={cn(
         "fixed z-[60] transition-all duration-300 ease-out",
@@ -42,7 +44,7 @@ export default function AssistantChatWidget({ open, onClose, onMinimize }: Props
           : "opacity-0 translate-y-4 pointer-events-none",
       )}
       role="dialog"
-      aria-label="مساعد رواء"
+      aria-label={t("asst.dialog")}
     >
       <div className="relative flex h-full w-full flex-col overflow-hidden rounded-3xl border border-primary/15 bg-background/95 backdrop-blur-xl shadow-2xl">
         <AssistantHeader

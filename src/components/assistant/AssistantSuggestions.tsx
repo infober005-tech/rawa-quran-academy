@@ -1,16 +1,17 @@
 import type { AssistantSuggestion } from "@/types/assistant";
+import { useI18n } from "@/lib/i18n";
 
-export const DEFAULT_SUGGESTIONS: AssistantSuggestion[] = [
-  { id: "reg", emoji: "📚", label: "التسجيل", prompt: "كيف أسجل في منصة رواء؟" },
-  { id: "halaqas", emoji: "📖", label: "الحلقات", prompt: "ما هي الحلقات المتاحة حالياً؟" },
-  { id: "teachers", emoji: "👨‍🏫", label: "المعلمون", prompt: "من هم المعلمون في المنصة؟" },
-  { id: "subs", emoji: "💳", label: "الاشتراكات", prompt: "ما باقات الاشتراك وكيف أدفع؟" },
-  { id: "qr", emoji: "📱", label: "QR الحضور", prompt: "كيف يعمل نظام حضور QR؟" },
-  { id: "parent", emoji: "👨‍👩‍👧", label: "ولي الأمر", prompt: "كيف أتابع ابني كولي أمر؟" },
-  { id: "student", emoji: "🎓", label: "الطالب", prompt: "ماذا تحتوي لوحة الطالب؟" },
-  { id: "events", emoji: "📅", label: "الفعاليات", prompt: "ما الفعاليات القادمة؟" },
-  { id: "contact", emoji: "📞", label: "تواصل معنا", prompt: "كيف يمكنني التواصل مع الدعم؟" },
-  { id: "faq", emoji: "❓", label: "الأسئلة الشائعة", prompt: "اعرض لي أهم الأسئلة الشائعة." },
+const SUGGESTION_IDS: Array<{ id: string; emoji: string }> = [
+  { id: "reg", emoji: "📚" },
+  { id: "halaqas", emoji: "📖" },
+  { id: "teachers", emoji: "👨‍🏫" },
+  { id: "subs", emoji: "💳" },
+  { id: "qr", emoji: "📱" },
+  { id: "parent", emoji: "👨‍👩‍👧" },
+  { id: "student", emoji: "🎓" },
+  { id: "events", emoji: "📅" },
+  { id: "contact", emoji: "📞" },
+  { id: "faq", emoji: "❓" },
 ];
 
 export default function AssistantSuggestions({
@@ -20,9 +21,16 @@ export default function AssistantSuggestions({
   onPick: (prompt: string) => void;
   disabled?: boolean;
 }) {
+  const { t } = useI18n();
+  const suggestions: AssistantSuggestion[] = SUGGESTION_IDS.map((s) => ({
+    id: s.id,
+    emoji: s.emoji,
+    label: t(`asst.sug.${s.id}`),
+    prompt: t(`asst.sug.${s.id}.prompt`),
+  }));
   return (
     <div className="flex flex-wrap gap-2 px-4 pb-3">
-      {DEFAULT_SUGGESTIONS.map((s) => (
+      {suggestions.map((s) => (
         <button
           key={s.id}
           type="button"

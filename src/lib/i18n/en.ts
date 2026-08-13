@@ -4,5 +4,6 @@ import admin from "./en/admin";
 import subscription from "./en/subscription";
 import features from "./en/features";
 import pages from "./en/pages";
-const dict: Record<string, string> = { ...base, ...dashboards, ...admin, ...subscription, ...features, ...pages };
+import widgets from "./en/widgets";
+const dict: Record<string, string> = { ...base, ...dashboards, ...admin, ...subscription, ...features, ...pages, ...widgets };
 export default dict;

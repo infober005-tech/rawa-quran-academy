@@ -14,10 +14,7 @@ const isWeakPasswordError = (m?: string) => !!m && WEAK_PWD_PATTERNS.test(m);
 const LETTERS_ONLY = /^[\p{L}\s'’\-]+$/u;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const MONTHS_AR = [
-  "يناير","فبراير","مارس","أبريل","مايو","يونيو",
-  "يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر",
-];
+const MONTH_INDEXES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
 type FormState = {
   full_name: string;
@@ -74,12 +71,12 @@ function passwordScore(p: string) {
     special: /[^A-Za-z0-9]/.test(p),
   };
   const score = Object.values(rules).filter(Boolean).length;
-  const labels = ["ضعيفة جداً", "ضعيفة", "متوسطة", "قوية", "قوية جداً"];
+  const labelKeys = ["reg.pwd.vweak", "reg.pwd.weak", "reg.pwd.medium", "reg.pwd.strong", "reg.pwd.vstrong"];
   const colors = ["bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-green-500", "bg-emerald-700"];
   return {
     rules,
     score,
-    label: score === 0 ? "ضعيفة جداً" : labels[score - 1],
+    labelKey: score === 0 ? "reg.pwd.vweak" : labelKeys[score - 1],
     color: score === 0 ? "bg-red-500" : colors[score - 1],
   };
 }
@@ -101,9 +98,11 @@ function daysInMonth(y: number, m: number) {
 function CountryPicker({
   value, onChange, label,
 }: { value: string; onChange: (code: string) => void; label: string }) {
+  const { t, lang } = useI18n();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const c = findCountry(value);
+  const cname = (x: { name_ar: string; name_en: string }) => (lang === "ar" ? x.name_ar : x.name_en);
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
     if (!s) return COUNTRIES;
@@ -124,7 +123,7 @@ function CountryPicker({
             aria-label={label}
           >
             <span className="text-lg shrink-0">{c?.flag ?? "🏳️"}</span>
-            <span className="flex-1 min-w-0 truncate">{c ? `${c.name_ar} (+${c.dial})` : label}</span>
+            <span className="flex-1 min-w-0 truncate">{c ? `${cname(c)} (+${c.dial})` : label}</span>
           </button>
         </PopoverTrigger>
         <label className="pointer-events-none absolute top-1 start-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate max-w-[calc(100%-2rem)]">
@@ -138,7 +137,7 @@ function CountryPicker({
               autoFocus
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="ابحث عن دولة…"
+              placeholder={t("auth.search_country")}
               className="flex-1 bg-transparent outline-none text-sm"
             />
           </div>
@@ -154,12 +153,12 @@ function CountryPicker({
                 )}
               >
                 <span className="text-lg">{x.flag}</span>
-                <span className="flex-1 truncate">{x.name_ar}</span>
+                <span className="flex-1 truncate">{cname(x)}</span>
                 <span className="text-xs text-muted-foreground">+{x.dial}</span>
               </button>
             ))}
             {filtered.length === 0 && (
-              <div className="px-3 py-4 text-xs text-muted-foreground text-center">لا توجد نتائج</div>
+              <div className="px-3 py-4 text-xs text-muted-foreground text-center">{t("auth.no_results")}</div>
             )}
           </div>
         </PopoverContent>
@@ -219,15 +218,15 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
   const phoneValid = phoneDigits.length >= 7 && phoneDigits.length <= 15;
 
   const errors: Partial<Record<keyof FormState, string>> = {};
-  if (touched.full_name && !LETTERS_ONLY.test(form.full_name.trim())) errors.full_name = "الاسم يجب أن يحتوي حروفاً فقط";
-  if (touched.parent_name && form.parent_name && !LETTERS_ONLY.test(form.parent_name.trim())) errors.parent_name = "اسم ولي الأمر يجب أن يحتوي حروفاً فقط";
-  if (touched.city && !LETTERS_ONLY.test(form.city.trim())) errors.city = "المدينة يجب أن تحتوي حروفاً فقط";
-  if (touched.email && !EMAIL_RE.test(form.email.trim())) errors.email = "بريد إلكتروني غير صالح";
-  if (touched.state && !form.state) errors.state = "الولاية / المقاطعة مطلوبة";
-  if (touched.phone_number && !phoneValid) errors.phone_number = "رقم هاتف غير صالح";
-  if ((touched.dob_y || touched.dob_m || touched.dob_d) && !dobValid) errors.dob_y = "التاريخ غير صالح (الحد الأدنى 4 سنوات، الأعلى 100)";
-  if (touched.password && !pwdStrong) errors.password = "كلمة المرور يجب أن تكون قوية";
-  if (touched.confirm && !confirmOk) errors.confirm = "كلمتا المرور غير متطابقتين";
+  if (touched.full_name && !LETTERS_ONLY.test(form.full_name.trim())) errors.full_name = t("reg.err.name_letters");
+  if (touched.parent_name && form.parent_name && !LETTERS_ONLY.test(form.parent_name.trim())) errors.parent_name = t("reg.err.parent_letters");
+  if (touched.city && !LETTERS_ONLY.test(form.city.trim())) errors.city = t("reg.err.city_letters");
+  if (touched.email && !EMAIL_RE.test(form.email.trim())) errors.email = t("reg.err.email");
+  if (touched.state && !form.state) errors.state = t("reg.err.state");
+  if (touched.phone_number && !phoneValid) errors.phone_number = t("reg.err.phone");
+  if ((touched.dob_y || touched.dob_m || touched.dob_d) && !dobValid) errors.dob_y = t("reg.err.dob");
+  if (touched.password && !pwdStrong) errors.password = t("reg.err.password");
+  if (touched.confirm && !confirmOk) errors.confirm = t("reg.pwd.nomatch");
 
   const canSubmit =
     LETTERS_ONLY.test(form.full_name.trim()) &&
@@ -324,39 +323,39 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
         <div className="sm:col-span-2">
           <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground min-w-0">
             <Calendar className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">تاريخ الميلاد</span>
-            {age !== null && dobValid && <span className="ms-auto shrink-0 text-primary font-semibold">العمر: {age} سنة</span>}
+            <span className="truncate">{t("reg.dob")}</span>
+            {age !== null && dobValid && <span className="ms-auto shrink-0 text-primary font-semibold">{t("reg.age", { n: age })}</span>}
           </div>
           <div className="grid grid-cols-3 gap-2 min-w-0">
             <select
-              aria-label="اليوم"
+              aria-label={t("reg.day")}
               value={form.dob_d}
               onChange={(e) => { set("dob_d", e.target.value); mark("dob_d"); }}
               className={cn(inputCls, "text-center pt-0 pb-0")}
             >
-              <option value="">اليوم</option>
+              <option value="">{t("reg.day")}</option>
               {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
                 <option key={d} value={d}>{d}</option>
               ))}
             </select>
             <select
-              aria-label="الشهر"
+              aria-label={t("reg.month")}
               value={form.dob_m}
               onChange={(e) => { set("dob_m", e.target.value); mark("dob_m"); }}
               className={cn(inputCls, "text-center pt-0 pb-0")}
             >
-              <option value="">الشهر</option>
-              {MONTHS_AR.map((m, i) => (
-                <option key={m} value={i + 1}>{m}</option>
+              <option value="">{t("reg.month")}</option>
+              {MONTH_INDEXES.map((m) => (
+                <option key={m} value={m}>{t(`reg.month.${m}`)}</option>
               ))}
             </select>
             <select
-              aria-label="السنة"
+              aria-label={t("reg.year")}
               value={form.dob_y}
               onChange={(e) => { set("dob_y", e.target.value); mark("dob_y"); }}
               className={cn(inputCls, "text-center pt-0 pb-0")}
             >
-              <option value="">السنة</option>
+              <option value="">{t("reg.year")}</option>
               {years.map((y) => (
                 <option key={y} value={y}>{y}</option>
               ))}
@@ -371,7 +370,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
         </div>
 
         {/* State */}
-        <FloatingField id="state" label="الولاية / المقاطعة" error={errors.state} ok={!!form.state}>
+        <FloatingField id="state" label={t("reg.state")} error={errors.state} ok={!!form.state}>
           <select
             id="state"
             disabled={!country || country.states.length <= 1}
@@ -379,7 +378,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
             onChange={(e) => { set("state", e.target.value); mark("state"); }}
             className={cn(inputCls, "disabled:opacity-60")}
           >
-            <option value="">{country.states.length > 1 ? "اختر" : "غير متاحة"}</option>
+            <option value="">{country.states.length > 1 ? t("reg.choose") : t("reg.na")}</option>
             {country.states.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
@@ -409,7 +408,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
           <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t("auth.phone")}</div>
           <div className="grid grid-cols-[7rem_minmax(0,1fr)] sm:grid-cols-[9rem_minmax(0,1fr)] gap-2 min-w-0">
             <div className="min-w-0">
-              <CountryPicker value={form.phone_country} onChange={(code) => set("phone_country", code)} label="الدولة" />
+              <CountryPicker value={form.phone_country} onChange={(code) => set("phone_country", code)} label={t("auth.country")} />
             </div>
             <div
               dir="ltr"
@@ -456,7 +455,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
               />
               <button type="button" onClick={() => setShowPw((v) => !v)}
                 className="absolute end-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground"
-                aria-label={showPw ? "إخفاء" : "إظهار"}>
+                aria-label={showPw ? t("reg.hide") : t("reg.show")}>
                 {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
@@ -469,16 +468,11 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
                 ))}
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold" style={{ color: pwd.score >= 4 ? "rgb(5,150,105)" : pwd.score >= 3 ? "rgb(202,138,4)" : "rgb(220,38,38)" }}>{pwd.label}</span>
+                <span className="text-xs font-semibold" style={{ color: pwd.score >= 4 ? "rgb(5,150,105)" : pwd.score >= 3 ? "rgb(202,138,4)" : "rgb(220,38,38)" }}>{t(pwd.labelKey)}</span>
               </div>
               <ul className="grid grid-cols-2 gap-1 text-[11px]">
-                {[
-                  { k: "len", label: "٨ أحرف على الأقل" },
-                  { k: "upper", label: "حرف كبير (A-Z)" },
-                  { k: "lower", label: "حرف صغير (a-z)" },
-                  { k: "num", label: "رقم (0-9)" },
-                  { k: "special", label: "رمز خاص (!@#…)" },
-                ].map((r) => {
+                {["len", "upper", "lower", "num", "special"].map((k) => {
+                  const r = { k, label: t(`reg.pwd.${k}`) };
                   const ok = (pwd.rules as Record<string, boolean>)[r.k];
                   return (
                     <li key={r.k} className={cn("flex items-center gap-1.5", ok ? "text-emerald-600" : "text-muted-foreground")}>
@@ -509,7 +503,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
               />
               <button type="button" onClick={() => setShowCw((v) => !v)}
                 className="absolute end-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground"
-                aria-label={showCw ? "إخفاء" : "إظهار"}>
+                aria-label={showCw ? t("reg.hide") : t("reg.show")}>
                 {showCw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
@@ -517,7 +511,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
           {form.confirm && (
             <div className={cn("mt-1 text-[11px] flex items-center gap-1", confirmOk ? "text-emerald-600" : "text-red-500")}>
               {confirmOk ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
-              {confirmOk ? "كلمتا المرور متطابقتان" : "كلمتا المرور غير متطابقتين"}
+              {confirmOk ? t("reg.pwd.match") : t("reg.pwd.nomatch")}
             </div>
           )}
         </div>
