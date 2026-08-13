@@ -1,21 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { sendAssistantMessage, ASSISTANT_STORAGE_KEY } from "@/services/assistant";
 import type { AssistantAttachment, AssistantMessage } from "@/types/assistant";
-
-const WELCOME: AssistantMessage = {
-  id: "welcome",
-  role: "assistant",
-  createdAt: Date.now(),
-  content:
-    "السلام عليكم ورحمة الله وبركاته 🌿\n\nأهلاً بك في منصة رواء.\nأنا مساعدك الذكي ويمكنني مساعدتك في:\n\n• التسجيل\n• الحلقات\n• المعلمين\n• الاشتراكات\n• المدفوعات\n• الحضور (QR)\n• لوحة الطالب\n• لوحة ولي الأمر\n• لوحة المعلم\n• القرآن والحفظ والتجويد\n• الدعم الفني",
-};
+import { useI18n } from "@/lib/i18n";
 
 function uid() {
   return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 }
 
 export function useAssistant() {
-  const [messages, setMessages] = useState<AssistantMessage[]>([WELCOME]);
+  const { t, lang } = useI18n();
+  const welcome = useMemo<AssistantMessage>(
+    () => ({ id: "welcome", role: "assistant", createdAt: Date.now(), content: t("asst.welcome") }),
+    [t, lang],
+  );
+  const [messages, setMessages] = useState<AssistantMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasAnnouncement, setHasAnnouncement] = useState(false);
@@ -51,7 +49,7 @@ export function useAssistant() {
       const userMsg: AssistantMessage = {
         id: uid(),
         role: "user",
-        content: clean || "(مرفق)",
+        content: clean || t("asst.attachment"),
         createdAt: Date.now(),
         attachments,
       };
@@ -59,14 +57,14 @@ export function useAssistant() {
       setIsSending(true);
       try {
         const history = [...messages, userMsg].filter((m) => m.id !== "welcome");
-        const { reply, hasAnnouncement: ann } = await sendAssistantMessage(history);
+        const { reply, hasAnnouncement: ann } = await sendAssistantMessage(history, lang);
         setHasAnnouncement(ann);
         setMessages((prev) => [
           ...prev,
           { id: uid(), role: "assistant", content: reply, createdAt: Date.now() },
         ]);
       } catch (e) {
-        const msg = e instanceof Error ? e.message : "خطأ غير معروف";
+        const msg = e instanceof Error ? e.message : t("asst.err.unknown");
         setError(msg);
         setMessages((prev) => [
           ...prev,
@@ -75,10 +73,10 @@ export function useAssistant() {
             role: "assistant",
             content:
               msg === "RATE_LIMITED"
-                ? "تم تجاوز الحد المؤقت للاستخدام، حاول بعد قليل."
+                ? t("asst.err.rate")
                 : msg === "CREDITS_EXHAUSTED"
-                ? "انتهى رصيد المساعد الذكي. يرجى إبلاغ الإدارة."
-                : "تعذّر الاتصال بالمساعد الآن. حاول مرة أخرى.",
+                ? t("asst.err.credits")
+                : t("asst.err.generic"),
             createdAt: Date.now(),
           },
         ]);
@@ -86,16 +84,23 @@ export function useAssistant() {
         setIsSending(false);
       }
     },
-    [messages],
+    [messages, t, lang],
   );
 
   const clear = useCallback(() => {
-    setMessages([{ ...WELCOME, id: "welcome", createdAt: Date.now() }]);
+    setMessages([]);
     setError(null);
   }, []);
 
   return useMemo(
-    () => ({ messages, send, isSending, error, clear, hasAnnouncement }),
-    [messages, send, isSending, error, clear, hasAnnouncement],
+    () => ({
+      messages: messages.length ? messages : [welcome],
+      send,
+      isSending,
+      error,
+      clear,
+      hasAnnouncement,
+    }),
+    [messages, welcome, send, isSending, error, clear, hasAnnouncement],
   );
 }
