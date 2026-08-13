@@ -2,6 +2,7 @@ import { useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { Send, Paperclip, Mic, Square } from "lucide-react";
 import type { AssistantAttachment } from "@/types/assistant";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 
 type Props = {
   disabled?: boolean;
@@ -22,6 +23,7 @@ async function fileToDataUrl(f: File): Promise<string> {
 }
 
 export default function AssistantInput({ disabled, onSend }: Props) {
+  const { t } = useI18n();
   const [value, setValue] = useState("");
   const [attachments, setAttachments] = useState<AssistantAttachment[]>([]);
   const [recording, setRecording] = useState(false);
