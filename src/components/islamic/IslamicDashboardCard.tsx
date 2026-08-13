@@ -42,21 +42,21 @@ const HADITHS = [
 ];
 
 const NAMES = [
-  { ar: "الرَّحْمَنُ", en: "The Most Gracious" },
-  { ar: "الرَّحِيمُ", en: "The Most Merciful" },
-  { ar: "الْمَلِكُ", en: "The King" },
-  { ar: "الْقُدُّوسُ", en: "The Most Holy" },
-  { ar: "السَّلَامُ", en: "The Source of Peace" },
-  { ar: "الْمُؤْمِنُ", en: "The Guardian of Faith" },
-  { ar: "الْعَزِيزُ", en: "The Almighty" },
-  { ar: "الْغَفَّارُ", en: "The Ever-Forgiving" },
-  { ar: "الْوَهَّابُ", en: "The Bestower" },
-  { ar: "الرَّزَّاقُ", en: "The Provider" },
-  { ar: "اللَّطِيفُ", en: "The Subtle One" },
-  { ar: "الْحَكِيمُ", en: "The All-Wise" },
-  { ar: "الْوَدُودُ", en: "The Most Loving" },
-  { ar: "الْحَيُّ", en: "The Ever-Living" },
-  { ar: "الْقَيُّومُ", en: "The Self-Subsisting" },
+  { ar: "الرَّحْمَنُ", en: "The Most Gracious", fr: "Le Tout Miséricordieux" },
+  { ar: "الرَّحِيمُ", en: "The Most Merciful", fr: "Le Très Miséricordieux" },
+  { ar: "الْمَلِكُ", en: "The King", fr: "Le Souverain" },
+  { ar: "الْقُدُّوسُ", en: "The Most Holy", fr: "Le Très Saint" },
+  { ar: "السَّلَامُ", en: "The Source of Peace", fr: "La Source de la Paix" },
+  { ar: "الْمُؤْمِنُ", en: "The Guardian of Faith", fr: "Le Garant de la Foi" },
+  { ar: "الْعَزِيزُ", en: "The Almighty", fr: "Le Tout-Puissant" },
+  { ar: "الْغَفَّارُ", en: "The Ever-Forgiving", fr: "Celui qui pardonne sans cesse" },
+  { ar: "الْوَهَّابُ", en: "The Bestower", fr: "Le Généreux Donateur" },
+  { ar: "الرَّزَّاقُ", en: "The Provider", fr: "Le Pourvoyeur" },
+  { ar: "اللَّطِيفُ", en: "The Subtle One", fr: "Le Subtil" },
+  { ar: "الْحَكِيمُ", en: "The All-Wise", fr: "Le Parfait Sage" },
+  { ar: "الْوَدُودُ", en: "The Most Loving", fr: "Le Tout Aimant" },
+  { ar: "الْحَيُّ", en: "The Ever-Living", fr: "Le Vivant" },
+  { ar: "الْقَيُّومُ", en: "The Self-Subsisting", fr: "Celui qui subsiste par Lui-même" },
 ];
 
 const BATNA = { lat: 35.5559, lng: 6.1741 };
@@ -378,7 +378,9 @@ export function IslamicDashboardCard() {
               <div className="mt-2 text-3xl font-black text-gold text-center" style={{ fontFamily: "var(--font-display-ar)" }}>
                 {name.ar}
               </div>
-              <div className="text-center text-xs opacity-80 mt-1">{name.en}</div>
+              {lang !== "ar" && (
+                <div className="text-center text-xs opacity-80 mt-1">{lang === "fr" ? name.fr : name.en}</div>
+              )}
             </div>
             <div className="mt-auto p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm">
