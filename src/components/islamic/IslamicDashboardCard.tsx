@@ -241,15 +241,15 @@ export function IslamicDashboardCard() {
   const isRamadan = hp.month === 9;
 
   const next = prayers ? nextPrayer(prayers, now) : null;
-  const nextName = next ? PRAYER_AR[next.name] : "";
+  const nextName = next ? t(`w.isl.prayer.${next.name}`) : "";
   const nextIn = next ? countdown(now, next.at) : "";
 
-  const gregorian = new Intl.DateTimeFormat("ar-EG", {
+  const gregorian = new Intl.DateTimeFormat(lang === "fr" ? "fr-FR" : lang === "en" ? "en-GB" : "ar-EG", {
     weekday: "long", day: "numeric", month: "long", year: "numeric",
   }).format(now);
 
   return (
-    <section aria-label="لوحة إسلامية" dir="rtl" className="max-w-7xl mx-auto px-4 sm:px-6 py-10 md:py-14">
+    <section aria-label={t("w.isl.aria")} dir={dir} className="max-w-7xl mx-auto px-4 sm:px-6 py-10 md:py-14">
       <div className="relative rounded-[2rem] overflow-hidden border border-gold/30 bg-gradient-to-br from-primary/95 via-primary to-secondary/90 text-primary-foreground shadow-[0_30px_80px_-30px_rgba(94,75,123,0.6)]">
         {/* ornaments */}
         <div className="pointer-events-none absolute inset-0 opacity-[0.09]" aria-hidden>
@@ -273,7 +273,7 @@ export function IslamicDashboardCard() {
             className="lg:col-span-5 rounded-3xl p-6 bg-white/10 backdrop-blur-xl border border-white/20"
           >
             <div className="flex items-center gap-2 text-gold text-xs font-semibold uppercase tracking-widest">
-              <Clock className="w-4 h-4" aria-hidden /> الوقت الآن
+              <Clock className="w-4 h-4" aria-hidden /> {t("w.isl.now")}
             </div>
             <div
               dir="ltr"
@@ -288,15 +288,15 @@ export function IslamicDashboardCard() {
               <span className="text-6xl md:text-7xl bg-gradient-to-b from-white to-gold/80 bg-clip-text text-transparent">{mounted ? s : "--"}</span>
             </div>
             <div className="mt-4 text-2xl font-bold text-gold" style={{ fontFamily: "var(--font-display-ar)" }}>
-              {greeting(now, "ar")}
+              {t(greetingKey(now))}
             </div>
             <div className="mt-2 text-sm opacity-90">{gregorian}</div>
             <div className="text-sm opacity-90 flex items-center gap-2">
-              <CalendarDays className="w-4 h-4 text-gold" aria-hidden /> {hijriDate(now)}
+              <CalendarDays className="w-4 h-4 text-gold" aria-hidden /> {hijriDate(now, locale)}
             </div>
             {isFriday && (
               <div className="mt-4 p-3 rounded-2xl bg-gold/20 border border-gold/40 text-center text-sm font-semibold">
-                اللهم صلِّ وسلِّم على نبينا محمد ﷺ
+                {t("w.isl.friday_dua")}
               </div>
             )}
           </motion.div>
@@ -308,15 +308,15 @@ export function IslamicDashboardCard() {
           >
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2 text-gold text-xs font-semibold uppercase tracking-widest">
-                <Sun className="w-4 h-4" aria-hidden /> مواقيت الصلاة
+                <Sun className="w-4 h-4" aria-hidden /> {t("w.isl.prayers")}
               </div>
               <div className="flex items-center gap-1 text-xs opacity-90">
-                <MapPin className="w-3.5 h-3.5" aria-hidden /> {geo.label}
+                <MapPin className="w-3.5 h-3.5" aria-hidden /> {geo.here ? t("w.isl.location.you") : t("w.isl.location.default")}
               </div>
             </div>
             {next && (
               <div className="mt-4 p-4 rounded-2xl bg-gradient-to-l from-gold/30 to-gold/10 border border-gold/40">
-                <div className="text-xs opacity-90">الصلاة القادمة</div>
+                <div className="text-xs opacity-90">{t("w.isl.next_prayer")}</div>
                 <div className="flex items-baseline justify-between mt-1">
                   <div className="text-2xl font-bold text-gold">{nextName}</div>
                   <div className="font-mono text-2xl font-bold">{nextIn}</div>
@@ -325,8 +325,8 @@ export function IslamicDashboardCard() {
             )}
             <div className="mt-4 grid grid-cols-3 sm:grid-cols-6 gap-2">
               {prayers
-                ? (Object.keys(PRAYER_AR) as (keyof Prayers)[]).map((k) => {
-                    const t = prayers[k]?.split(" ")[0] ?? "—";
+                ? PRAYER_KEYS.map((k) => {
+                    const time = prayers[k]?.split(" ")[0] ?? "—";
                     const active = next?.name === k;
                     return (
                       <div
@@ -337,13 +337,13 @@ export function IslamicDashboardCard() {
                             : "bg-white/5 border-white/10"
                         }`}
                       >
-                        <div className="text-[11px] opacity-90">{PRAYER_AR[k]}</div>
-                        <div className="font-mono font-bold mt-1">{t}</div>
+                        <div className="text-[11px] opacity-90">{t(`w.isl.prayer.${k}`)}</div>
+                        <div className="font-mono font-bold mt-1" dir="ltr">{time}</div>
                       </div>
                     );
                   })
                 : (
-                  <div className="col-span-full text-center opacity-80 text-sm py-4">جارٍ حساب المواقيت…</div>
+                  <div className="col-span-full text-center opacity-80 text-sm py-4">{t("w.isl.prayers_loading")}</div>
                 )}
             </div>
           </motion.div>
@@ -354,14 +354,14 @@ export function IslamicDashboardCard() {
             className="lg:col-span-8 rounded-3xl p-6 bg-white/10 backdrop-blur-xl border border-white/20"
           >
             <div className="flex items-center gap-2 text-gold text-xs font-semibold uppercase tracking-widest">
-              <BookOpen className="w-4 h-4" aria-hidden /> آية اليوم
+              <BookOpen className="w-4 h-4" aria-hidden /> {t("w.isl.verse_of_day")}
             </div>
-            <p className="mt-4 text-2xl md:text-3xl leading-loose text-center" style={{ fontFamily: "var(--font-display-ar)" }}>
+            <p dir="rtl" className="mt-4 text-2xl md:text-3xl leading-loose text-center" style={{ fontFamily: "var(--font-display-ar)" }}>
               ﴿ {verse.text} ﴾
             </p>
             {(verse.surah || verse.ayah) && (
               <div className="mt-3 text-center text-sm text-gold font-semibold">
-                {verse.surah}{verse.ayah ? ` — الآية ${verse.ayah}` : ""}
+                {verse.surah}{verse.ayah ? ` — ${t("w.isl.ayah_no", { n: verse.ayah })}` : ""}
               </div>
             )}
           </motion.div>
@@ -373,7 +373,7 @@ export function IslamicDashboardCard() {
           >
             <div>
               <div className="flex items-center gap-2 text-gold text-xs font-semibold uppercase tracking-widest">
-                <Sparkles className="w-4 h-4" aria-hidden /> اسم اليوم
+                <Sparkles className="w-4 h-4" aria-hidden /> {t("w.isl.name_of_day")}
               </div>
               <div className="mt-2 text-3xl font-black text-gold text-center" style={{ fontFamily: "var(--font-display-ar)" }}>
                 {name.ar}
@@ -383,7 +383,7 @@ export function IslamicDashboardCard() {
             <div className="mt-auto p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm">
                 <Cloud className="w-4 h-4 text-gold" aria-hidden />
-                <span>الطقس</span>
+                <span>{t("w.isl.weather")}</span>
               </div>
               <div className="font-bold">
                 {weather ? `${weather.temp}°C` : "—"}
@@ -399,15 +399,15 @@ export function IslamicDashboardCard() {
             >
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-2 font-bold text-gold">
-                  <Moon className="w-5 h-5" aria-hidden /> رمضان مبارك
+                  <Moon className="w-5 h-5" aria-hidden /> {t("w.isl.ramadan")}
                 </div>
                 <div className="flex flex-wrap gap-4 text-sm">
                   <div>
-                    <span className="opacity-80">إلى الإفطار: </span>
+                    <span className="opacity-80">{t("w.isl.to_iftar")} </span>
                     <span className="font-mono font-bold">{countdown(now, parsePrayerTime(prayers.Maghrib, now))}</span>
                   </div>
                   <div>
-                    <span className="opacity-80">إلى السحور (الفجر): </span>
+                    <span className="opacity-80">{t("w.isl.to_suhoor")} </span>
                     <span className="font-mono font-bold">{countdown(now, parsePrayerTime(prayers.Fajr, now))}</span>
                   </div>
                 </div>
@@ -421,9 +421,9 @@ export function IslamicDashboardCard() {
             className="lg:col-span-6 rounded-3xl p-6 bg-white/10 backdrop-blur-xl border border-white/20"
           >
             <div className="flex items-center gap-2 text-gold text-xs font-semibold uppercase tracking-widest">
-              <Star className="w-4 h-4" aria-hidden /> ذكر اليوم
+              <Star className="w-4 h-4" aria-hidden /> {t("w.isl.dhikr_of_day")}
             </div>
-            <p className="mt-3 text-lg md:text-xl text-center leading-loose" style={{ fontFamily: "var(--font-display-ar)" }}>
+            <p dir="rtl" className="mt-3 text-lg md:text-xl text-center leading-loose" style={{ fontFamily: "var(--font-display-ar)" }}>
               {dhikr}
             </p>
           </motion.div>
@@ -433,12 +433,12 @@ export function IslamicDashboardCard() {
             className="lg:col-span-6 rounded-3xl p-6 bg-white/10 backdrop-blur-xl border border-white/20"
           >
             <div className="flex items-center gap-2 text-gold text-xs font-semibold uppercase tracking-widest">
-              <Award className="w-4 h-4" aria-hidden /> حديث اليوم
+              <Award className="w-4 h-4" aria-hidden /> {t("w.isl.hadith_of_day")}
             </div>
-            <p className="mt-3 text-base md:text-lg text-center leading-loose" style={{ fontFamily: "var(--font-display-ar)" }}>
+            <p dir="rtl" className="mt-3 text-base md:text-lg text-center leading-loose" style={{ fontFamily: "var(--font-display-ar)" }}>
               «{hadith.text}»
             </p>
-            <div className="mt-2 text-center text-xs text-gold font-semibold">{hadith.src}</div>
+            <div dir="rtl" className="mt-2 text-center text-xs text-gold font-semibold">{hadith.src}</div>
           </motion.div>
 
           {/* LIVE STATS */}
@@ -447,14 +447,14 @@ export function IslamicDashboardCard() {
             className="lg:col-span-12 rounded-3xl p-6 bg-white/10 backdrop-blur-xl border border-white/20"
           >
             <div className="flex items-center gap-2 text-gold text-xs font-semibold uppercase tracking-widest mb-4">
-              <TrendingUp className="w-4 h-4" aria-hidden /> الأكاديمية الآن
+              <TrendingUp className="w-4 h-4" aria-hidden /> {t("w.isl.academy_now")}
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
-                { label: "الطلاب", value: stats?.students ?? 0 },
-                { label: "المعلمون", value: stats?.teachers ?? 0 },
-                { label: "الحلقات", value: stats?.halaqas ?? 0 },
-                { label: "ساعات البث", value: stats?.hours ?? 0 },
+                { label: t("w.isl.stat.students"), value: stats?.students ?? 0 },
+                { label: t("w.isl.stat.teachers"), value: stats?.teachers ?? 0 },
+                { label: t("w.isl.stat.halaqas"), value: stats?.halaqas ?? 0 },
+                { label: t("w.isl.stat.hours"), value: stats?.hours ?? 0 },
               ].map((s) => (
                 <div key={s.label} className="p-4 rounded-2xl bg-white/5 border border-white/10 text-center">
                   <div className="text-3xl font-black text-gold">{s.value}</div>
