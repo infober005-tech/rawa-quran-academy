@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getLandingStats } from "@/lib/landing.functions";
+import { useI18n } from "@/lib/i18n";
 
 /* -------------------------- static fallback data -------------------------- */
 
@@ -58,7 +59,7 @@ const NAMES = [
   { ar: "الْقَيُّومُ", en: "The Self-Subsisting" },
 ];
 
-const BATNA = { lat: 35.5559, lng: 6.1741, name: "باتنة، الجزائر" };
+const BATNA = { lat: 35.5559, lng: 6.1741 };
 
 /* --------------------------------- helpers -------------------------------- */
 
@@ -78,9 +79,9 @@ function fmtHM(d: Date) {
   return { h, m, s };
 }
 
-function hijriDate(d: Date) {
+function hijriDate(d: Date, locale: string) {
   try {
-    return new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", {
+    return new Intl.DateTimeFormat(`${locale}-u-ca-islamic-umalqura`, {
       day: "numeric", month: "long", year: "numeric",
     }).format(d);
   } catch { return ""; }
@@ -96,11 +97,11 @@ function hijriParts(d: Date) {
   } catch { return { day: 0, month: 0, year: 0 }; }
 }
 
-function greeting(d: Date, lang: "ar") {
+function greetingKey(d: Date) {
   const h = d.getHours();
-  if (h < 12) return "صباح الخير";
-  if (h < 18) return "مساء الخير";
-  return "مساء الخير";
+  if (h < 12) return "w.isl.greet.morning";
+  if (h < 18) return "w.isl.greet.afternoon";
+  return "w.isl.greet.evening";
 }
 
 type Prayers = {
@@ -128,13 +129,13 @@ async function fetchWeather(lat: number, lng: number) {
 }
 
 function useGeolocation() {
-  const [pos, setPos] = useState<{ lat: number; lng: number; label: string }>({
-    lat: BATNA.lat, lng: BATNA.lng, label: BATNA.name,
+  const [pos, setPos] = useState<{ lat: number; lng: number; here: boolean }>({
+    lat: BATNA.lat, lng: BATNA.lng, here: false,
   });
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
-      (p) => setPos({ lat: p.coords.latitude, lng: p.coords.longitude, label: "موقعك" }),
+      (p) => setPos({ lat: p.coords.latitude, lng: p.coords.longitude, here: true }),
       () => {},
       { timeout: 4000 },
     );
@@ -161,9 +162,7 @@ function nextPrayer(p: Prayers, now: Date) {
   return { name: "Fajr" as const, at: fajr };
 }
 
-const PRAYER_AR: Record<keyof Prayers, string> = {
-  Fajr: "الفجر", Sunrise: "الشروق", Dhuhr: "الظهر", Asr: "العصر", Maghrib: "المغرب", Isha: "العشاء",
-};
+const PRAYER_KEYS: (keyof Prayers)[] = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
 function countdown(from: Date, to: Date) {
   const ms = Math.max(0, to.getTime() - from.getTime());
@@ -176,6 +175,8 @@ function countdown(from: Date, to: Date) {
 /* --------------------------------- widget --------------------------------- */
 
 export function IslamicDashboardCard() {
+  const { t, lang, dir } = useI18n();
+  const locale = lang === "fr" ? "fr-FR" : lang === "en" ? "en-GB" : "ar-SA";
   const [now, setNow] = useState<Date>(() => new Date());
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); setNow(new Date()); }, []);
