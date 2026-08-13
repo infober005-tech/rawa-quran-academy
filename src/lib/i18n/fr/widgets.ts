@@ -75,5 +75,7 @@ const dict: Record<string, string> = {
   "asst.sug.contact.prompt": "Comment contacter le support ?",
   "asst.sug.faq": "FAQ",
   "asst.sug.faq.prompt": "Montrez-moi les questions les plus fréquentes.",
+  "auth.search_country": "Rechercher un pays…",
+  "auth.no_results": "Aucun résultat",
 };
 export default dict;
