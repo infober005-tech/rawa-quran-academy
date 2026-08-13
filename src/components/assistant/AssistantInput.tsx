@@ -103,7 +103,7 @@ export default function AssistantInput({ disabled, onSend }: Props) {
               type="button"
               onClick={() => setAttachments((prev) => prev.filter((x) => x.id !== a.id))}
               className="text-[11px] px-2 py-1 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition"
-              title="حذف المرفق"
+              title={t("asst.remove_attachment")}
             >
               {a.kind === "image" ? "🖼️" : a.kind === "pdf" ? "📄" : "🎙️"} {a.name} ✕
             </button>
@@ -114,8 +114,8 @@ export default function AssistantInput({ disabled, onSend }: Props) {
         <div className="flex items-center gap-1 shrink-0 pb-1">
           <button
             type="button"
-            aria-label="إرفاق ملف"
-            title="إرفاق ملف"
+            aria-label={t("asst.attach")}
+            title={t("asst.attach")}
             onClick={() => fileRef.current?.click()}
             className="h-9 w-9 grid place-items-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition"
           >
@@ -131,8 +131,8 @@ export default function AssistantInput({ disabled, onSend }: Props) {
           />
           <button
             type="button"
-            aria-label={recording ? "إيقاف التسجيل" : "تسجيل صوتي"}
-            title={recording ? "إيقاف التسجيل" : "تسجيل صوتي"}
+            aria-label={recording ? t("asst.stop_record") : t("asst.record")}
+            title={recording ? t("asst.stop_record") : t("asst.record")}
             onClick={toggleRecord}
             className={cn(
               "h-9 w-9 grid place-items-center rounded-full transition",
@@ -149,13 +149,13 @@ export default function AssistantInput({ disabled, onSend }: Props) {
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={onKey}
           rows={1}
-          placeholder="اكتب سؤالك…"
+          placeholder={t("asst.placeholder")}
           className="flex-1 resize-none max-h-32 min-h-[40px] rounded-2xl border border-primary/15 bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
         />
         <button
           type="submit"
           disabled={disabled || (!value.trim() && attachments.length === 0)}
-          aria-label="إرسال"
+          aria-label={t("asst.send")}
           className="h-10 w-10 shrink-0 grid place-items-center rounded-full bg-gradient-royal text-primary-foreground shadow-glow disabled:opacity-50 transition"
         >
           <Send className="h-4 w-4 rtl:-scale-x-100" />
