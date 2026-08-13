@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 import AssistantChatWidget from "./AssistantChatWidget";
 
 const OPEN_KEY = "rawa.assistant.open";
 
 export default function AssistantFAB() {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -30,8 +32,8 @@ export default function AssistantFAB() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label={open ? "إغلاق المساعد" : "فتح مساعد رواء"}
-        title={open ? "إغلاق المساعد" : "مساعد رواء"}
+        aria-label={open ? t("asst.close_assistant") : t("asst.open")}
+        title={open ? t("asst.close_assistant") : t("asst.dialog")}
         className={cn(
           "fixed z-[70] end-4 bottom-4 sm:end-6 sm:bottom-6",
           "h-14 w-14 grid place-items-center rounded-full",
