@@ -101,9 +101,11 @@ function daysInMonth(y: number, m: number) {
 function CountryPicker({
   value, onChange, label,
 }: { value: string; onChange: (code: string) => void; label: string }) {
+  const { t, lang } = useI18n();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const c = findCountry(value);
+  const cname = (x: { name_ar: string; name_en: string }) => (lang === "ar" ? x.name_ar : x.name_en);
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
     if (!s) return COUNTRIES;
@@ -124,7 +126,7 @@ function CountryPicker({
             aria-label={label}
           >
             <span className="text-lg shrink-0">{c?.flag ?? "🏳️"}</span>
-            <span className="flex-1 min-w-0 truncate">{c ? `${c.name_ar} (+${c.dial})` : label}</span>
+            <span className="flex-1 min-w-0 truncate">{c ? `${cname(c)} (+${c.dial})` : label}</span>
           </button>
         </PopoverTrigger>
         <label className="pointer-events-none absolute top-1 start-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate max-w-[calc(100%-2rem)]">
@@ -138,7 +140,7 @@ function CountryPicker({
               autoFocus
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="ابحث عن دولة…"
+              placeholder={t("auth.search_country")}
               className="flex-1 bg-transparent outline-none text-sm"
             />
           </div>
@@ -154,12 +156,12 @@ function CountryPicker({
                 )}
               >
                 <span className="text-lg">{x.flag}</span>
-                <span className="flex-1 truncate">{x.name_ar}</span>
+                <span className="flex-1 truncate">{cname(x)}</span>
                 <span className="text-xs text-muted-foreground">+{x.dial}</span>
               </button>
             ))}
             {filtered.length === 0 && (
-              <div className="px-3 py-4 text-xs text-muted-foreground text-center">لا توجد نتائج</div>
+              <div className="px-3 py-4 text-xs text-muted-foreground text-center">{t("auth.no_results")}</div>
             )}
           </div>
         </PopoverContent>
