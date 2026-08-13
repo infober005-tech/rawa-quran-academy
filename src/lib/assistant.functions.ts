@@ -11,6 +11,7 @@ const ChatInput = z.object({
     )
     .min(1)
     .max(30),
+  lang: z.enum(["ar", "fr", "en"]).optional(),
 });
 
 type PlatformSnapshot = {
@@ -142,6 +143,15 @@ export const askAssistant = createServerFn({ method: "POST" })
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
+          {
+            role: "system",
+            content:
+              data.lang === "fr"
+                ? "Réponds exclusivement en français professionnel et naturel, quelle que soit la langue de la question."
+                : data.lang === "en"
+                  ? "Reply exclusively in professional, natural English regardless of the language of the question."
+                  : "أجب بالعربية الفصحى المهنية دائماً.",
+          },
           { role: "system", content: platformContext },
           ...data.messages,
         ],
