@@ -10,14 +10,14 @@
 | --- | --- |
 | Schemas (`public`, `private`) | 2 |
 | Enum types | 12 |
-| Tables | 25 |
-| Constraints (PK / UNIQUE / CHECK / FK) | 92 |
-| Indexes (غير مرتبطة بقيود) | 24 |
+| Tables | 24 |
+| Constraints (PK / UNIQUE / CHECK / FK) | 91 |
+| Indexes (غير مرتبطة بقيود) | 23 |
 | Functions (بما فيها SECURITY DEFINER) | 26 |
-| Triggers على `public` | 22 |
+| Triggers على `public` | 21 |
 | Views / Materialized views | 0 (لا توجد) |
 | GRANTs لـ anon / authenticated / service_role | 71 |
-| ENABLE ROW LEVEL SECURITY | 25 |
+| ENABLE ROW LEVEL SECURITY | 24 |
 | RLS policies (public + private + storage.objects) | 129 |
 | Storage buckets | 7 |
 | Realtime publication (كتعليقات مرجعية) | ✔ |
