@@ -1,0 +1,7 @@
+id,actor_id,entity_type,entity_id,action,metadata,created_at
+b507a08c-ebe8-4fe1-b1e4-78b0bff5b3fd,a74e799e-95c6-4b2c-87b2-aef5220a08cb,payment,40fd6533-2435-47bf-91ed-7306052e3ee2,status_changed,"{""to"": ""approved"", ""from"": ""pending"", ""notes"": null}",2026-06-27 16:24:39.535464+00
+5c16c962-8457-4d79-8ee8-dce2faf8959b,a74e799e-95c6-4b2c-87b2-aef5220a08cb,payment,849e0363-b276-45e7-855b-3fa998c994e6,status_changed,"{""to"": ""approved"", ""from"": ""pending"", ""notes"": null}",2026-06-29 15:36:32.585453+00
+b25b7601-2337-4218-9699-500a9833f5e8,a74e799e-95c6-4b2c-87b2-aef5220a08cb,payment,77befa91-a0e3-4096-8e58-e36c80aa2c7c,status_changed,"{""to"": ""approved"", ""from"": ""pending"", ""notes"": null}",2026-07-04 14:59:01.425616+00
+9733b119-dff6-4845-9a20-99dc6c64829c,,payment,77befa91-a0e3-4096-8e58-e36c80aa2c7c,submitted,"{""ref"": ""RAWA-PAY-MR6HJUZK-C67C1D-EGUO"", ""amount"": 2000.00, ""method"": ""baridimob""}",2026-07-04 14:57:34.97135+00
+5d184c7b-8f23-4500-9bcf-cc577e89a566,,payment,849e0363-b276-45e7-855b-3fa998c994e6,submitted,"{""ref"": ""RAWA-PAY-MQZDN1M7-A480DB-SHL3"", ""amount"": 1500.00, ""method"": ""edahabia""}",2026-06-29 15:33:54.673442+00
+53f8e4b8-8f9f-464a-b362-3a9b01f83d3c,,payment,40fd6533-2435-47bf-91ed-7306052e3ee2,submitted,"{""ref"": ""RAWA-PAY-MQWKJFVB-606F96-K8H3"", ""amount"": 1500.00, ""method"": ""edahabia""}",2026-06-27 16:23:58.675192+00

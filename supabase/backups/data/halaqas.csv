@@ -1,0 +1,2 @@
+id,name,gender,level,teacher_id,supervisor_id,schedule,meeting_link,description,status,created_at,updated_at,start_time,end_time,max_students,meeting_provider,schedule_days,meeting_id,meeting_passcode,live_session_active,live_session_started_at,live_session_started_by,halaqa_date,halaqa_day
+b1c17208-6764-4fab-aa56-b6bee51b0a2a,حلقة الهدى,female,intermediate,049a55cb-e30c-40af-91f3-a6668d4ccb43,,,meet.google.com/bwd-ssee-tpv,,published,2026-08-08 16:30:47.575687+00,2026-08-08 16:30:47.575687+00,22:28:00,00:00:00,5,google_meet,{Sat},,,f,,,2026-08-08,6
