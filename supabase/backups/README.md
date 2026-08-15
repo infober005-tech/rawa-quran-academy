@@ -17,9 +17,16 @@
 - `generate_data_snapshot.sh` — يعيد توليد نسخة البيانات (قراءة فقط).
 - `export_auth_users.mjs` — يصدّر بيانات الحسابات الوصفية (يقرأ المفتاح من البيئة).
 - `restore_data.sh` — يستورد ملفات CSV إلى مشروع جديد بالترتيب الصحيح للعلاقات.
+- `restore_auth_users.mjs` — ينشئ مستخدمي auth في مشروع جديد بنفس الـ `id` (بلا كلمات مرور).
 - `copy_storage_files.mjs` — تنزيل ملفات Storage الفعلية لاحقاً.
+- `restore_storage_files.mjs` — رفع ملفات Storage إلى المشروع الجديد بنفس المسارات.
 - `AUTH_AND_SETTINGS.md` — إعدادات Auth الحالية وطريقة استعادة المستخدمين.
 - `STORAGE_AND_REALTIME.md` — الدلاء والسياسات وجرد الملفات وRealtime publication.
+
+### المرحلة 3 — اختبار الاسترجاع
+- `RECOVERY_TEST_REPORT.md` — تقرير Recovery Test النهائي (نسبة الاكتمال، ما يُسترجع آلياً، ما يحتاج تدخلاً يدوياً).
+- `recovery/run_recovery_test.sh` — اختبار استرجاع كامل في قاعدة PostgreSQL محلية معزولة (لا يلمس المشروع الأصلي).
+- `recovery/00_supabase_shim.sql`, `recovery/import_auth_metadata.mjs`, `recovery/rls_checks.sql` — ملحقات الاختبار.
 
 ## ما تم نسخه
 - بنية قاعدة البيانات بالكامل + RLS + الصلاحيات + الدوال والتريجرز.
