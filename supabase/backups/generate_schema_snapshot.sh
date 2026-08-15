@@ -63,7 +63,7 @@ q "select 'ALTER TABLE '||n.nspname||'.'||quote_ident(c.relname)||' ENABLE ROW L
 from pg_class c join pg_namespace n on n.oid=c.relnamespace where c.relrowsecurity and n.nspname in ('public','private') order by c.relname" >> $OUT
 
 echo "" >> $OUT; echo "-- ---------- RLS POLICIES ----------" >> $OUT
-q "select 'CREATE POLICY '||quote_literal(pol.polname)||' ON '||n.nspname||'.'||quote_ident(c.relname)||
+q "select 'CREATE POLICY '||quote_ident(pol.polname)||' ON '||n.nspname||'.'||quote_ident(c.relname)||
  ' AS '||case when pol.polpermissive then 'PERMISSIVE' else 'RESTRICTIVE' end||
  ' FOR '||case pol.polcmd when 'r' then 'SELECT' when 'a' then 'INSERT' when 'w' then 'UPDATE' when 'd' then 'DELETE' else 'ALL' end||
  ' TO '||coalesce((select string_agg(quote_ident(rolname),', ') from pg_roles where oid=any(pol.polroles)),'public')||
@@ -76,7 +76,7 @@ echo "" >> $OUT; echo "-- ---------- STORAGE BUCKETS ----------" >> $OUT
 q "select 'INSERT INTO storage.buckets (id,name,public) VALUES ('||quote_literal(id)||','||quote_literal(name)||','||public||') ON CONFLICT (id) DO NOTHING;' from storage.buckets order by id" >> $OUT
 
 echo "" >> $OUT; echo "-- ---------- STORAGE POLICIES (storage.objects) ----------" >> $OUT
-q "select 'CREATE POLICY '||quote_literal(pol.polname)||' ON storage.objects FOR '||
+q "select 'CREATE POLICY '||quote_ident(pol.polname)||' ON storage.objects FOR '||
  case pol.polcmd when 'r' then 'SELECT' when 'a' then 'INSERT' when 'w' then 'UPDATE' when 'd' then 'DELETE' else 'ALL' end||
  ' TO '||coalesce((select string_agg(quote_ident(rolname),', ') from pg_roles where oid=any(pol.polroles)),'public')||
  coalesce(' USING ('||pg_get_expr(pol.polqual,pol.polrelid)||')','')||
