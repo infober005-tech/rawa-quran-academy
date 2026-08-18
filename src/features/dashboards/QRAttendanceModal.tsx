@@ -5,6 +5,7 @@ import QRCode from "qrcode";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { startAttendanceSession, endAttendanceSession } from "@/lib/attendance.functions";
+import { useI18n } from "@/lib/i18n";
 
 type ActiveSession = { id: string; token: string; expires_at: string; halaqa_id: string };
 
@@ -18,6 +19,7 @@ export function QRAttendanceModal({
   halaqaName,
   onClose,
 }: { halaqaId: string; halaqaName: string; onClose: () => void }) {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const start = useServerFn(startAttendanceSession);
   const end = useServerFn(endAttendanceSession);
@@ -34,7 +36,7 @@ export function QRAttendanceModal({
 
   const endMut = useMutation({
     mutationFn: (id: string) => end({ data: { sessionId: id } }),
-    onSuccess: () => { setSession(null); setQrDataUrl(null); toast.success("Attendance session ended"); qc.invalidateQueries(); },
+    onSuccess: () => { setSession(null); setQrDataUrl(null); toast.success(t("d.qr.ended")); qc.invalidateQueries(); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -96,7 +98,7 @@ export function QRAttendanceModal({
       <div className="bg-card rounded-3xl border border-border max-w-md w-full shadow-glow" onClick={(e) => e.stopPropagation()}>
         <div className="p-6 border-b border-border flex justify-between items-center">
           <div>
-            <h2 className="font-bold text-primary">QR Attendance</h2>
+            <h2 className="font-bold text-primary">{t("d.qr.title")}</h2>
             <p className="text-xs text-muted-foreground mt-1">{halaqaName}</p>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">✕</button>
@@ -105,27 +107,27 @@ export function QRAttendanceModal({
           {!session ? (
             <>
               <p className="text-sm text-muted-foreground">
-                Start a 5-minute check-in window. Students in this halaqa can scan the QR from their phone to mark attendance.
+                {t("d.qr.intro")}
               </p>
               <button
                 onClick={() => startMut.mutate()}
                 disabled={startMut.isPending}
                 className="px-6 py-3 rounded-full bg-gradient-royal text-primary-foreground font-semibold disabled:opacity-50"
               >
-                {startMut.isPending ? "Starting…" : "▶ Start Attendance"}
+                {startMut.isPending ? t("d.qr.starting") : `▶ ${t("d.qr.start")}`}
               </button>
             </>
           ) : (
             <>
               {qrDataUrl && (
-                <img src={qrDataUrl} alt="Attendance QR" className="mx-auto rounded-2xl border border-border bg-white p-2" />
+                <img src={qrDataUrl} alt={t("d.qr.alt")} className="mx-auto rounded-2xl border border-border bg-white p-2" />
               )}
               <div className="flex items-center justify-center gap-3">
-                <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-600 text-xs font-bold animate-pulse">● Live</span>
-                <span className="text-xs text-muted-foreground">Expires in <span className="font-mono font-bold text-primary">{mm}:{ss}</span></span>
+                <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-600 text-xs font-bold animate-pulse">● {t("d.qr.live")}</span>
+                <span className="text-xs text-muted-foreground">{t("d.qr.expires_in")} <span className="font-mono font-bold text-primary">{mm}:{ss}</span></span>
               </div>
               <div className="p-4 rounded-2xl bg-muted/40 border border-border">
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Checked-in today</div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("d.qr.checked_in_today")}</div>
                 <div className="text-3xl font-black text-primary mt-1">{count}</div>
               </div>
               <button
@@ -133,7 +135,7 @@ export function QRAttendanceModal({
                 disabled={endMut.isPending}
                 className="w-full px-4 py-2 rounded-full bg-destructive/10 text-destructive font-semibold"
               >
-                End Attendance
+                {t("d.qr.end")}
               </button>
               {checkinUrl && (
                 <div className="text-[10px] text-muted-foreground break-all font-mono">{checkinUrl}</div>

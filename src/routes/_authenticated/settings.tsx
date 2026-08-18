@@ -55,7 +55,7 @@ function SettingsPage() {
             </header>
             <LangSwitcher />
           </section>
-          <form onSubmit={save} aria-label="Profile information" className="rounded-3xl bg-card/70 backdrop-blur-xl border border-border shadow-soft p-6 space-y-4 lg:row-span-2">
+          <form onSubmit={save} aria-label={t("set.aria.profile")} className="rounded-3xl bg-card/70 backdrop-blur-xl border border-border shadow-soft p-6 space-y-4 lg:row-span-2">
             <header className="flex items-center gap-2">
               <User className="h-4 w-4 text-gold" aria-hidden />
               <h2 className="text-base font-bold text-primary">{t("settings.profile.title")}</h2>
@@ -68,7 +68,7 @@ function SettingsPage() {
             </div>
             <button disabled={busy} className="px-6 py-2.5 min-h-11 rounded-full bg-gradient-royal text-primary-foreground font-semibold disabled:opacity-60 shadow-glow">{busy ? t("common.loading") : t("common.save")}</button>
           </form>
-          <form onSubmit={changePassword} aria-label="Change password" className="rounded-3xl bg-card/70 backdrop-blur-xl border border-border shadow-soft p-6 space-y-4">
+          <form onSubmit={changePassword} aria-label={t("set.aria.password")} className="rounded-3xl bg-card/70 backdrop-blur-xl border border-border shadow-soft p-6 space-y-4">
             <header className="flex items-center gap-2">
               <Lock className="h-4 w-4 text-gold" aria-hidden />
               <h2 className="text-base font-bold text-primary">{t("settings.password.title")}</h2>
