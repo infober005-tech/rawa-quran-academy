@@ -243,7 +243,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
       state: true, phone_number: true, dob_y: true, dob_m: true, dob_d: true,
       password: true, confirm: true,
     });
-    if (!canSubmit) { toast.error("يرجى تصحيح الحقول قبل المتابعة"); return; }
+    if (!canSubmit) { toast.error(t("reg.err.fix")); return; }
 
     const dob = `${form.dob_y}-${String(form.dob_m).padStart(2, "0")}-${String(form.dob_d).padStart(2, "0")}`;
     setBusy(true);
