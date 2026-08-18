@@ -20,6 +20,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { upsertAttendanceRecord } from "@/lib/attendance.functions";
+import { useI18n } from "@/lib/i18n";
 
 type Status = "present" | "late" | "absent";
 
@@ -50,6 +51,7 @@ function daysAgo(n: number) { const d = new Date(); d.setDate(d.getDate() - n); 
 
 export function AttendancePanel() {
   const upsert = useServerFn(upsertAttendanceRecord);
+  const { t } = useI18n();
 
   const [from, setFrom] = useState(daysAgo(30));
   const [to, setTo] = useState(today());
@@ -182,7 +184,7 @@ export function AttendancePanel() {
     if (!editing) return;
     try {
       await upsert({ data: { attendanceId: editing.id, status: next.status, notes: next.notes || undefined } });
-      toast.success("Attendance updated");
+      toast.success(t("a.att.updated"));
       setEditing(null);
     } catch (e) {
       toast.error((e as Error).message);
@@ -195,61 +197,61 @@ export function AttendancePanel() {
       <div className="rounded-3xl border border-border bg-card/60 backdrop-blur-xl p-4 md:p-5 shadow-soft">
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-6">
           <label className="text-xs font-semibold text-muted-foreground">
-            From
+            {t("a.att.from")}
             <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-xl bg-background border border-border text-sm" />
           </label>
           <label className="text-xs font-semibold text-muted-foreground">
-            To
+            {t("a.att.to")}
             <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-xl bg-background border border-border text-sm" />
           </label>
           <label className="text-xs font-semibold text-muted-foreground">
-            Halaqa
+            {t("a.att.halaqa")}
             <select value={halaqaId} onChange={(e) => setHalaqaId(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-xl bg-background border border-border text-sm">
-              <option value="">All halaqas</option>
+              <option value="">{t("a.att.all_halaqas")}</option>
               {halaqas.map((h: any) => <option key={h.id} value={h.id}>{h.name}</option>)}
             </select>
           </label>
           <label className="text-xs font-semibold text-muted-foreground">
-            Teacher
+            {t("common.teacher")}
             <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-xl bg-background border border-border text-sm">
-              <option value="">All teachers</option>
+              <option value="">{t("a.att.all_teachers")}</option>
               {teachers.map((t) => <option key={t.id} value={t.id}>{t.full_name ?? "—"}</option>)}
             </select>
           </label>
           <label className="text-xs font-semibold text-muted-foreground">
-            Student
-            <input value={studentQuery} onChange={(e) => setStudentQuery(e.target.value)} placeholder="Search name…" className="mt-1 w-full px-3 py-2 rounded-xl bg-background border border-border text-sm" />
+            {t("a.att.student")}
+            <input value={studentQuery} onChange={(e) => setStudentQuery(e.target.value)} placeholder={t("a.att.search_name")} className="mt-1 w-full px-3 py-2 rounded-xl bg-background border border-border text-sm" />
           </label>
           <label className="text-xs font-semibold text-muted-foreground">
-            Status
+            {t("common.status")}
             <select value={status} onChange={(e) => setStatus(e.target.value as Status | "")} className="mt-1 w-full px-3 py-2 rounded-xl bg-background border border-border text-sm">
-              <option value="">All</option>
-              <option value="present">Present</option>
-              <option value="late">Late</option>
-              <option value="absent">Absent</option>
+              <option value="">{t("common.all")}</option>
+              <option value="present">{t("common.present")}</option>
+              <option value="late">{t("common.late")}</option>
+              <option value="absent">{t("common.absent")}</option>
             </select>
           </label>
         </div>
         <div className="flex flex-wrap gap-2 mt-4">
-          <button onClick={exportExcel} className="px-4 py-2 rounded-full bg-gold/20 text-gold-foreground border border-gold/40 text-xs font-semibold hover:bg-gold/30">📊 Export Excel</button>
-          <button onClick={exportPDF} className="px-4 py-2 rounded-full bg-primary/10 text-primary border border-primary/30 text-xs font-semibold hover:bg-primary/20">📄 Export PDF</button>
-          <span className="ms-auto text-xs text-muted-foreground self-center">{filtered.length} records</span>
+          <button onClick={exportExcel} className="px-4 py-2 rounded-full bg-gold/20 text-gold-foreground border border-gold/40 text-xs font-semibold hover:bg-gold/30">📊 {t("a.att.export_excel")}</button>
+          <button onClick={exportPDF} className="px-4 py-2 rounded-full bg-primary/10 text-primary border border-primary/30 text-xs font-semibold hover:bg-primary/20">📄 {t("a.att.export_pdf")}</button>
+          <span className="ms-auto text-xs text-muted-foreground self-center">{t("a.att.records", { n: filtered.length })}</span>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <StatCard label="Total" value={stats.total} tone="from-primary/20 to-primary/5" />
-        <StatCard label="Present" value={stats.by.present} tone="from-emerald-500/20 to-emerald-500/5" />
-        <StatCard label="Late" value={stats.by.late} tone="from-amber-500/20 to-amber-500/5" />
-        <StatCard label="Absent" value={stats.by.absent} tone="from-rose-500/20 to-rose-500/5" />
-        <StatCard label="Rate" value={`${stats.rate}%`} tone="from-gold/20 to-gold/5" />
+        <StatCard label={t("a.att.total")} value={stats.total} tone="from-primary/20 to-primary/5" />
+        <StatCard label={t("common.present")} value={stats.by.present} tone="from-emerald-500/20 to-emerald-500/5" />
+        <StatCard label={t("common.late")} value={stats.by.late} tone="from-amber-500/20 to-amber-500/5" />
+        <StatCard label={t("common.absent")} value={stats.by.absent} tone="from-rose-500/20 to-rose-500/5" />
+        <StatCard label={t("a.att.rate")} value={`${stats.rate}%`} tone="from-gold/20 to-gold/5" />
       </div>
 
       {/* Charts */}
       <div className="grid lg:grid-cols-[1.6fr_1fr] gap-4">
         <div className="rounded-3xl border border-border bg-card/60 backdrop-blur-xl p-4 shadow-soft">
-          <h3 className="text-sm font-bold text-primary mb-2">Daily breakdown</h3>
+          <h3 className="text-sm font-bold text-primary mb-2">{t("a.att.daily")}</h3>
           <div className="h-64">
             <ResponsiveContainer>
               <BarChart data={chartByDay}>
@@ -265,7 +267,7 @@ export function AttendancePanel() {
           </div>
         </div>
         <div className="rounded-3xl border border-border bg-card/60 backdrop-blur-xl p-4 shadow-soft">
-          <h3 className="text-sm font-bold text-primary mb-2">Status distribution</h3>
+          <h3 className="text-sm font-bold text-primary mb-2">{t("a.att.distribution")}</h3>
           <div className="h-64">
             <ResponsiveContainer>
               <PieChart>
@@ -286,19 +288,19 @@ export function AttendancePanel() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-xs text-muted-foreground border-b border-border">
-                <th className="text-start py-2 px-2 font-semibold">Date</th>
-                <th className="text-start py-2 px-2 font-semibold">Student</th>
-                <th className="text-start py-2 px-2 font-semibold">Halaqa</th>
-                <th className="text-start py-2 px-2 font-semibold">Status</th>
-                <th className="text-start py-2 px-2 font-semibold">Check-in</th>
-                <th className="text-start py-2 px-2 font-semibold">Device</th>
-                <th className="text-start py-2 px-2 font-semibold">GPS</th>
-                <th className="text-end py-2 px-2 font-semibold">Actions</th>
+                <th className="text-start py-2 px-2 font-semibold">{t("common.date")}</th>
+                <th className="text-start py-2 px-2 font-semibold">{t("a.att.student")}</th>
+                <th className="text-start py-2 px-2 font-semibold">{t("a.att.halaqa")}</th>
+                <th className="text-start py-2 px-2 font-semibold">{t("common.status")}</th>
+                <th className="text-start py-2 px-2 font-semibold">{t("a.att.checkin")}</th>
+                <th className="text-start py-2 px-2 font-semibold">{t("a.att.device")}</th>
+                <th className="text-start py-2 px-2 font-semibold">{t("a.att.gps")}</th>
+                <th className="text-end py-2 px-2 font-semibold">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
-              {isLoading && <tr><td colSpan={8} className="py-8 text-center text-muted-foreground text-xs">Loading…</td></tr>}
-              {!isLoading && filtered.length === 0 && <tr><td colSpan={8} className="py-8 text-center text-muted-foreground text-xs">No records</td></tr>}
+              {isLoading && <tr><td colSpan={8} className="py-8 text-center text-muted-foreground text-xs">{t("common.loading")}</td></tr>}
+              {!isLoading && filtered.length === 0 && <tr><td colSpan={8} className="py-8 text-center text-muted-foreground text-xs">{t("a.att.no_records")}</td></tr>}
               {filtered.map((r) => (
                 <tr key={r.id} className="hover:bg-muted/30">
                   <td className="py-2 px-2 text-xs">{r.date}</td>
@@ -306,9 +308,9 @@ export function AttendancePanel() {
                   <td className="py-2 px-2 text-xs">{r.halaqa?.name ?? "—"}</td>
                   <td className="py-2 px-2 text-xs">
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: `${STATUS_COLORS[r.status]}22`, color: STATUS_COLORS[r.status] }}>
-                      {r.status}
+                      {t(`common.${r.status}`)}
                     </span>
-                    {r.is_manual && <span className="ms-1 text-[9px] text-muted-foreground">(manual)</span>}
+                    {r.is_manual && <span className="ms-1 text-[9px] text-muted-foreground">{t("a.att.manual")}</span>}
                   </td>
                   <td className="py-2 px-2 text-xs">{r.checked_in_at ? new Date(r.checked_in_at).toLocaleTimeString() : "—"}</td>
                   <td className="py-2 px-2 text-xs max-w-[180px] truncate" title={r.user_agent ?? ""}>{r.user_agent ? shortDevice(r.user_agent) : "—"}</td>
@@ -320,7 +322,7 @@ export function AttendancePanel() {
                     ) : "—"}
                   </td>
                   <td className="py-2 px-2 text-end">
-                    <button onClick={() => setEditing(r)} className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary hover:bg-primary/20">Edit</button>
+                    <button onClick={() => setEditing(r)} className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary hover:bg-primary/20">{t("common.edit")}</button>
                   </td>
                 </tr>
               ))}
@@ -356,30 +358,31 @@ function shortDevice(ua: string) {
 }
 
 function EditModal({ record, onClose, onSave }: { record: Row; onClose: () => void; onSave: (v: { status: Status; notes: string }) => void }) {
+  const { t } = useI18n();
   const [status, setStatus] = useState<Status>(record.status);
   const [notes, setNotes] = useState(record.notes ?? "");
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-card rounded-3xl border border-border max-w-md w-full shadow-glow p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
         <div>
-          <h3 className="font-bold text-primary">Correct attendance</h3>
+          <h3 className="font-bold text-primary">{t("a.att.correct_title")}</h3>
           <p className="text-xs text-muted-foreground mt-1">{record.student?.full_name} · {record.halaqa?.name} · {record.date}</p>
         </div>
         <label className="block text-xs font-semibold text-muted-foreground">
-          Status
+          {t("common.status")}
           <select value={status} onChange={(e) => setStatus(e.target.value as Status)} className="mt-1 w-full px-3 py-2 rounded-xl bg-background border border-border text-sm">
-            <option value="present">Present</option>
-            <option value="late">Late</option>
-            <option value="absent">Absent</option>
+            <option value="present">{t("common.present")}</option>
+            <option value="late">{t("common.late")}</option>
+            <option value="absent">{t("common.absent")}</option>
           </select>
         </label>
         <label className="block text-xs font-semibold text-muted-foreground">
-          Notes
+          {t("common.notes")}
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className="mt-1 w-full px-3 py-2 rounded-xl bg-background border border-border text-sm" />
         </label>
         <div className="flex gap-2 justify-end">
-          <button onClick={onClose} className="px-4 py-2 rounded-full text-xs font-semibold bg-muted text-muted-foreground">Cancel</button>
-          <button onClick={() => onSave({ status, notes })} className="px-4 py-2 rounded-full text-xs font-semibold bg-gradient-royal text-primary-foreground">Save</button>
+          <button onClick={onClose} className="px-4 py-2 rounded-full text-xs font-semibold bg-muted text-muted-foreground">{t("common.cancel")}</button>
+          <button onClick={() => onSave({ status, notes })} className="px-4 py-2 rounded-full text-xs font-semibold bg-gradient-royal text-primary-foreground">{t("common.save")}</button>
         </div>
       </div>
     </div>
