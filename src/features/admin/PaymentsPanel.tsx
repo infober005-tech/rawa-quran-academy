@@ -454,7 +454,7 @@ function computeStats(payments: Array<{ status: string; amount: number; created_
   const months: { key: string; label: string; date: Date }[] = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleDateString("ar", { month: "short" }), date: d });
+    months.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleDateString(lang, { month: "short" }), date: d });
   }
   const revenue6m = months.map((m) => {
     const next = new Date(m.date.getFullYear(), m.date.getMonth() + 1, 1);
