@@ -147,7 +147,7 @@ export function PaymentsPanel() {
     return p.full_name?.toLowerCase().includes(q) || p.email?.toLowerCase().includes(q) || p.transaction_number?.includes(search);
   });
 
-  const stats = useMemo(() => computeStats(allPayments ?? [], subs ?? []), [allPayments, subs]);
+  const stats = useMemo(() => computeStats(allPayments ?? [], subs ?? [], lang), [allPayments, subs, lang]);
 
   const displaySubs = useMemo<SubEnrichedRow[]>(() => {
     const rows = subs ?? [];
