@@ -6,7 +6,7 @@ import { useI18n } from "@/lib/i18n";
 type CalItem = { id: string; title: string; date: Date; kind: "event" | "halaqa"; color: string };
 
 export function CalendarPanel() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [view, setView] = useState<"month" | "week">("month");
   const [cursor, setCursor] = useState(() => new Date());
 
@@ -110,7 +110,7 @@ export function CalendarPanel() {
                 {items.filter((it) => sameDay(it.date, d)).map((it) => (
                   <div key={it.id} className={`px-2 py-1 rounded text-[11px] ${it.color}`}>
                     <div className="font-semibold truncate">{it.title}</div>
-                    <div className="opacity-70">{it.date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div>
+                    <div className="opacity-70">{it.date.toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit" })}</div>
                   </div>
                 ))}
               </div>

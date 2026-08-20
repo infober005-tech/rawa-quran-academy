@@ -51,7 +51,7 @@ function daysAgo(n: number) { const d = new Date(); d.setDate(d.getDate() - n); 
 
 export function AttendancePanel() {
   const upsert = useServerFn(upsertAttendanceRecord);
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
 
   const [from, setFrom] = useState(daysAgo(30));
   const [to, setTo] = useState(today());
@@ -170,7 +170,7 @@ export function AttendancePanel() {
         r.student?.full_name ?? "",
         r.halaqa?.name ?? "",
         r.status,
-        r.checked_in_at ? new Date(r.checked_in_at).toLocaleTimeString() : "",
+        r.checked_in_at ? new Date(r.checked_in_at).toLocaleTimeString(lang) : "",
         r.is_manual ? "Yes" : "No",
         r.notes ?? "",
       ]),
@@ -312,7 +312,7 @@ export function AttendancePanel() {
                     </span>
                     {r.is_manual && <span className="ms-1 text-[9px] text-muted-foreground">{t("a.att.manual")}</span>}
                   </td>
-                  <td className="py-2 px-2 text-xs">{r.checked_in_at ? new Date(r.checked_in_at).toLocaleTimeString() : "—"}</td>
+                  <td className="py-2 px-2 text-xs">{r.checked_in_at ? new Date(r.checked_in_at).toLocaleTimeString(lang) : "—"}</td>
                   <td className="py-2 px-2 text-xs max-w-[180px] truncate" title={r.user_agent ?? ""}>{r.user_agent ? shortDevice(r.user_agent) : "—"}</td>
                   <td className="py-2 px-2 text-xs">
                     {r.latitude != null && r.longitude != null ? (

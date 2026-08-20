@@ -39,7 +39,7 @@ type HalaqaInfo = {
 
 export function ParentDashboard() {
   const { user, profile } = useAuth();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [activeChild, setActiveChild] = useState<string | null>(null);
   useRealtimeInvalidate(
     ["attendance", "evaluations", "halaqas"],
@@ -114,7 +114,7 @@ export function ParentDashboard() {
 
 function ChildPanel({ child, parentName }: { child: Child; parentName: string }) {
   const { user } = useAuth();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
 
   const { data: halaqa } = useQuery({
     queryKey: ["parent-child-halaqa", child.id],
@@ -250,7 +250,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
         present: 0,
         late: 0,
         absent: 0,
-        label: d.toLocaleDateString("ar", { month: "short" }),
+        label: d.toLocaleDateString(lang, { month: "short" }),
       };
     }
     (att ?? []).forEach((a) => {
@@ -407,13 +407,13 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
                   : "bg-rose-500/15 text-rose-600";
                 return (
                   <tr key={row.id}>
-                    <td className="py-2.5 text-xs text-muted-foreground">{new Date(row.date).toLocaleDateString("ar")}</td>
+                    <td className="py-2.5 text-xs text-muted-foreground">{new Date(row.date).toLocaleDateString(lang)}</td>
                     <td className="py-2.5 text-xs">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${tone}`}>{row.status}</span>
                       {row.is_manual && <span className="ms-1 text-[9px] text-muted-foreground">(manual)</span>}
                     </td>
                     <td className="py-2.5 text-xs">{row.halaqa?.name ?? "—"}</td>
-                    <td className="py-2.5 text-xs">{row.checked_in_at ? new Date(row.checked_in_at).toLocaleTimeString("ar") : "—"}</td>
+                    <td className="py-2.5 text-xs">{row.checked_in_at ? new Date(row.checked_in_at).toLocaleTimeString(lang) : "—"}</td>
                     <td className="py-2.5 text-xs text-muted-foreground">{row.notes ?? "—"}</td>
                   </tr>
                 );
@@ -446,7 +446,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
                 {(evals ?? []).slice(0, 6).map((e) => (
                   <tr key={e.id}>
                     <td className="py-2.5 text-xs text-muted-foreground">
-                      {new Date(e.created_at).toLocaleDateString("ar")}
+                      {new Date(e.created_at).toLocaleDateString(lang)}
                     </td>
                     <td className="py-2.5 text-xs">
                       {(e as { teacher?: { full_name: string | null } }).teacher?.full_name ?? "—"}
@@ -485,7 +485,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
                 className="p-3 rounded-2xl bg-background/60 border border-border/60 backdrop-blur"
               >
                 <div className="text-[10px] text-muted-foreground mb-1">
-                  {new Date(n.created_at).toLocaleDateString("ar")}
+                  {new Date(n.created_at).toLocaleDateString(lang)}
                 </div>
                 <p className="text-sm leading-relaxed">{n.note}</p>
               </div>
@@ -520,7 +520,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
                     <div className="font-bold text-primary truncate">{ev.title}</div>
                   </div>
                   <div className="shrink-0 text-[10px] px-2 py-1 rounded-full bg-primary/10 text-primary font-semibold">
-                    {new Date(ev.date).toLocaleDateString("ar", { day: "numeric", month: "short" })}
+                    {new Date(ev.date).toLocaleDateString(lang, { day: "numeric", month: "short" })}
                   </div>
                 </div>
                 {ev.description && (
@@ -569,7 +569,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
                   )}
                 </div>
                 <div className="text-[10px] text-muted-foreground shrink-0">
-                  {new Date(n.created_at).toLocaleDateString("ar")}
+                  {new Date(n.created_at).toLocaleDateString(lang)}
                 </div>
               </div>
             ))}
@@ -601,7 +601,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
 // ===== small subcomponents =====
 
 function LiveStatus({ halaqa }: { halaqa: HalaqaInfo | null | undefined }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const live = !!halaqa?.live_session_active;
   return (
     <div
@@ -815,9 +815,9 @@ function PremiumHeroCard({
   lastEval: Eval | null;
   lastNote: NoteRow | null;
 }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const fmt = (d?: string | null) =>
-    d ? new Date(d).toLocaleDateString("ar", { day: "numeric", month: "long" }) : "—";
+    d ? new Date(d).toLocaleDateString(lang, { day: "numeric", month: "long" }) : "—";
 
   const lastEvalScore = lastEval
     ? Math.round(

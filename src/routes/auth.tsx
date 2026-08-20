@@ -19,7 +19,16 @@ function isEmailUnconfirmedError(msg: string | undefined) {
 const RESEND_COOLDOWN_KEY = "rawa:resend_activation_at";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "تسجيل الدخول · رواء" }] }),
+  head: () => ({
+    meta: [
+      { title: "تسجيل الدخول · رواء | Sign in — Rawa Quran Academy" },
+      { name: "description", content: "Sign in or create your Rawa Quran Academy account to join live halaqas, track memorization and manage your subscription." },
+      { property: "og:title", content: "Sign in — Rawa Quran Academy" },
+      { property: "og:description", content: "Access your Rawa Quran Academy account." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: AuthPage,
 });
 

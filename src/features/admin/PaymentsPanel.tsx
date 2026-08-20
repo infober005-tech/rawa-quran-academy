@@ -147,7 +147,7 @@ export function PaymentsPanel() {
     return p.full_name?.toLowerCase().includes(q) || p.email?.toLowerCase().includes(q) || p.transaction_number?.includes(search);
   });
 
-  const stats = useMemo(() => computeStats(allPayments ?? [], subs ?? []), [allPayments, subs]);
+  const stats = useMemo(() => computeStats(allPayments ?? [], subs ?? [], lang), [allPayments, subs, lang]);
 
   const displaySubs = useMemo<SubEnrichedRow[]>(() => {
     const rows = subs ?? [];
@@ -435,7 +435,7 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
   );
 }
 
-function computeStats(payments: Array<{ status: string; amount: number; created_at: string; approved_at?: string | null }>, subs: SubRow[]) {
+function computeStats(payments: Array<{ status: string; amount: number; created_at: string; approved_at?: string | null }>, subs: SubRow[], lang: string) {
   const now = new Date();
   const startOfDay = new Date(now); startOfDay.setHours(0, 0, 0, 0);
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -454,7 +454,7 @@ function computeStats(payments: Array<{ status: string; amount: number; created_
   const months: { key: string; label: string; date: Date }[] = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleDateString("ar", { month: "short" }), date: d });
+    months.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleDateString(lang, { month: "short" }), date: d });
   }
   const revenue6m = months.map((m) => {
     const next = new Date(m.date.getFullYear(), m.date.getMonth() + 1, 1);
