@@ -1,15 +1,17 @@
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 import type { AssistantMessage as Msg } from "@/types/assistant";
 
-function formatTime(ts: number) {
+function formatTime(ts: number, locale: string) {
   try {
-    return new Intl.DateTimeFormat("ar", { hour: "2-digit", minute: "2-digit" }).format(new Date(ts));
+    return new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }).format(new Date(ts));
   } catch {
     return "";
   }
 }
 
 export default function AssistantMessage({ message }: { message: Msg }) {
+  const { lang } = useI18n();
   const isUser = message.role === "user";
   return (
     <div className={cn("flex w-full", isUser ? "justify-end" : "justify-start")}>
@@ -34,7 +36,7 @@ export default function AssistantMessage({ message }: { message: Msg }) {
           )}
         </div>
         <span className="text-[10px] text-muted-foreground mt-1 px-1 tabular-nums" dir="ltr">
-          {formatTime(message.createdAt)}
+          {formatTime(message.createdAt, lang)}
         </span>
       </div>
     </div>

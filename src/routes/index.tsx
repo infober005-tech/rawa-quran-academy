@@ -432,6 +432,7 @@ function LiveHalaqas() {
 
 /* ============================== STATS ============================= */
 function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
+  const { lang } = useI18n();
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.5 });
   const [value, setValue] = useState(0);
@@ -443,7 +444,7 @@ function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
     });
     return () => controls.stop();
   }, [inView, to]);
-  return <span ref={ref}>{value.toLocaleString("ar-EG")}{suffix}</span>;
+  return <span ref={ref}>{value.toLocaleString(lang === "ar" ? "ar-EG" : lang === "fr" ? "fr-FR" : "en-US")}{suffix}</span>;
 }
 
 function Stats() {
