@@ -435,7 +435,7 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
   );
 }
 
-function computeStats(payments: Array<{ status: string; amount: number; created_at: string; approved_at?: string | null }>, subs: SubRow[]) {
+function computeStats(payments: Array<{ status: string; amount: number; created_at: string; approved_at?: string | null }>, subs: SubRow[], lang: string) {
   const now = new Date();
   const startOfDay = new Date(now); startOfDay.setHours(0, 0, 0, 0);
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);

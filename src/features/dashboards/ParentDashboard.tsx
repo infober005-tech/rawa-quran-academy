@@ -39,7 +39,7 @@ type HalaqaInfo = {
 
 export function ParentDashboard() {
   const { user, profile } = useAuth();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [activeChild, setActiveChild] = useState<string | null>(null);
   useRealtimeInvalidate(
     ["attendance", "evaluations", "halaqas"],
@@ -114,7 +114,7 @@ export function ParentDashboard() {
 
 function ChildPanel({ child, parentName }: { child: Child; parentName: string }) {
   const { user } = useAuth();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
 
   const { data: halaqa } = useQuery({
     queryKey: ["parent-child-halaqa", child.id],
@@ -601,7 +601,7 @@ function ChildPanel({ child, parentName }: { child: Child; parentName: string })
 // ===== small subcomponents =====
 
 function LiveStatus({ halaqa }: { halaqa: HalaqaInfo | null | undefined }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const live = !!halaqa?.live_session_active;
   return (
     <div
@@ -815,7 +815,7 @@ function PremiumHeroCard({
   lastEval: Eval | null;
   lastNote: NoteRow | null;
 }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const fmt = (d?: string | null) =>
     d ? new Date(d).toLocaleDateString(lang, { day: "numeric", month: "long" }) : "—";
 
