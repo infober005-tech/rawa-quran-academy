@@ -432,6 +432,7 @@ function LiveHalaqas() {
 
 /* ============================== STATS ============================= */
 function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
+  const { lang } = useI18n();
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.5 });
   const [value, setValue] = useState(0);
