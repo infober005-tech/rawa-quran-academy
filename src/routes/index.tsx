@@ -443,7 +443,7 @@ function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
     });
     return () => controls.stop();
   }, [inView, to]);
-  return <span ref={ref}>{value.toLocaleString("ar-EG")}{suffix}</span>;
+  return <span ref={ref}>{value.toLocaleString(lang === "ar" ? "ar-EG" : lang === "fr" ? "fr-FR" : "en-US")}{suffix}</span>;
 }
 
 function Stats() {
