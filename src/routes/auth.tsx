@@ -43,26 +43,36 @@ function AuthPage() {
   }, [loading, session, navigate]);
 
   return (
-    <div dir={dir} className="min-h-dvh bg-hero islamic-pattern flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div dir={dir} className="min-h-dvh auth-bg flex items-start sm:items-center justify-center px-4 py-8 sm:py-12 overflow-x-hidden">
+      <div className="w-full max-w-[620px] min-w-0">
         <div className="flex justify-center mb-4"><LangSwitcher /></div>
-        <Link to="/" className="flex flex-col items-center justify-center gap-2 mb-6">
+        <Link to="/" className="flex flex-col items-center justify-center gap-2.5 mb-6">
           <LogoPremium3D size="md" intro />
           <div className="text-center">
-            <div className="text-2xl font-bold text-primary" style={{ fontFamily: "var(--font-display-ar)" }}>{t("app.name")}</div>
-            <div className="text-xs text-muted-foreground">{t("app.tagline")}</div>
+            <div className="text-[22px] sm:text-2xl font-bold text-primary leading-snug" style={{ fontFamily: "var(--font-display-ar)" }}>{t("app.name")}</div>
+            <div className="text-[13px] text-muted-foreground mt-0.5">{t("app.tagline")}</div>
           </div>
         </Link>
-        <div className="bg-card border border-border rounded-3xl p-6 md:p-8 shadow-soft">
-          <div className="flex gap-1 p-1 bg-muted rounded-full mb-6 text-sm">
-            <button onClick={() => setTab("login")} className={`flex-1 py-2 rounded-full transition ${tab === "login" ? "bg-gradient-royal text-primary-foreground shadow-glow" : "text-muted-foreground"}`}>{t("auth.login")}</button>
-            <button onClick={() => setTab("register")} className={`flex-1 py-2 rounded-full transition ${tab === "register" ? "bg-gradient-royal text-primary-foreground shadow-glow" : "text-muted-foreground"}`}>{t("auth.register")}</button>
+        <div className="auth-card rounded-[28px] p-5 sm:p-7 md:p-8">
+          <div className="auth-segment flex gap-1 p-1 mb-6 text-sm">
+            <button
+              type="button"
+              onClick={() => setTab("login")}
+              aria-pressed={tab === "login"}
+              className={`flex-1 min-w-0 rounded-[20px] font-semibold transition-all duration-200 ${tab === "login" ? "auth-cta" : "text-[#5c5266] hover:text-[#241a2f]"}`}
+            >{t("auth.login")}</button>
+            <button
+              type="button"
+              onClick={() => setTab("register")}
+              aria-pressed={tab === "register"}
+              className={`flex-1 min-w-0 rounded-[20px] font-semibold transition-all duration-200 ${tab === "register" ? "auth-cta" : "text-[#5c5266] hover:text-[#241a2f]"}`}
+            >{t("auth.register")}</button>
           </div>
           {tab === "login" && <LoginForm onForgot={() => setTab("forgot")} />}
           {tab === "register" && (
-            <div className="space-y-3">
+            <div className="space-y-5">
               <GoogleBtn />
-              <div className="flex items-center gap-3"><div className="flex-1 h-px bg-border" /><span className="text-xs text-muted-foreground">{t("auth.or")}</span><div className="flex-1 h-px bg-border" /></div>
+              <Divider />
               <RegisterForm onDone={() => setTab("login")} />
             </div>
           )}
@@ -72,6 +82,18 @@ function AuthPage() {
     </div>
   );
 }
+
+function Divider() {
+  const { t } = useI18n();
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex-1 h-px bg-[#e6e0ea]" />
+      <span className="text-xs text-[#9b92a5]">{t("auth.or")}</span>
+      <div className="flex-1 h-px bg-[#e6e0ea]" />
+    </div>
+  );
+}
+
 
 function GoogleBtn() {
   const { t } = useI18n();
