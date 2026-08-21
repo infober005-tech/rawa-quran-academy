@@ -200,30 +200,43 @@ function LoginForm({ onForgot }: { onForgot: () => void }) {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-3" method="post" action="#" autoComplete="on">
+    <form onSubmit={submit} className="space-y-5" method="post" action="#" autoComplete="on">
       <GoogleBtn />
-      <div className="flex items-center gap-3 my-2"><div className="flex-1 h-px bg-border" /><span className="text-xs text-muted-foreground">{t("auth.or")}</span><div className="flex-1 h-px bg-border" /></div>
-      <Field label={t("auth.email")}>
-        <input id="login-email" name="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} autoComplete="username" autoCapitalize="off" autoCorrect="off" spellCheck={false} />
-      </Field>
-      <Field label={t("auth.password")}>
-        <input id="login-password" name="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className={inputCls} autoComplete="current-password" />
-      </Field>
-      <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-          <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-4 w-4 rounded border-input accent-primary" />
+      <Divider />
+      <div className="space-y-4">
+        <Field label={t("auth.email")} htmlFor="login-email">
+          <input id="login-email" name="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} autoComplete="username" autoCapitalize="off" autoCorrect="off" spellCheck={false} />
+        </Field>
+        <Field label={t("auth.password")} htmlFor="login-password">
+          <div className="relative min-w-0">
+            <input id="login-password" name="password" type={showPw ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} className={`${inputCls} pe-12`} autoComplete="current-password" />
+            <button
+              type="button"
+              onClick={() => setShowPw((v) => !v)}
+              aria-label={showPw ? t("reg.hide") : t("reg.show")}
+              className="absolute end-2 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center rounded-xl text-[#776d82] hover:text-[#241a2f] transition-colors"
+            >
+              {showPw ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+            </button>
+          </div>
+        </Field>
+      </div>
+      <div className="flex items-center justify-between gap-3">
+        <label className="flex items-center gap-2 text-xs text-[#776d82] cursor-pointer select-none">
+          <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-4 w-4 rounded border-[#e6e0ea] accent-primary" />
           {t("auth.remember_me")}
         </label>
-        <button type="button" onClick={onForgot} className="text-xs text-primary hover:underline">{t("auth.forgot")}</button>
+        <button type="button" onClick={onForgot} className="text-xs font-medium text-primary hover:underline">{t("auth.forgot")}</button>
       </div>
-      <button disabled={busy} className="w-full py-2.5 rounded-xl bg-gradient-royal text-primary-foreground font-semibold shadow-glow disabled:opacity-60">
+      <button disabled={busy} className="auth-cta w-full h-14 rounded-2xl text-[15.5px] font-bold flex items-center justify-center gap-2">
+        {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
         {busy ? t("common.loading") : t("auth.login")}
       </button>
       <button
         type="button"
         onClick={resendActivation}
         disabled={resendBusy}
-        className={`w-full text-xs ${showResend ? "text-primary" : "text-muted-foreground"} hover:underline disabled:opacity-60`}
+        className={`w-full text-xs ${showResend ? "text-primary" : "text-[#9b92a5]"} hover:underline disabled:opacity-60`}
       >
         {resendBusy ? t("common.loading") : `✉ ${t("auth.resend_activation")}`}
       </button>
@@ -246,20 +259,25 @@ function ForgotForm({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-3">
-      <Field label={t("auth.email")}><input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} /></Field>
-      <button disabled={busy} className="w-full py-2.5 rounded-xl bg-gradient-royal text-primary-foreground font-semibold disabled:opacity-60">{busy ? t("common.loading") : t("common.submit")}</button>
-      <button type="button" onClick={onBack} className="w-full text-xs text-muted-foreground hover:text-foreground">← {t("auth.login")}</button>
+    <form onSubmit={submit} className="space-y-5">
+      <Field label={t("auth.email")} htmlFor="forgot-email">
+        <input id="forgot-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />
+      </Field>
+      <button disabled={busy} className="auth-cta w-full h-14 rounded-2xl text-[15.5px] font-bold flex items-center justify-center gap-2">
+        {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+        {busy ? t("common.loading") : t("common.submit")}
+      </button>
+      <button type="button" onClick={onBack} className="w-full text-xs text-[#776d82] hover:text-[#241a2f]">← {t("auth.login")}</button>
     </form>
   );
 }
 
-const inputCls = "w-full h-12 md:h-11 px-4 py-2 rounded-xl border border-input bg-background text-foreground text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary/40";
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+const inputCls = "auth-field";
+function Field({ label, htmlFor, children }: { label: string; htmlFor?: string; children: React.ReactNode }) {
   return (
-    <label className="block">
-      <span className="text-xs text-muted-foreground mb-1 block">{label}</span>
+    <div className="min-w-0">
+      <label htmlFor={htmlFor} className="auth-label mb-2 block">{label}</label>
       {children}
-    </label>
+    </div>
   );
 }
