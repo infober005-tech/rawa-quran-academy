@@ -278,7 +278,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
   const maxDay = daysInMonth(dobY, dobM);
 
   return (
-    <form onSubmit={submit} className="space-y-4" method="post" autoComplete="on">
+    <form onSubmit={submit} className="space-y-6" method="post" autoComplete="on">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4 sm:gap-y-5 min-w-0">
         {/* Full name */}
         <FloatingField id="full_name" label={t("auth.full_name")} error={errors.full_name} ok={!!form.full_name && !errors.full_name}>
@@ -448,7 +448,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
                 value={form.password}
                 onChange={(e) => set("password", e.target.value)}
                 onBlur={() => mark("password")}
-                className={cn(inputCls, "pe-12")}
+                className={cn(inputCls, "pe-12", errors.password && "auth-field-error")}
               />
               <button type="button" onClick={() => setShowPw((v) => !v)}
                 className="absolute end-2 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center rounded-xl text-[#776d82] hover:text-[#241a2f] transition-colors"
@@ -496,7 +496,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
                 value={form.confirm}
                 onChange={(e) => set("confirm", e.target.value)}
                 onBlur={() => mark("confirm")}
-                className={cn(inputCls, "pe-12")}
+                className={cn(inputCls, "pe-12", errors.confirm && "auth-field-error")}
               />
               <button type="button" onClick={() => setShowCw((v) => !v)}
                 className="absolute end-2 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center rounded-xl text-[#776d82] hover:text-[#241a2f] transition-colors"
