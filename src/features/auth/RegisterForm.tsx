@@ -309,25 +309,25 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
 
         {/* Gender */}
         <FloatingField id="gender" label={t("auth.gender")}>
-          <select id="gender" value={form.gender} onChange={(e) => set("gender", e.target.value as "male" | "female")} className={inputCls}>
+          <select id="gender" value={form.gender} onChange={(e) => set("gender", e.target.value as "male" | "female")} className={cn(inputCls, "auth-select")}>
             <option value="male">{t("auth.male")}</option>
             <option value="female">{t("auth.female")}</option>
           </select>
         </FloatingField>
 
         {/* DOB */}
-        <div className="sm:col-span-2">
-          <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground min-w-0">
-            <Calendar className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">{t("reg.dob")}</span>
-            {age !== null && dobValid && <span className="ms-auto shrink-0 text-primary font-semibold">{t("reg.age", { n: age })}</span>}
+        <div className="sm:col-span-2 min-w-0">
+          <div className="flex items-center gap-2 mb-2 min-w-0">
+            <Calendar className="w-4 h-4 shrink-0 text-[#9b92a5]" aria-hidden />
+            <span className="auth-label truncate">{t("reg.dob")}</span>
+            {age !== null && dobValid && <span className="ms-auto shrink-0 text-xs text-primary font-semibold">{t("reg.age", { n: age })}</span>}
           </div>
-          <div className="grid grid-cols-3 gap-2 min-w-0">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 min-w-0">
             <select
               aria-label={t("reg.day")}
               value={form.dob_d}
               onChange={(e) => { set("dob_d", e.target.value); mark("dob_d"); }}
-              className={cn(inputCls, "text-center pt-0 pb-0")}
+              className={cn(inputCls, "auth-select ps-3", errors.dob_y && "auth-field-error")}
             >
               <option value="">{t("reg.day")}</option>
               {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
@@ -338,7 +338,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
               aria-label={t("reg.month")}
               value={form.dob_m}
               onChange={(e) => { set("dob_m", e.target.value); mark("dob_m"); }}
-              className={cn(inputCls, "text-center pt-0 pb-0")}
+              className={cn(inputCls, "auth-select ps-3", errors.dob_y && "auth-field-error")}
             >
               <option value="">{t("reg.month")}</option>
               {MONTH_INDEXES.map((m) => (
@@ -349,7 +349,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
               aria-label={t("reg.year")}
               value={form.dob_y}
               onChange={(e) => { set("dob_y", e.target.value); mark("dob_y"); }}
-              className={cn(inputCls, "text-center pt-0 pb-0")}
+              className={cn(inputCls, "auth-select ps-3", errors.dob_y && "auth-field-error")}
             >
               <option value="">{t("reg.year")}</option>
               {years.map((y) => (
@@ -357,22 +357,20 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
               ))}
             </select>
           </div>
-          {errors.dob_y && <div className="mt-1 text-[11px] text-red-500 leading-snug">{errors.dob_y}</div>}
+          {errors.dob_y && <div className="mt-1.5 auth-error-text">{errors.dob_y}</div>}
         </div>
 
         {/* Country */}
-        <div>
-          <CountryPicker value={form.country} onChange={(code) => { set("country", code); set("state", ""); }} label={t("auth.country")} />
-        </div>
+        <CountryPicker value={form.country} onChange={(code) => { set("country", code); set("state", ""); }} label={t("auth.country")} />
 
         {/* State */}
-        <FloatingField id="state" label={t("reg.state")} error={errors.state} ok={!!form.state}>
+        <FloatingField id="state" label={t("reg.state")} error={errors.state}>
           <select
             id="state"
             disabled={!country || country.states.length <= 1}
             value={form.state}
             onChange={(e) => { set("state", e.target.value); mark("state"); }}
-            className={cn(inputCls, "disabled:opacity-60")}
+            className={cn(inputCls, "auth-select", errors.state && "auth-field-error")}
           >
             <option value="">{country.states.length > 1 ? t("reg.choose") : t("reg.na")}</option>
             {country.states.map((s) => (
@@ -392,12 +390,13 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
 
         {/* Quran level */}
         <FloatingField id="quran_level" label={t("auth.quran_level")}>
-          <select id="quran_level" value={form.quran_level} onChange={(e) => set("quran_level", e.target.value as FormState["quran_level"])} className={inputCls}>
+          <select id="quran_level" value={form.quran_level} onChange={(e) => set("quran_level", e.target.value as FormState["quran_level"])} className={cn(inputCls, "auth-select")}>
             <option value="beginner">{t("auth.level.beginner")}</option>
             <option value="intermediate">{t("auth.level.intermediate")}</option>
             <option value="advanced">{t("auth.level.advanced")}</option>
           </select>
         </FloatingField>
+
 
         {/* Phone with country dial */}
         <div className="sm:col-span-2">
