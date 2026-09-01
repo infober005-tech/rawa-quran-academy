@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Eye, EyeOff, Check, X, ChevronDown, Search, Calendar } from "lucide-react";
+import { Eye, EyeOff, Check, X, ChevronDown, Search, Calendar, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
@@ -448,12 +448,12 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
                 value={form.password}
                 onChange={(e) => set("password", e.target.value)}
                 onBlur={() => mark("password")}
-                className={cn(inputCls, "pe-10")}
+                className={cn(inputCls, "pe-12")}
               />
               <button type="button" onClick={() => setShowPw((v) => !v)}
-                className="absolute end-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                className="absolute end-2 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center rounded-xl text-[#776d82] hover:text-[#241a2f] transition-colors"
                 aria-label={showPw ? t("reg.hide") : t("reg.show")}>
-                {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPw ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
               </button>
             </div>
           </FloatingField>
@@ -461,7 +461,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
             <div className="mt-2 space-y-2">
               <div className="flex gap-1">
                 {[0, 1, 2, 3, 4].map((i) => (
-                  <div key={i} className={cn("h-1.5 flex-1 rounded-full transition", i < pwd.score ? pwd.color : "bg-muted")} />
+                  <div key={i} className={cn("h-1.5 flex-1 rounded-full transition", i < pwd.score ? pwd.color : "bg-[#eee9f3]")} />
                 ))}
               </div>
               <div className="flex items-center justify-between">
@@ -472,7 +472,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
                   const r = { k, label: t(`reg.pwd.${k}`) };
                   const ok = (pwd.rules as Record<string, boolean>)[r.k];
                   return (
-                    <li key={r.k} className={cn("flex items-center gap-1.5", ok ? "text-emerald-600" : "text-muted-foreground")}>
+                    <li key={r.k} className={cn("flex items-center gap-1.5", ok ? "text-[#2e9b68]" : "text-[#9b92a5]")}>
                       {ok ? <Check className="h-3 w-3" /> : <X className="h-3 w-3 opacity-60" />}
                       {r.label}
                     </li>
@@ -496,17 +496,17 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
                 value={form.confirm}
                 onChange={(e) => set("confirm", e.target.value)}
                 onBlur={() => mark("confirm")}
-                className={cn(inputCls, "pe-10")}
+                className={cn(inputCls, "pe-12")}
               />
               <button type="button" onClick={() => setShowCw((v) => !v)}
-                className="absolute end-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                className="absolute end-2 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center rounded-xl text-[#776d82] hover:text-[#241a2f] transition-colors"
                 aria-label={showCw ? t("reg.hide") : t("reg.show")}>
-                {showCw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showCw ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
               </button>
             </div>
           </FloatingField>
           {form.confirm && (
-            <div className={cn("mt-1 text-[11px] flex items-center gap-1", confirmOk ? "text-emerald-600" : "text-red-500")}>
+            <div className={cn("mt-1.5 text-xs flex items-center gap-1.5", confirmOk ? "text-[#2e9b68]" : "text-[#d84c5b]")}>
               {confirmOk ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
               {confirmOk ? t("reg.pwd.match") : t("reg.pwd.nomatch")}
             </div>
@@ -516,8 +516,9 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
 
       <button
         disabled={busy || !canSubmit}
-        className="w-full py-3 rounded-xl bg-gradient-royal text-primary-foreground font-semibold shadow-glow disabled:opacity-60 transition"
+        className="auth-cta w-full h-14 rounded-2xl text-[15.5px] font-bold flex items-center justify-center gap-2"
       >
+        {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
         {busy ? t("common.loading") : t("auth.register")}
       </button>
     </form>
