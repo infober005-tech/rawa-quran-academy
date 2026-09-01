@@ -34,33 +34,28 @@ type FormState = {
   confirm: string;
 };
 
-const inputCls =
-  "peer w-full h-12 min-w-0 px-3 pt-4 pb-1 rounded-xl border border-input bg-background text-foreground text-sm sm:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-primary/40 transition appearance-none";
+const inputCls = "auth-field";
 
 function FloatingField({
   id, label, error, ok, children,
 }: { id: string; label: string; error?: string; ok?: boolean; children: React.ReactNode }) {
   return (
-    <div className="relative min-w-0">
+    <div className="min-w-0">
+      <label htmlFor={id} className="auth-label mb-2 block truncate">{label}</label>
       <div className="relative min-w-0">
         {children}
-        <label
-          htmlFor={id}
-          className="pointer-events-none absolute top-1 start-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate max-w-[calc(100%-2rem)]"
-        >
-          {label}
-        </label>
         {ok && !error && (
-          <Check className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-emerald-500" aria-hidden />
+          <Check className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-[#2e9b68]" aria-hidden />
         )}
         {error && (
-          <X className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-red-500" aria-hidden />
+          <X className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-[#d84c5b]" aria-hidden />
         )}
       </div>
-      {error && <div className="mt-1 text-[11px] text-red-500 leading-snug">{error}</div>}
+      {error && <div className="mt-1.5 auth-error-text">{error}</div>}
     </div>
   );
 }
+
 
 function passwordScore(p: string) {
   const rules = {
