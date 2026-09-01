@@ -109,22 +109,23 @@ function CountryPicker({
     );
   }, [q]);
   return (
-    <div className="relative min-w-0">
+    <div className="min-w-0">
+      {showLabel && <span className="auth-label mb-2 block truncate">{label}</span>}
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            className={cn(inputCls, "flex items-center gap-2 text-start pe-8")}
-            aria-label={label}
-          >
-            <span className="text-lg shrink-0">{c?.flag ?? "🏳️"}</span>
-            <span className="flex-1 min-w-0 truncate">{c ? `${cname(c)} (+${c.dial})` : label}</span>
-          </button>
-        </PopoverTrigger>
-        <label className="pointer-events-none absolute top-1 start-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate max-w-[calc(100%-2rem)]">
-          {label}
-        </label>
-        <ChevronDown className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-2 h-4 w-4 opacity-60" />
+        <div className="relative min-w-0">
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className={cn(inputCls, "flex items-center gap-2 text-start pe-9")}
+              aria-label={label}
+            >
+              <span className="text-lg shrink-0">{c?.flag ?? "🏳️"}</span>
+              <span className="flex-1 min-w-0 truncate">{c ? `${cname(c)} (+${c.dial})` : label}</span>
+            </button>
+          </PopoverTrigger>
+          <ChevronDown className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-[#9b92a5]" />
+        </div>
+
         <PopoverContent align="start" className="p-0 w-[min(92vw,360px)]">
           <div className="p-2 border-b border-border flex items-center gap-2">
             <Search className="h-4 w-4 opacity-60" />
