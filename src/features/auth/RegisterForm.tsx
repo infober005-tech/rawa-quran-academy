@@ -279,14 +279,14 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
 
   return (
     <form onSubmit={submit} className="space-y-4" method="post" autoComplete="on">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4 sm:gap-y-5 min-w-0">
         {/* Full name */}
         <FloatingField id="full_name" label={t("auth.full_name")} error={errors.full_name} ok={!!form.full_name && !errors.full_name}>
           <input id="full_name" name="name" autoComplete="name" required
             value={form.full_name}
             onChange={(e) => set("full_name", e.target.value)}
             onBlur={() => mark("full_name")}
-            className={inputCls} />
+            className={cn(inputCls, "pe-10", errors.full_name && "auth-field-error")} />
         </FloatingField>
 
         {/* Parent name */}
@@ -295,7 +295,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
             value={form.parent_name}
             onChange={(e) => set("parent_name", e.target.value)}
             onBlur={() => mark("parent_name")}
-            className={inputCls} />
+            className={cn(inputCls, "pe-10", errors.parent_name && "auth-field-error")} />
         </FloatingField>
 
         {/* Email */}
@@ -304,7 +304,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
             value={form.email}
             onChange={(e) => set("email", e.target.value)}
             onBlur={() => mark("email")}
-            className={inputCls} />
+            className={cn(inputCls, "pe-10", errors.email && "auth-field-error")} />
         </FloatingField>
 
         {/* Gender */}
@@ -387,7 +387,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
             value={form.city}
             onChange={(e) => set("city", e.target.value)}
             onBlur={() => mark("city")}
-            className={inputCls} />
+            className={cn(inputCls, "pe-10", errors.city && "auth-field-error")} />
         </FloatingField>
 
         {/* Quran level */}
