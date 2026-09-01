@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Eye, EyeOff, Check, X, ChevronDown, Search, Calendar } from "lucide-react";
+import { Eye, EyeOff, Check, X, ChevronDown, Search, Calendar, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
@@ -34,33 +34,28 @@ type FormState = {
   confirm: string;
 };
 
-const inputCls =
-  "peer w-full h-12 min-w-0 px-3 pt-4 pb-1 rounded-xl border border-input bg-background text-foreground text-sm sm:text-base leading-tight focus:outline-none focus:ring-2 focus:ring-primary/40 transition appearance-none";
+const inputCls = "auth-field";
 
 function FloatingField({
   id, label, error, ok, children,
 }: { id: string; label: string; error?: string; ok?: boolean; children: React.ReactNode }) {
   return (
-    <div className="relative min-w-0">
+    <div className="min-w-0">
+      <label htmlFor={id} className="auth-label mb-2 block truncate">{label}</label>
       <div className="relative min-w-0">
         {children}
-        <label
-          htmlFor={id}
-          className="pointer-events-none absolute top-1 start-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate max-w-[calc(100%-2rem)]"
-        >
-          {label}
-        </label>
         {ok && !error && (
-          <Check className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-emerald-500" aria-hidden />
+          <Check className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-[#2e9b68]" aria-hidden />
         )}
         {error && (
-          <X className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-red-500" aria-hidden />
+          <X className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-[#d84c5b]" aria-hidden />
         )}
       </div>
-      {error && <div className="mt-1 text-[11px] text-red-500 leading-snug">{error}</div>}
+      {error && <div className="mt-1.5 auth-error-text">{error}</div>}
     </div>
   );
 }
+
 
 function passwordScore(p: string) {
   const rules = {
@@ -96,8 +91,8 @@ function daysInMonth(y: number, m: number) {
 }
 
 function CountryPicker({
-  value, onChange, label,
-}: { value: string; onChange: (code: string) => void; label: string }) {
+  value, onChange, label, showLabel = true,
+}: { value: string; onChange: (code: string) => void; label: string; showLabel?: boolean }) {
   const { t, lang } = useI18n();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -114,22 +109,23 @@ function CountryPicker({
     );
   }, [q]);
   return (
-    <div className="relative min-w-0">
+    <div className="min-w-0">
+      {showLabel && <span className="auth-label mb-2 block truncate">{label}</span>}
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            className={cn(inputCls, "flex items-center gap-2 text-start pe-8")}
-            aria-label={label}
-          >
-            <span className="text-lg shrink-0">{c?.flag ?? "🏳️"}</span>
-            <span className="flex-1 min-w-0 truncate">{c ? `${cname(c)} (+${c.dial})` : label}</span>
-          </button>
-        </PopoverTrigger>
-        <label className="pointer-events-none absolute top-1 start-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate max-w-[calc(100%-2rem)]">
-          {label}
-        </label>
-        <ChevronDown className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-2 h-4 w-4 opacity-60" />
+        <div className="relative min-w-0">
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className={cn(inputCls, "flex items-center gap-2 text-start pe-9")}
+              aria-label={label}
+            >
+              <span className="text-lg shrink-0">{c?.flag ?? "🏳️"}</span>
+              <span className="flex-1 min-w-0 truncate">{c ? `${cname(c)} (+${c.dial})` : label}</span>
+            </button>
+          </PopoverTrigger>
+          <ChevronDown className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-[#9b92a5]" />
+        </div>
+
         <PopoverContent align="start" className="p-0 w-[min(92vw,360px)]">
           <div className="p-2 border-b border-border flex items-center gap-2">
             <Search className="h-4 w-4 opacity-60" />
@@ -282,15 +278,15 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
   const maxDay = daysInMonth(dobY, dobM);
 
   return (
-    <form onSubmit={submit} className="space-y-4" method="post" autoComplete="on">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0">
+    <form onSubmit={submit} className="space-y-6" method="post" autoComplete="on">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4 sm:gap-y-5 min-w-0">
         {/* Full name */}
         <FloatingField id="full_name" label={t("auth.full_name")} error={errors.full_name} ok={!!form.full_name && !errors.full_name}>
           <input id="full_name" name="name" autoComplete="name" required
             value={form.full_name}
             onChange={(e) => set("full_name", e.target.value)}
             onBlur={() => mark("full_name")}
-            className={inputCls} />
+            className={cn(inputCls, "pe-10", errors.full_name && "auth-field-error")} />
         </FloatingField>
 
         {/* Parent name */}
@@ -299,7 +295,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
             value={form.parent_name}
             onChange={(e) => set("parent_name", e.target.value)}
             onBlur={() => mark("parent_name")}
-            className={inputCls} />
+            className={cn(inputCls, "pe-10", errors.parent_name && "auth-field-error")} />
         </FloatingField>
 
         {/* Email */}
@@ -308,30 +304,30 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
             value={form.email}
             onChange={(e) => set("email", e.target.value)}
             onBlur={() => mark("email")}
-            className={inputCls} />
+            className={cn(inputCls, "pe-10", errors.email && "auth-field-error")} />
         </FloatingField>
 
         {/* Gender */}
         <FloatingField id="gender" label={t("auth.gender")}>
-          <select id="gender" value={form.gender} onChange={(e) => set("gender", e.target.value as "male" | "female")} className={inputCls}>
+          <select id="gender" value={form.gender} onChange={(e) => set("gender", e.target.value as "male" | "female")} className={cn(inputCls, "auth-select")}>
             <option value="male">{t("auth.male")}</option>
             <option value="female">{t("auth.female")}</option>
           </select>
         </FloatingField>
 
         {/* DOB */}
-        <div className="sm:col-span-2">
-          <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground min-w-0">
-            <Calendar className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">{t("reg.dob")}</span>
-            {age !== null && dobValid && <span className="ms-auto shrink-0 text-primary font-semibold">{t("reg.age", { n: age })}</span>}
+        <div className="sm:col-span-2 min-w-0">
+          <div className="flex items-center gap-2 mb-2 min-w-0">
+            <Calendar className="w-4 h-4 shrink-0 text-[#9b92a5]" aria-hidden />
+            <span className="auth-label truncate">{t("reg.dob")}</span>
+            {age !== null && dobValid && <span className="ms-auto shrink-0 text-xs text-primary font-semibold">{t("reg.age", { n: age })}</span>}
           </div>
-          <div className="grid grid-cols-3 gap-2 min-w-0">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 min-w-0">
             <select
               aria-label={t("reg.day")}
               value={form.dob_d}
               onChange={(e) => { set("dob_d", e.target.value); mark("dob_d"); }}
-              className={cn(inputCls, "text-center pt-0 pb-0")}
+              className={cn(inputCls, "auth-select ps-3", errors.dob_y && "auth-field-error")}
             >
               <option value="">{t("reg.day")}</option>
               {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
@@ -342,7 +338,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
               aria-label={t("reg.month")}
               value={form.dob_m}
               onChange={(e) => { set("dob_m", e.target.value); mark("dob_m"); }}
-              className={cn(inputCls, "text-center pt-0 pb-0")}
+              className={cn(inputCls, "auth-select ps-3", errors.dob_y && "auth-field-error")}
             >
               <option value="">{t("reg.month")}</option>
               {MONTH_INDEXES.map((m) => (
@@ -353,7 +349,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
               aria-label={t("reg.year")}
               value={form.dob_y}
               onChange={(e) => { set("dob_y", e.target.value); mark("dob_y"); }}
-              className={cn(inputCls, "text-center pt-0 pb-0")}
+              className={cn(inputCls, "auth-select ps-3", errors.dob_y && "auth-field-error")}
             >
               <option value="">{t("reg.year")}</option>
               {years.map((y) => (
@@ -361,22 +357,20 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
               ))}
             </select>
           </div>
-          {errors.dob_y && <div className="mt-1 text-[11px] text-red-500 leading-snug">{errors.dob_y}</div>}
+          {errors.dob_y && <div className="mt-1.5 auth-error-text">{errors.dob_y}</div>}
         </div>
 
         {/* Country */}
-        <div>
-          <CountryPicker value={form.country} onChange={(code) => { set("country", code); set("state", ""); }} label={t("auth.country")} />
-        </div>
+        <CountryPicker value={form.country} onChange={(code) => { set("country", code); set("state", ""); }} label={t("auth.country")} />
 
         {/* State */}
-        <FloatingField id="state" label={t("reg.state")} error={errors.state} ok={!!form.state}>
+        <FloatingField id="state" label={t("reg.state")} error={errors.state}>
           <select
             id="state"
             disabled={!country || country.states.length <= 1}
             value={form.state}
             onChange={(e) => { set("state", e.target.value); mark("state"); }}
-            className={cn(inputCls, "disabled:opacity-60")}
+            className={cn(inputCls, "auth-select", errors.state && "auth-field-error")}
           >
             <option value="">{country.states.length > 1 ? t("reg.choose") : t("reg.na")}</option>
             {country.states.map((s) => (
@@ -391,30 +385,31 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
             value={form.city}
             onChange={(e) => set("city", e.target.value)}
             onBlur={() => mark("city")}
-            className={inputCls} />
+            className={cn(inputCls, "pe-10", errors.city && "auth-field-error")} />
         </FloatingField>
 
         {/* Quran level */}
         <FloatingField id="quran_level" label={t("auth.quran_level")}>
-          <select id="quran_level" value={form.quran_level} onChange={(e) => set("quran_level", e.target.value as FormState["quran_level"])} className={inputCls}>
+          <select id="quran_level" value={form.quran_level} onChange={(e) => set("quran_level", e.target.value as FormState["quran_level"])} className={cn(inputCls, "auth-select")}>
             <option value="beginner">{t("auth.level.beginner")}</option>
             <option value="intermediate">{t("auth.level.intermediate")}</option>
             <option value="advanced">{t("auth.level.advanced")}</option>
           </select>
         </FloatingField>
 
+
         {/* Phone with country dial */}
-        <div className="sm:col-span-2">
-          <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t("auth.phone")}</div>
-          <div className="grid grid-cols-[7rem_minmax(0,1fr)] sm:grid-cols-[9rem_minmax(0,1fr)] gap-2 min-w-0">
+        <div className="sm:col-span-2 min-w-0">
+          <div className="auth-label mb-2">{t("auth.phone")}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-[10rem_minmax(0,1fr)] gap-2 sm:gap-3 min-w-0">
             <div className="min-w-0">
-              <CountryPicker value={form.phone_country} onChange={(code) => set("phone_country", code)} label={t("auth.country")} />
+              <CountryPicker value={form.phone_country} onChange={(code) => set("phone_country", code)} label={t("auth.country")} showLabel={false} />
             </div>
             <div
               dir="ltr"
-              className="flex items-stretch h-12 min-w-0 overflow-hidden rounded-xl border border-input bg-background focus-within:ring-2 focus-within:ring-primary/40"
+              className={cn("auth-field flex items-stretch overflow-hidden px-0 focus-within:border-[#6f4aa8] focus-within:shadow-[0_0_0_3px_rgb(111_74_168_/_0.1)]", errors.phone_number && "auth-field-error")}
             >
-              <span className="shrink-0 px-2.5 flex items-center text-sm text-muted-foreground border-e border-input font-mono">
+              <span className="shrink-0 px-3 flex items-center text-sm text-[#776d82] border-e border-[#e6e0ea] font-mono bg-[#f5f2f9]">
                 +{phoneCountry.dial}
               </span>
               <input
@@ -422,21 +417,23 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
                 inputMode="tel"
                 autoComplete="tel"
                 dir="ltr"
+                aria-label={t("auth.phone")}
                 value={formatPhone(form.phone_number)}
                 onChange={(e) => set("phone_number", e.target.value.replace(/\D/g, ""))}
                 onBlur={() => mark("phone_number")}
                 placeholder="6 12 34 56 78"
-                className="flex-1 min-w-0 h-full px-2.5 bg-transparent outline-none text-sm sm:text-base font-mono"
+                className="flex-1 min-w-0 h-full px-3 bg-transparent outline-none text-[15px] font-mono"
               />
               {form.phone_number && (
                 phoneValid
-                  ? <Check className="mx-2 self-center shrink-0 h-4 w-4 text-emerald-500" />
-                  : <X className="mx-2 self-center shrink-0 h-4 w-4 text-red-500" />
+                  ? <Check className="mx-3 self-center shrink-0 h-4 w-4 text-[#2e9b68]" />
+                  : <X className="mx-3 self-center shrink-0 h-4 w-4 text-[#d84c5b]" />
               )}
             </div>
           </div>
-          {errors.phone_number && <div className="mt-1 text-[11px] text-red-500 leading-snug">{errors.phone_number}</div>}
+          {errors.phone_number && <div className="mt-1.5 auth-error-text">{errors.phone_number}</div>}
         </div>
+
 
         {/* Password */}
         <div className="sm:col-span-2">
@@ -451,12 +448,12 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
                 value={form.password}
                 onChange={(e) => set("password", e.target.value)}
                 onBlur={() => mark("password")}
-                className={cn(inputCls, "pe-10")}
+                className={cn(inputCls, "pe-12", errors.password && "auth-field-error")}
               />
               <button type="button" onClick={() => setShowPw((v) => !v)}
-                className="absolute end-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                className="absolute end-2 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center rounded-xl text-[#776d82] hover:text-[#241a2f] transition-colors"
                 aria-label={showPw ? t("reg.hide") : t("reg.show")}>
-                {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPw ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
               </button>
             </div>
           </FloatingField>
@@ -464,7 +461,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
             <div className="mt-2 space-y-2">
               <div className="flex gap-1">
                 {[0, 1, 2, 3, 4].map((i) => (
-                  <div key={i} className={cn("h-1.5 flex-1 rounded-full transition", i < pwd.score ? pwd.color : "bg-muted")} />
+                  <div key={i} className={cn("h-1.5 flex-1 rounded-full transition", i < pwd.score ? pwd.color : "bg-[#eee9f3]")} />
                 ))}
               </div>
               <div className="flex items-center justify-between">
@@ -475,7 +472,7 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
                   const r = { k, label: t(`reg.pwd.${k}`) };
                   const ok = (pwd.rules as Record<string, boolean>)[r.k];
                   return (
-                    <li key={r.k} className={cn("flex items-center gap-1.5", ok ? "text-emerald-600" : "text-muted-foreground")}>
+                    <li key={r.k} className={cn("flex items-center gap-1.5", ok ? "text-[#2e9b68]" : "text-[#9b92a5]")}>
                       {ok ? <Check className="h-3 w-3" /> : <X className="h-3 w-3 opacity-60" />}
                       {r.label}
                     </li>
@@ -499,17 +496,17 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
                 value={form.confirm}
                 onChange={(e) => set("confirm", e.target.value)}
                 onBlur={() => mark("confirm")}
-                className={cn(inputCls, "pe-10")}
+                className={cn(inputCls, "pe-12", errors.confirm && "auth-field-error")}
               />
               <button type="button" onClick={() => setShowCw((v) => !v)}
-                className="absolute end-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                className="absolute end-2 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center rounded-xl text-[#776d82] hover:text-[#241a2f] transition-colors"
                 aria-label={showCw ? t("reg.hide") : t("reg.show")}>
-                {showCw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showCw ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
               </button>
             </div>
           </FloatingField>
           {form.confirm && (
-            <div className={cn("mt-1 text-[11px] flex items-center gap-1", confirmOk ? "text-emerald-600" : "text-red-500")}>
+            <div className={cn("mt-1.5 text-xs flex items-center gap-1.5", confirmOk ? "text-[#2e9b68]" : "text-[#d84c5b]")}>
               {confirmOk ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
               {confirmOk ? t("reg.pwd.match") : t("reg.pwd.nomatch")}
             </div>
@@ -519,8 +516,9 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
 
       <button
         disabled={busy || !canSubmit}
-        className="w-full py-3 rounded-xl bg-gradient-royal text-primary-foreground font-semibold shadow-glow disabled:opacity-60 transition"
+        className="auth-cta w-full h-14 rounded-2xl text-[15.5px] font-bold flex items-center justify-center gap-2"
       >
+        {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
         {busy ? t("common.loading") : t("auth.register")}
       </button>
     </form>
