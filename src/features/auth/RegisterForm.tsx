@@ -91,8 +91,8 @@ function daysInMonth(y: number, m: number) {
 }
 
 function CountryPicker({
-  value, onChange, label,
-}: { value: string; onChange: (code: string) => void; label: string }) {
+  value, onChange, label, showLabel = true,
+}: { value: string; onChange: (code: string) => void; label: string; showLabel?: boolean }) {
   const { t, lang } = useI18n();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
