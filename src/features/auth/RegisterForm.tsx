@@ -399,17 +399,17 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
 
 
         {/* Phone with country dial */}
-        <div className="sm:col-span-2">
-          <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t("auth.phone")}</div>
-          <div className="grid grid-cols-[7rem_minmax(0,1fr)] sm:grid-cols-[9rem_minmax(0,1fr)] gap-2 min-w-0">
+        <div className="sm:col-span-2 min-w-0">
+          <div className="auth-label mb-2">{t("auth.phone")}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-[10rem_minmax(0,1fr)] gap-2 sm:gap-3 min-w-0">
             <div className="min-w-0">
-              <CountryPicker value={form.phone_country} onChange={(code) => set("phone_country", code)} label={t("auth.country")} />
+              <CountryPicker value={form.phone_country} onChange={(code) => set("phone_country", code)} label={t("auth.country")} showLabel={false} />
             </div>
             <div
               dir="ltr"
-              className="flex items-stretch h-12 min-w-0 overflow-hidden rounded-xl border border-input bg-background focus-within:ring-2 focus-within:ring-primary/40"
+              className={cn("auth-field flex items-stretch overflow-hidden px-0 focus-within:border-[#6f4aa8] focus-within:shadow-[0_0_0_3px_rgb(111_74_168_/_0.1)]", errors.phone_number && "auth-field-error")}
             >
-              <span className="shrink-0 px-2.5 flex items-center text-sm text-muted-foreground border-e border-input font-mono">
+              <span className="shrink-0 px-3 flex items-center text-sm text-[#776d82] border-e border-[#e6e0ea] font-mono bg-[#f5f2f9]">
                 +{phoneCountry.dial}
               </span>
               <input
@@ -417,21 +417,23 @@ export default function RegisterForm({ onDone }: { onDone: () => void }) {
                 inputMode="tel"
                 autoComplete="tel"
                 dir="ltr"
+                aria-label={t("auth.phone")}
                 value={formatPhone(form.phone_number)}
                 onChange={(e) => set("phone_number", e.target.value.replace(/\D/g, ""))}
                 onBlur={() => mark("phone_number")}
                 placeholder="6 12 34 56 78"
-                className="flex-1 min-w-0 h-full px-2.5 bg-transparent outline-none text-sm sm:text-base font-mono"
+                className="flex-1 min-w-0 h-full px-3 bg-transparent outline-none text-[15px] font-mono"
               />
               {form.phone_number && (
                 phoneValid
-                  ? <Check className="mx-2 self-center shrink-0 h-4 w-4 text-emerald-500" />
-                  : <X className="mx-2 self-center shrink-0 h-4 w-4 text-red-500" />
+                  ? <Check className="mx-3 self-center shrink-0 h-4 w-4 text-[#2e9b68]" />
+                  : <X className="mx-3 self-center shrink-0 h-4 w-4 text-[#d84c5b]" />
               )}
             </div>
           </div>
-          {errors.phone_number && <div className="mt-1 text-[11px] text-red-500 leading-snug">{errors.phone_number}</div>}
+          {errors.phone_number && <div className="mt-1.5 auth-error-text">{errors.phone_number}</div>}
         </div>
+
 
         {/* Password */}
         <div className="sm:col-span-2">
