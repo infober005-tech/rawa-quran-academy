@@ -171,23 +171,32 @@ function buildInvoiceHTML(settings: SettingsLike, logoSrc: string, t: T, lang: L
 async function ensureArabicFont(): Promise<void> {
   if (typeof document === "undefined") return;
   const id = "rawa-arabic-font";
-  if (document.getElementById(id)) return;
-  const link = document.createElement("link");
-  link.id = id;
-  link.rel = "stylesheet";
-  link.href = "https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap";
-  document.head.appendChild(link);
-  // Best-effort wait for the font to load
-  try {
-    const fonts = (document as Document & { fonts?: { load: (s: string) => Promise<unknown>; ready: Promise<unknown> } }).fonts;
-    if (fonts?.load) {
-      await fonts.load("700 16px Cairo");
-      await fonts.ready;
-    } else {
-      await new Promise((r) => setTimeout(r, 400));
-    }
-  } catch { /* ignore */ }
+  if (!document.getElementById(id)) {
+    const link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href =
+      "https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;500;700;800&display=swap";
+    document.head.appendChild(link);
+  }
+  const fonts = (document as Document & {
+    fonts?: { load: (s: string) => Promise<unknown>; ready: Promise<unknown> };
+  }).fonts;
+  if (fonts?.load) {
+    // Load the exact weights the template uses, with Arabic sample text so the
+    // Arabic subset (and its shaping tables) is actually fetched.
+    const sample = "تعليمات الدفع مرحباً بك في منصة رواء";
+    await Promise.all(
+      ["400 14px Cairo", "700 16px Cairo", "900 26px Cairo", "700 16px Tajawal"].map((f) =>
+        fonts.load(f, sample).catch(() => undefined),
+      ),
+    );
+    await fonts.ready;
+  } else {
+    await new Promise((r) => setTimeout(r, 600));
+  }
 }
+
 
 function buildFallbackPdf(settings: SettingsLike, t: T, qrDataUrl?: string, paymentRef?: string, logoDataUrl?: string): jsPDF {
   console.info("[pdf] Building fallback PDF (text-only via jsPDF)...");
