@@ -197,140 +197,115 @@ async function ensureArabicFont(): Promise<void> {
   }
 }
 
-
-function buildFallbackPdf(settings: SettingsLike, t: T, qrDataUrl?: string, paymentRef?: string, logoDataUrl?: string): jsPDF {
-  console.info("[pdf] Building fallback PDF (text-only via jsPDF)...");
-  const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait", compress: true });
-  const price = `${settings.price_dzd ?? "—"} ${settings.currency ?? "DZD"}`;
-
-  if (logoDataUrl && logoDataUrl !== BLANK_PNG) {
-    try { doc.addImage(logoDataUrl, "PNG", 257, 30, 80, 80); } catch (e) { console.warn("[pdf] fallback logo failed", e); }
-  }
-  doc.setFillColor(90, 67, 111);
-  doc.rect(0, 120, 595, 4, "F");
-  doc.setFontSize(20); doc.setTextColor(90, 67, 111);
-  doc.text(t("s.pdf.fallback_title"), 297, 150, { align: "center" });
-  doc.setFontSize(13); doc.setTextColor(80, 80, 80);
-  doc.text(t("s.pdf.fallback_subtitle"), 297, 172, { align: "center" });
-
-  let y = 220;
-  doc.setFontSize(12); doc.setTextColor(30, 30, 30);
-  const rows: [string, string][] = [
-    [t("s.pdf.method"), "Edahabia / BaridiMob"],
-    [t("s.pdf.ccp"), settings.ccp_number ?? "—"],
-    ...(settings.ccp_key ? [[t("s.pdf.key"), settings.ccp_key] as [string, string]] : []),
-    [t("s.pdf.beneficiary_en"), settings.account_holder ?? "—"],
-    [t("s.pdf.amount_en"), price],
-    ...(paymentRef ? [[t("s.pdf.reference_en"), paymentRef] as [string, string]] : []),
-    [t("s.pdf.duration_en"), t("s.pdf.duration_days_en", { days: settings.subscription_duration_days ?? 30 })],
-  ];
-  for (const [k, v] of rows) {
-    doc.setTextColor(120, 110, 140); doc.text(`${k}:`, 60, y);
-    doc.setTextColor(30, 30, 30); doc.text(String(v), 200, y);
-    y += 24;
-  }
-
-  if (qrDataUrl) {
-    try { doc.addImage(qrDataUrl, "PNG", 380, 220, 160, 160); }
-    catch (e) { console.warn("[pdf] fallback QR failed", e); }
-  }
-
-  y = Math.max(y, 420);
-  doc.setFontSize(11); doc.setTextColor(90, 67, 111);
-  doc.text(t("s.pdf.steps_en"), 60, y); y += 18;
-  doc.setTextColor(40, 40, 40);
-  [
-    `1. ${t("s.pdf.step1")}`,
-    `2. ${t("s.pdf.step2")}`,
-    `3. ${t("s.pdf.step3")}`,
-    `4. ${t("s.pdf.step4")}`,
-    `5. ${t("s.pdf.step5")}`,
-  ].forEach((line) => { doc.text(line, 60, y); y += 16; });
-
-  doc.setFontSize(10); doc.setTextColor(120, 110, 140);
-  doc.text(t("s.pdf.footer_en", { url: PLATFORM_URL }), 297, 800, { align: "center" });
-  return doc;
-}
-
-export async function downloadPaymentInstructionsPDF(settings: SettingsLike, t: T, lang: Lang, qrDataUrl?: string, paymentRef?: string) {
-  let logoSrc = BLANK_PNG;
-
-  // Step 1: Fonts
-  console.info("[pdf] Waiting fonts...");
-  try { await ensureArabicFont(); }
-  catch (e) { console.error("PDF ERROR (fonts):", e); }
-
-  // Step 2: Logo
-  console.info("[pdf] Loading logo...");
-  try { logoSrc = await imageToDataUrl(logoAsset.url); }
-  catch (e) { console.error("PDF ERROR (logo):", e); }
-
-  // Step 3+: HTML render attempt
+/**
+ * Arabic-safe PDF generation.
+ *
+ * Arabic is NEVER drawn with jsPDF.text(): the core jsPDF fonts have no Arabic
+ * glyphs and no shaping/bidi engine, which produced the reversed/disconnected
+ * output. Instead the browser lays out and shapes the RTL HTML, html2canvas
+ * rasterises it, and jsPDF only embeds the resulting bitmap.
+ */
+export async function downloadPaymentInstructionsPDF(
+  settings: SettingsLike,
+  t: T,
+  lang: Lang,
+  qrDataUrl?: string,
+  paymentRef?: string,
+) {
+  let step = "init";
   let host: HTMLDivElement | null = null;
   try {
-    console.info("[pdf] Creating template...");
+    step = "fonts";
+    console.info("[pdf] step: fonts");
+    await ensureArabicFont();
+
+    step = "logo";
+    console.info("[pdf] step: logo");
+    const logoSrc = await imageToDataUrl(logoAsset.url);
+
+    step = "template";
+    console.info("[pdf] step: template");
     host = document.createElement("div");
-    host.style.cssText = "position:fixed; left:-99999px; top:0; width:794px; visibility:hidden;";
+    // Off-screen but measurable: html2canvas needs real layout, so never display:none.
+    host.style.cssText =
+      "position:fixed; left:-10000px; top:0; width:794px; z-index:-1; visibility:hidden; pointer-events:none; background:#ffffff;";
     host.setAttribute("aria-hidden", "true");
     host.innerHTML = buildInvoiceHTML(settings, logoSrc, t, lang, qrDataUrl, paymentRef);
     document.body.appendChild(host);
     const node = host.querySelector("#rawa-pdf-root") as HTMLElement | null;
     if (!node) throw new Error("template root missing");
+    if (node.offsetWidth === 0 || node.offsetHeight === 0) {
+      throw new Error(`template has no measurable layout (${node.offsetWidth}x${node.offsetHeight})`);
+    }
 
-    console.info("[pdf] Loading QR + images...");
+    step = "images";
+    console.info("[pdf] step: images");
     await waitForImages(node);
-    try {
-      const fonts = (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts;
-      if (fonts?.ready) await fonts.ready;
-    } catch (e) { console.warn("[pdf] fonts.ready failed", e); }
 
-    console.info("[pdf] Rendering canvas (html2canvas)...");
+    step = "fonts-ready";
+    console.info("[pdf] step: fonts-ready");
+    const fonts = (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts;
+    if (fonts?.ready) await fonts.ready;
+    // One frame so shaped Arabic glyphs are committed to layout before capture.
+    await new Promise((r) => requestAnimationFrame(() => r(null)));
+
+    step = "canvas";
+    console.info("[pdf] step: canvas");
     const canvas = await html2canvas(node, {
-      scale: Math.min(3, window.devicePixelRatio > 1 ? 2.5 : 2),
-      backgroundColor: "#ffffff",
+      scale: 3,
       useCORS: true,
-      allowTaint: true,
+      allowTaint: false,
+      imageTimeout: 15000,
+      backgroundColor: "#ffffff",
       logging: false,
-      imageTimeout: 4000,
+      width: node.offsetWidth,
+      height: node.offsetHeight,
+      windowWidth: node.offsetWidth,
+      windowHeight: node.offsetHeight,
+      onclone: (clonedDoc) => {
+        const root = clonedDoc.getElementById("rawa-pdf-root");
+        if (root) (root as HTMLElement).style.visibility = "visible";
+      },
     });
+    if (!canvas.width || !canvas.height) throw new Error("html2canvas produced an empty canvas");
 
-    console.info("[pdf] Creating PDF...");
-    const imgData = canvas.toDataURL("image/jpeg", 0.92);
+    step = "pdf";
+    console.info("[pdf] step: pdf");
+    const imgData = canvas.toDataURL("image/jpeg", 0.95);
     const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait", compress: true });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
     const imgW = pageW;
     const imgH = (canvas.height * imgW) / canvas.width;
 
-    if (imgH <= pageH) {
-      doc.addImage(imgData, "JPEG", 0, 0, imgW, imgH);
+    if (imgH <= pageH + 1) {
+      doc.addImage(imgData, "JPEG", 0, 0, imgW, Math.min(imgH, pageH));
     } else {
       let remaining = imgH;
       let position = 0;
       while (remaining > 0) {
         doc.addImage(imgData, "JPEG", 0, position, imgW, imgH);
         remaining -= pageH;
-        if (remaining > 0) { doc.addPage(); position -= pageH; }
+        if (remaining > 0) {
+          doc.addPage();
+          position -= pageH;
+        }
       }
     }
-    console.info("[pdf] Saving PDF...");
+
+    step = "save";
+    console.info("[pdf] step: save");
     doc.save(`${t("s.pdf.filename")}.pdf`);
-    return;
   } catch (error) {
-    console.error("PDF ERROR:", error);
-    // Fallback: always produce a PDF
-    try {
-      const doc = buildFallbackPdf(settings, t, qrDataUrl, paymentRef, logoSrc);
-      console.info("[pdf] Saving fallback PDF...");
-      doc.save(`${t("s.pdf.filename")}.pdf`);
-    } catch (fallbackError) {
-      console.error("PDF ERROR (fallback also failed):", fallbackError);
-      throw fallbackError;
-    }
+    // No jsPDF text fallback: it cannot shape Arabic. Surface the failure so the
+    // caller shows the existing Arabic error toast.
+    console.error(`[pdf] PDF generation failed at step "${step}":`, error);
+    throw error instanceof Error ? error : new Error(String(error));
   } finally {
-    if (host && host.parentNode) host.parentNode.removeChild(host);
+    if (host?.parentNode) host.parentNode.removeChild(host);
   }
 }
+
 
 export async function compressImageFile(file: File, maxSide = 1600, quality = 0.82): Promise<File> {
   if (!file.type.startsWith("image/")) return file;
