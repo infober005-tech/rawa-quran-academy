@@ -90,24 +90,24 @@ function buildInvoiceHTML(settings: SettingsLike, logoSrc: string, t: T, lang: L
       object-fit:contain;" />
 
     <!-- Header -->
-    <div style="position:relative; z-index:1; background: linear-gradient(135deg,#5A436F 0%, #7A5A95 60%, #D4AF37 100%); padding: 28px 48px 24px; text-align:center; color:#fff;">
+    <div dir="${dir}" style="position:relative; z-index:1; background: linear-gradient(135deg,#5A436F 0%, #7A5A95 60%, #D4AF37 100%); padding: 28px 48px 24px; text-align:center; color:#fff; direction:${dir}; unicode-bidi:plaintext;">
       <img src="${logoUrl}" alt="Rawa" style="width:88px; height:88px; border-radius:50%; border:3px solid #D4AF37; box-shadow:0 6px 18px rgba(0,0,0,.25); background:#fff; object-fit:cover; margin-bottom:10px;" />
-      <div style="font-size: 12px; letter-spacing: 6px; font-weight:700; opacity:.9;">RAWA</div>
-      <h1 style="margin:6px 0 2px; font-size: 26px; font-weight: 900;">${t("s.pdf.platform_title")}</h1>
-      <div style="font-size: 15px; opacity:.92;">${t("s.pdf.header_title")}</div>
+      <div style="font-size: 12px; letter-spacing: 6px; font-weight:700; opacity:.9; direction:ltr; unicode-bidi:isolate;">RAWA</div>
+      <h1 dir="${dir}" style="margin:6px 0 2px; font-size: 26px; font-weight: 900; direction:${dir}; unicode-bidi:plaintext;">${t("s.pdf.platform_title")}</h1>
+      <div dir="${dir}" style="font-size: 15px; opacity:.92; direction:${dir}; unicode-bidi:plaintext;">${t("s.pdf.header_title")}</div>
       <div style="height:3px; width:120px; margin:14px auto 0; background:#D4AF37; border-radius:2px;"></div>
     </div>
 
     <div style="position:relative; z-index:1; padding: 28px 48px 16px; display:flex; gap:24px; align-items:flex-start;">
-      <div style="flex:1; min-width:0;">
+      <div dir="${dir}" style="flex:1; min-width:0; direction:${dir}; text-align:${align}; unicode-bidi:plaintext;">
         <h2 style="color:#5A436F; font-size:18px; margin:0 0 10px; ${borderSide}:4px solid #D4AF37; ${paddingSide}:10px;">${t("s.pdf.payment_data")}</h2>
         <div style="background:#faf7ff; border:1px solid #ece5f7; border-radius:14px; padding:14px 18px; font-size:14px; line-height:1.9;">
           <div style="padding:6px 0; border-bottom:1px dashed #ece5f7; color:#7a6a91; font-weight:600;">${t("s.pdf.payment_method_label")} <span style="color:#3a2a55; font-weight:700;">${t("s.pdf.payment_method_value")}</span></div>
-          ${buildPaymentRow(t("s.pdf.ccp_number"), settings.ccp_number ?? "—")}
-          ${settings.ccp_key ? buildPaymentRow(t("s.pdf.key"), settings.ccp_key) : ""}
+          ${buildPaymentRow(t("s.pdf.ccp_number"), settings.ccp_number ?? "—", false, true)}
+          ${settings.ccp_key ? buildPaymentRow(t("s.pdf.key"), settings.ccp_key, false, true) : ""}
           ${buildPaymentRow(t("s.pdf.beneficiary"), settings.account_holder ?? "—")}
-          ${buildPaymentRow(t("s.pdf.amount"), price, true)}
-          ${paymentRef ? buildPaymentRow(t("s.pdf.reference"), paymentRef) : ""}
+          ${buildPaymentRow(t("s.pdf.amount"), price, true, true)}
+          ${paymentRef ? buildPaymentRow(t("s.pdf.reference"), paymentRef, false, true) : ""}
           ${buildPaymentRow(t("s.pdf.duration"), t("s.pdf.duration_days", { days: settings.subscription_duration_days ?? 30 }))}
         </div>
       </div>
@@ -115,31 +115,32 @@ function buildInvoiceHTML(settings: SettingsLike, logoSrc: string, t: T, lang: L
         <div style="display:inline-block; padding:10px; background:#fff; border:2px solid #D4AF37; border-radius:14px;">
           <img src="${qrDataUrl}" alt="QR" style="width:188px; height:188px; display:block;" />
         </div>
-        <div style="font-size:11px; color:#7a6a91; margin-top:8px;">${t("s.pdf.qr_scan_hint")}</div>
+        <div dir="${dir}" style="font-size:11px; color:#7a6a91; margin-top:8px; direction:${dir}; unicode-bidi:plaintext;">${t("s.pdf.qr_scan_hint")}</div>
       </div>` : ""}
     </div>
 
-    <div style="position:relative; z-index:1; padding: 0 48px 16px;">
+    <div dir="${dir}" style="position:relative; z-index:1; padding: 0 48px 16px; direction:${dir}; text-align:${align}; unicode-bidi:plaintext;">
       <h2 style="color:#5A436F; font-size:18px; margin:0 0 10px; ${borderSide}:4px solid #D4AF37; ${paddingSide}:10px;">${t("s.pdf.steps_title")}</h2>
       <ol style="font-size:14px; line-height:1.9; color:#1a1a1a; ${paddingSide}:24px; margin:0;">
-        <li>${t("s.pdf.step1")}</li>
-        <li>${t("s.pdf.step2")}</li>
-        <li>${t("s.pdf.step3")}</li>
-        <li>${t("s.pdf.step4")}</li>
-        <li>${t("s.pdf.step5")}</li>
+        <li style="unicode-bidi:plaintext;">${t("s.pdf.step1")}</li>
+        <li style="unicode-bidi:plaintext;">${t("s.pdf.step2")}</li>
+        <li style="unicode-bidi:plaintext;">${t("s.pdf.step3")}</li>
+        <li style="unicode-bidi:plaintext;">${t("s.pdf.step4")}</li>
+        <li style="unicode-bidi:plaintext;">${t("s.pdf.step5")}</li>
       </ol>
     </div>
 
-    <div style="position:relative; z-index:1; padding: 0 48px 16px;">
+    <div dir="${dir}" style="position:relative; z-index:1; padding: 0 48px 16px; direction:${dir}; text-align:${align}; unicode-bidi:plaintext;">
       <div style="background:#fff8e1; border:1px solid #f1d98a; ${borderSide}:4px solid #D4AF37; border-radius:12px; padding:12px 16px;">
         <div style="font-weight:800; color:#5A436F; margin-bottom:4px;">${t("s.pdf.notes_title")}</div>
         <ul style="font-size:13px; color:#3a2a55; line-height:1.9; margin:0; ${paddingSide}:18px;">
-          <li>${t("s.pdf.note1")}</li>
-          <li>${t("s.pdf.note2")}</li>
-          <li>${t("s.pdf.note3")}</li>
+          <li style="unicode-bidi:plaintext;">${t("s.pdf.note1")}</li>
+          <li style="unicode-bidi:plaintext;">${t("s.pdf.note2")}</li>
+          <li style="unicode-bidi:plaintext;">${t("s.pdf.note3")}</li>
         </ul>
       </div>
     </div>
+
 
     <!-- Signature + Stamp -->
     <div style="position:relative; z-index:1; padding: 8px 48px 16px; display:flex; gap:24px; align-items:center; justify-content:space-between;">
