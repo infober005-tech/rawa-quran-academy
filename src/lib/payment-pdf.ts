@@ -143,27 +143,28 @@ function buildInvoiceHTML(settings: SettingsLike, logoSrc: string, t: T, lang: L
 
 
     <!-- Signature + Stamp -->
-    <div style="position:relative; z-index:1; padding: 8px 48px 16px; display:flex; gap:24px; align-items:center; justify-content:space-between;">
+    <div dir="${dir}" style="position:relative; z-index:1; padding: 8px 48px 16px; display:flex; gap:24px; align-items:center; justify-content:space-between; direction:${dir}; text-align:${align}; unicode-bidi:plaintext;">
       <div style="flex:1;">
-        <div style="color:#7a6a91; font-size:12px; margin-bottom:6px;">${t("s.pdf.esignature")}</div>
-        <div style="font-family:'Cairo'; font-style:italic; font-weight:700; color:#5A436F; font-size:18px; border-bottom:2px solid #D4AF37; display:inline-block; padding:2px 8px 6px;">${t("s.pdf.admin_signature")}</div>
+        <div style="color:#7a6a91; font-size:12px; margin-bottom:6px; unicode-bidi:plaintext;">${t("s.pdf.esignature")}</div>
+        <div style="font-family:'Cairo','Tajawal',sans-serif; font-weight:700; color:#5A436F; font-size:18px; border-bottom:2px solid #D4AF37; display:inline-block; padding:2px 8px 6px; unicode-bidi:plaintext;">${t("s.pdf.admin_signature")}</div>
       </div>
       <div style="width:130px; height:130px; position:relative; display:flex; align-items:center; justify-content:center;">
         <div style="position:absolute; inset:0; border-radius:50%; border:4px double #D4AF37; transform:rotate(-12deg);"></div>
         <div style="position:absolute; inset:10px; border-radius:50%; border:2px solid #D4AF37; transform:rotate(-12deg);"></div>
         <div style="text-align:center; transform:rotate(-12deg); color:#8a6a1f; font-weight:900;">
-          <div style="font-size:10px; letter-spacing:2px;">RAWA</div>
-          <div style="font-size:14px; margin-top:2px;">${t("s.pdf.stamp_certified")}</div>
-          <div style="font-size:9px; margin-top:2px;">${t("s.pdf.stamp_official")}</div>
+          <div style="font-size:10px; letter-spacing:2px; direction:ltr; unicode-bidi:isolate;">RAWA</div>
+          <div style="font-size:14px; margin-top:2px; unicode-bidi:plaintext;">${t("s.pdf.stamp_certified")}</div>
+          <div style="font-size:9px; margin-top:2px; direction:ltr; unicode-bidi:isolate;">${t("s.pdf.stamp_official")}</div>
         </div>
       </div>
     </div>
 
-    <div style="position:relative; z-index:1; margin-top:auto; padding: 14px 48px; border-top:2px solid #D4AF37; text-align:center; color:#7a6a91; font-size:11px;">
-      <div style="font-weight:700; color:#5A436F;">${t("s.pdf.footer_copyright")}</div>
-      <div style="margin-top:2px;"><a href="${PLATFORM_URL}" style="color:#5A436F; text-decoration:none;">${PLATFORM_URL}</a></div>
-      <div>${t("s.pdf.all_rights")}</div>
+    <div dir="${dir}" style="position:relative; z-index:1; margin-top:auto; padding: 14px 48px; border-top:2px solid #D4AF37; text-align:center; color:#7a6a91; font-size:11px; direction:${dir}; unicode-bidi:plaintext;">
+      <div style="font-weight:700; color:#5A436F; unicode-bidi:plaintext;">${t("s.pdf.footer_copyright")}</div>
+      <div style="margin-top:2px;">${ltr(`<span style="color:#5A436F;">${PLATFORM_URL}</span>`)}</div>
+      <div style="unicode-bidi:plaintext;">${t("s.pdf.all_rights")}</div>
     </div>
+
   </div>`;
 }
 
