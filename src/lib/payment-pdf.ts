@@ -54,10 +54,16 @@ async function waitForImages(root: HTMLElement): Promise<void> {
   );
 }
 
-function buildPaymentRow(label: string, value: string, accent = false): string {
+// Wrap numeric / reference / URL content so bidi never mixes it with Arabic.
+function ltr(value: string): string {
+  return `<span dir="ltr" style="direction:ltr; unicode-bidi:isolate; display:inline-block; white-space:nowrap; font-variant-numeric:tabular-nums;">${value}</span>`;
+}
+
+function buildPaymentRow(label: string, value: string, accent = false, isLtr = false): string {
+  const rendered = isLtr ? ltr(value) : value;
   return `<div style="display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-bottom:1px dashed #ece5f7;">
-    <span style="color:#7a6a91; font-weight:600;">${label}</span>
-    <span style="font-weight:${accent ? 800 : 700}; color:${accent ? "#D4AF37" : "#3a2a55"}; ${accent ? "font-size:17px;" : ""}">${value}</span>
+    <span style="color:#7a6a91; font-weight:600; unicode-bidi:plaintext;">${label}</span>
+    <span style="font-weight:${accent ? 800 : 700}; color:${accent ? "#D4AF37" : "#3a2a55"}; ${accent ? "font-size:17px;" : ""}">${rendered}</span>
   </div>`;
 }
 
@@ -65,14 +71,19 @@ function buildInvoiceHTML(settings: SettingsLike, logoSrc: string, t: T, lang: L
   const price = `${settings.price_dzd ?? "—"} ${settings.currency ?? "DZD"}`;
   const logoUrl = logoSrc;
   const dir = lang === "ar" ? "rtl" : "ltr";
+  const align = dir === "rtl" ? "right" : "left";
   const borderSide = dir === "rtl" ? "border-right" : "border-left";
   const paddingSide = dir === "rtl" ? "padding-right" : "padding-left";
   return `
   <div id="rawa-pdf-root" dir="${dir}" lang="${lang}" style="
     width: 794px; min-height: 1123px; background:#ffffff; color:#1a1a1a; position:relative; overflow:hidden;
+    visibility: visible;
+    direction: ${dir}; unicode-bidi: plaintext; text-align: ${align}; letter-spacing: normal;
     font-family: 'Cairo','Tajawal','Noto Sans Arabic','Segoe UI',Tahoma,sans-serif;
+    font-kerning: normal; font-feature-settings: "liga" 1, "calt" 1;
     padding: 0; margin: 0; box-sizing: border-box;">
     <!-- Watermark -->
+
     <img src="${logoUrl}" alt="" style="
       position:absolute; top:50%; left:50%; width:560px; height:560px;
       transform: translate(-50%, -50%); opacity:0.06; pointer-events:none; z-index:0;
