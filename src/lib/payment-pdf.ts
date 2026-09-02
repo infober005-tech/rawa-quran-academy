@@ -213,7 +213,7 @@ export async function downloadPaymentInstructionsPDF(
   paymentRef?: string,
 ) {
   let step = "init";
-  let host: HTMLDivElement | null = null;
+  let frame: HTMLIFrameElement | null = null;
   try {
     step = "fonts";
     console.info("[pdf] step: fonts");
@@ -225,18 +225,34 @@ export async function downloadPaymentInstructionsPDF(
 
     step = "template";
     console.info("[pdf] step: template");
-    host = document.createElement("div");
-    // Off-screen but measurable: html2canvas needs real layout, so never display:none.
-    host.style.cssText =
-      "position:fixed; left:-10000px; top:0; width:794px; z-index:-1; visibility:hidden; pointer-events:none; background:#ffffff;";
-    host.setAttribute("aria-hidden", "true");
-    host.innerHTML = buildInvoiceHTML(settings, logoSrc, t, lang, qrDataUrl, paymentRef);
-    document.body.appendChild(host);
-    const node = host.querySelector("#rawa-pdf-root") as HTMLElement | null;
+    // The template is rendered inside an isolated iframe: the app's Tailwind
+    // theme uses modern oklch()/lab() colors that html2canvas cannot parse, and
+    // any inherited value would abort the capture.
+    frame = document.createElement("iframe");
+    frame.setAttribute("aria-hidden", "true");
+    // Off-screen but measurable — html2canvas needs real layout, never display:none.
+    frame.style.cssText =
+      "position:fixed; left:-10000px; top:0; width:794px; height:1200px; border:0; z-index:-1; visibility:hidden; pointer-events:none; background:#ffffff;";
+    document.body.appendChild(frame);
+    const fdoc = frame.contentDocument;
+    if (!fdoc) throw new Error("iframe document unavailable");
+    fdoc.open();
+    fdoc.write(`<!doctype html><html dir="${lang === "ar" ? "rtl" : "ltr"}" lang="${lang}"><head><meta charset="utf-8">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;500;700;800&display=swap">
+      <style>
+        html,body{margin:0;padding:0;background:#ffffff;color:#1a1a1a;}
+        body{font-family:'Cairo','Tajawal','Noto Sans Arabic','Segoe UI',Tahoma,sans-serif; letter-spacing:normal;
+             direction:${lang === "ar" ? "rtl" : "ltr"}; unicode-bidi:plaintext; text-align:${lang === "ar" ? "right" : "left"};}
+        *{box-sizing:border-box;}
+      </style></head><body>${buildInvoiceHTML(settings, logoSrc, t, lang, qrDataUrl, paymentRef)}</body></html>`);
+    fdoc.close();
+
+    const node = fdoc.getElementById("rawa-pdf-root") as HTMLElement | null;
     if (!node) throw new Error("template root missing");
     if (node.offsetWidth === 0 || node.offsetHeight === 0) {
       throw new Error(`template has no measurable layout (${node.offsetWidth}x${node.offsetHeight})`);
     }
+    frame.style.height = `${node.offsetHeight}px`;
 
     step = "images";
     console.info("[pdf] step: images");
@@ -244,8 +260,10 @@ export async function downloadPaymentInstructionsPDF(
 
     step = "fonts-ready";
     console.info("[pdf] step: fonts-ready");
-    const fonts = (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts;
-    if (fonts?.ready) await fonts.ready;
+    const outerFonts = (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts;
+    if (outerFonts?.ready) await outerFonts.ready;
+    const innerFonts = (fdoc as Document & { fonts?: { ready: Promise<unknown> } }).fonts;
+    if (innerFonts?.ready) await innerFonts.ready;
     // One frame so shaped Arabic glyphs are committed to layout before capture.
     await new Promise((r) => requestAnimationFrame(() => r(null)));
 
@@ -267,6 +285,7 @@ export async function downloadPaymentInstructionsPDF(
         if (root) (root as HTMLElement).style.visibility = "visible";
       },
     });
+
     if (!canvas.width || !canvas.height) throw new Error("html2canvas produced an empty canvas");
 
     step = "pdf";
