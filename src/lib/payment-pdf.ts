@@ -321,7 +321,7 @@ export async function downloadPaymentInstructionsPDF(
     console.error(`[pdf] PDF generation failed at step "${step}":`, error);
     throw error instanceof Error ? error : new Error(String(error));
   } finally {
-    if (host?.parentNode) host.parentNode.removeChild(host);
+    if (frame?.parentNode) frame.parentNode.removeChild(frame);
   }
 }
 
