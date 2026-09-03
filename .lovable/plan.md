@@ -1,77 +1,38 @@
+# Payment PDF: QR and single-page A4 fix
+
 ## Scope
 
-Two large tracks in one turn: (A) Halaqa Management upgrade and (B) platform-wide mobile-first sweep. To keep quality high and avoid a mega-diff that regresses production, I want to confirm the approach and sequencing before writing code.
+Modify only `src/lib/payment-pdf.ts`. Preserve the QR payload, payment data, translations, subscription flow, error toast, and all unrelated application behavior.
 
----
+## Implementation
 
-## Track A — Halaqa Management upgrade
+1. **Export a real QR image before capture**
+   - Normalize the supplied QR into a dedicated PNG image before `html2canvas` runs.
+   - If a QR canvas exists, export it with `canvas.toDataURL("image/png")`; otherwise validate and reuse the existing QR data URL without changing its payload.
+   - Reject empty/blank exports, create an `<img>` with explicit dimensions, and await its load inside the PDF document.
+   - Log `[payment-pdf] QR converted successfully` only after the image is measurable and contains non-empty image data.
 
-Touches: `src/features/admin/HalaqasPanel.tsx`, `src/routes/_authenticated/halaqas.tsx`, dashboards that render halaqa titles, i18n dictionaries, and the DB.
+2. **Build an exact A4-sized document**
+   - Make the PDF root exactly `794px × 1123px`, with `box-sizing: border-box` and `overflow: hidden`.
+   - Use a column layout that keeps header, payment details + QR, steps, notes, signature/stamp, and footer within that fixed height.
+   - Tighten only spacing, gaps, type sizes, and QR size as needed; retain every existing information block and visual element.
+   - Keep the footer anchored in normal flex layout at the bottom, not through negative positioning.
 
-### Schema (additive only — no RLS, auth, or business-logic changes)
+3. **Measure and fit before rendering**
+   - Log actual DOM width/height and expected dimensions.
+   - If content exceeds 1123px, apply bounded compact layout levels that proportionally reduce vertical spacing and typography, remeasure after each level, and fail rather than crop if it still cannot fit.
+   - Log `[payment-pdf] DOM fits A4` only after `scrollHeight <= 1123`.
 
-New optional columns on `halaqas`:
-- `halaqa_date` `date` (nullable — required only at the form layer)
-- `halaqa_day` `smallint` 0..6 (auto-derived, stored for filtering)
+4. **Render exactly one page**
+   - Await document fonts and all logo, watermark, and QR images.
+   - Capture at exactly `794 × 1123` with the requested `html2canvas` options and `scale: 2`.
+   - Export PNG and add it once to a portrait A4 jsPDF at `0, 0, 210, 297`; remove all pagination and `addPage()` logic.
+   - Preserve RTL Arabic shaping and LTR French/English, with isolated LTR handling for numbers, CCP, references, URLs, and phone-like values.
+   - Emit the requested success logs and one `[payment-pdf] FAILED:` error path so the existing caller continues showing its current error toast.
 
-Note: "halaqa_name" — the table already has `name`. I will keep the existing `name` column (renaming would break every consumer, notifications, evaluations, attendance joins, RLS-referencing views). The UI label becomes "اسم الحلقة *"; DB stays `name`. This is the only deviation from the spec — call out if you want a hard rename instead (higher risk, requires trigger/notification refactor).
+## Verification
 
-### Form (Director-only, `HalaqasPanel`)
-
-- 3-col desktop / 2-col tablet / 1-col mobile grid.
-- Fields with required validation: name, teacher, gender, level, max_students, halaqa_date (date picker → auto-fills day chip), start_time, end_time, meeting_link, status, ≥1 weekday, ≥1 student.
-- Searchable multi-select for students, grouped by level (beginner / intermediate / advanced) with Select All / Clear / count.
-- Segmented Draft / Published buttons (values `draft` / `published`). Note current DB enum is `active | archived | inactive` — I'll add `draft` and `published` to the check/enum and treat `active` as legacy-published for read paths so old rows keep working.
-- Draft rule enforced in UI (hides meeting link + suppresses toast). Real notification suppression is already handled by the existing trigger `notify_halaqa_activated` (fires only when status transitions to `active`); I'll extend it to also fire on `published`.
-
-### List / cards
-
-Redesigned card shows: name, teacher, students count, level, day, formatted date (`29 يونيو 2026` via `Intl.DateTimeFormat` with current locale), start–end time, status badge, meet icon.
-
-### Filters bar
-
-Name search, teacher, level, day, status (draft/published/all), date range.
-
-### Display everywhere
-
-Halaqa name is already used in `TeacherDashboard`, `StudentDashboard`, `DirectorDashboard`, `ParentDashboard`, notifications, attendance, evaluations — I'll audit each and ensure the new name/date/day render consistently.
-
----
-
-## Track B — Mobile-first sweep
-
-Existing plan file `.lovable/plan.md` already covers this in detail. I'll execute it in one batch:
-
-1. Add `ResponsiveDialog`, `ResponsiveTable`, `StatGrid`, `PageShell` primitives.
-2. Convert every admin panel table (`Users`, `Halaqas`, `Events`, `Payments`, `ParentLinks`, `PaymentSettings`, `Calendar`) to `ResponsiveTable` — desktop table, mobile glass card list with title / badge / meta / date / actions.
-3. Swap every `Dialog`/`AlertDialog` to `ResponsiveDialog` (Vaul drawer under 768px).
-4. Page-by-page pass on Landing, Auth, Reset, all 6 dashboards, Halaqas, Events, Notifications, Settings, Subscribe, Payment Status, Profile — single column < 768, safe-area, sticky headers, full-width CTAs.
-5. Forms: 48px inputs on mobile, correct `inputMode`, single-column.
-6. Charts wrapped in `ResponsiveContainer`, images lazy + aspect-ratio.
-7. Global CSS: verify `overflow-x: hidden`, `clamp()` typography, `.stack-actions`, safe-area helpers.
-
-### Desktop invariance
-
-All mobile changes are `md:`-gated. Desktop dashboards, sidebar, tables, dialogs render identically to today.
-
-### QA
-
-Playwright sweep at 320 / 360 / 375 / 390 / 414 / 768 / 1024 / 1440, screenshots under `/tmp/browser/qa/`, checked for no horizontal overflow, no clipped text, dialogs full-screen on mobile, tables → cards on mobile. Typecheck + build must pass.
-
----
-
-## Out of scope (unchanged)
-
-- Auth, RBAC, RLS, subscriptions, payments logic.
-- Visual language / color tokens.
-- Any new features beyond the two tracks above.
-
----
-
-## Confirmations I need before starting
-
-1. **Halaqa DB column**: keep existing `name` and only relabel in UI (safe), or hard-rename `name → halaqa_name` platform-wide (risky, touches triggers + notifications + every consumer)?
-2. **Status enum**: add `draft` and `published` alongside existing `active | archived | inactive`, or fully migrate old rows to the new values (data migration required)?
-3. **Order**: ship Track A (Halaqa) first in one turn, then Track B (mobile sweep) in the next — or one combined mega-turn? I recommend splitting; the mobile sweep alone touches ~40 files.
-
-Approve and I'll start with Track A using option 1 (label-only) + option 2 (additive enum) unless you say otherwise.
+- Run the project’s automated type/build checks after the one-file edit.
+- Generate actual Arabic, French, and English downloads in Chromium using the live payment page.
+- Inspect each downloaded PDF at desktop and mobile viewport sizes and verify: one page; visible/scannable QR; logo and watermark; complete payment details; steps and notes; signature and stamp; footer; no clipping; Arabic RTL; French/English LTR.
+- Inspect rendered PDF pages visually and verify the QR decodes to the same supplied payment payload before reporting completion.
