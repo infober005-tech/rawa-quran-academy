@@ -280,15 +280,18 @@ export async function downloadPaymentInstructionsPDF(
   let frame: HTMLIFrameElement | null = null;
   try {
     step = "fonts";
-    console.info("[pdf] step: fonts");
     await ensureArabicFont();
+    const outerFonts = (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts;
+    if (outerFonts?.ready) await outerFonts.ready;
+    console.log("[payment-pdf] Fonts ready");
 
     step = "logo";
-    console.info("[pdf] step: logo");
     const logoSrc = await imageToDataUrl(logoAsset.url);
 
+    step = "qr";
+    const exportedQrDataUrl = qrDataUrl ? await createQrPng(qrDataUrl) : undefined;
+
     step = "template";
-    console.info("[pdf] step: template");
     // The template is rendered inside an isolated iframe: the app's Tailwind
     // theme uses modern oklch()/lab() colors that html2canvas cannot parse, and
     // any inherited value would abort the capture.
@@ -296,7 +299,7 @@ export async function downloadPaymentInstructionsPDF(
     frame.setAttribute("aria-hidden", "true");
     // Off-screen but measurable — html2canvas needs real layout, never display:none.
     frame.style.cssText =
-      "position:fixed; left:-10000px; top:0; width:794px; height:1200px; border:0; z-index:-1; visibility:hidden; pointer-events:none; background:#ffffff;";
+      `position:fixed; left:-10000px; top:0; width:${PDF_WIDTH}px; height:${PDF_HEIGHT}px; border:0; z-index:-1; visibility:hidden; pointer-events:none; background:#ffffff;`;
     document.body.appendChild(frame);
     const fdoc = frame.contentDocument;
     if (!fdoc) throw new Error("iframe document unavailable");
@@ -307,8 +310,19 @@ export async function downloadPaymentInstructionsPDF(
         html,body{margin:0;padding:0;background:#ffffff;color:#1a1a1a;}
         body{font-family:'Cairo','Tajawal','Noto Sans Arabic','Segoe UI',Tahoma,sans-serif; letter-spacing:normal;
              direction:${lang === "ar" ? "rtl" : "ltr"}; unicode-bidi:plaintext; text-align:${lang === "ar" ? "right" : "left"};}
-        *{box-sizing:border-box;}
-      </style></head><body>${buildInvoiceHTML(settings, logoSrc, t, lang, qrDataUrl, paymentRef)}</body></html>`);
+         *{box-sizing:border-box;}
+         #rawa-pdf-root.pdf-compact-1 .pdf-header{padding-top:16px!important;padding-bottom:13px!important;}
+         #rawa-pdf-root.pdf-compact-1 .pdf-payment{padding-top:14px!important;padding-bottom:7px!important;}
+         #rawa-pdf-root.pdf-compact-1 .pdf-steps,#rawa-pdf-root.pdf-compact-1 .pdf-notes{padding-bottom:7px!important;}
+         #rawa-pdf-root.pdf-compact-1 .pdf-signature{padding-top:2px!important;padding-bottom:5px!important;}
+         #rawa-pdf-root.pdf-compact-1 .pdf-stamp{width:100px!important;height:100px!important;}
+         #rawa-pdf-root.pdf-compact-2 .pdf-header{padding-top:12px!important;padding-bottom:10px!important;}
+         #rawa-pdf-root.pdf-compact-2 .pdf-payment{padding-top:10px!important;padding-bottom:5px!important;}
+         #rawa-pdf-root.pdf-compact-2 .pdf-steps,#rawa-pdf-root.pdf-compact-2 .pdf-notes{padding-bottom:5px!important;}
+         #rawa-pdf-root.pdf-compact-2 .pdf-signature{padding:0 44px 3px!important;}
+         #rawa-pdf-root.pdf-compact-2 .pdf-stamp{width:90px!important;height:90px!important;}
+         #rawa-pdf-root.pdf-compact-2 .pdf-footer{padding-top:7px!important;padding-bottom:7px!important;}
+       </style></head><body>${buildInvoiceHTML(settings, logoSrc, t, lang, exportedQrDataUrl, paymentRef)}</body></html>`);
     fdoc.close();
 
     const node = fdoc.getElementById("rawa-pdf-root") as HTMLElement | null;
@@ -316,34 +330,56 @@ export async function downloadPaymentInstructionsPDF(
     if (node.offsetWidth === 0 || node.offsetHeight === 0) {
       throw new Error(`template has no measurable layout (${node.offsetWidth}x${node.offsetHeight})`);
     }
-    frame.style.height = `${node.offsetHeight}px`;
 
     step = "images";
-    console.info("[pdf] step: images");
     await waitForImages(node);
+    const qrImg = fdoc.getElementById("payment-pdf-qr") as HTMLImageElement | null;
+    if (exportedQrDataUrl && (!qrImg || qrImg.naturalWidth === 0 || qrImg.naturalHeight === 0)) {
+      throw new Error("QR_CODE_EXPORT_FAILED");
+    }
+    console.log("[payment-pdf] Images ready");
 
     step = "fonts-ready";
-    console.info("[pdf] step: fonts-ready");
-    const outerFonts = (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts;
-    if (outerFonts?.ready) await outerFonts.ready;
     const innerFonts = (fdoc as Document & { fonts?: { ready: Promise<unknown> } }).fonts;
     if (innerFonts?.ready) await innerFonts.ready;
-    // One frame so shaped Arabic glyphs are committed to layout before capture.
-    await new Promise((r) => requestAnimationFrame(() => r(null)));
+    const frameWindow = fdoc.defaultView;
+    await new Promise<void>((resolve) => {
+      const requestFrame = frameWindow?.requestAnimationFrame.bind(frameWindow) ?? requestAnimationFrame;
+      requestFrame(() => requestFrame(() => resolve()));
+    });
+
+    step = "measure";
+    console.log("[payment-pdf] DOM width:", node.scrollWidth);
+    console.log("[payment-pdf] DOM height:", node.scrollHeight);
+    console.log("[payment-pdf] expected:", PDF_WIDTH, PDF_HEIGHT);
+    for (const compactClass of ["pdf-compact-1", "pdf-compact-2"]) {
+      if (node.scrollHeight <= PDF_HEIGHT) break;
+      node.classList.add(compactClass);
+      await new Promise<void>((resolve) => {
+        const requestFrame = frameWindow?.requestAnimationFrame.bind(frameWindow) ?? requestAnimationFrame;
+        requestFrame(() => resolve());
+      });
+      console.log(`[payment-pdf] DOM height after ${compactClass}:`, node.scrollHeight);
+    }
+    if (node.scrollWidth > PDF_WIDTH || node.scrollHeight > PDF_HEIGHT) {
+      throw new Error(`PDF_DOM_OVERFLOW: ${node.scrollWidth}x${node.scrollHeight}`);
+    }
+    console.log("[payment-pdf] DOM fits A4");
 
     step = "canvas";
-    console.info("[pdf] step: canvas");
     const canvas = await html2canvas(node, {
-      scale: 3,
+      width: PDF_WIDTH,
+      height: PDF_HEIGHT,
+      windowWidth: PDF_WIDTH,
+      windowHeight: PDF_HEIGHT,
+      scale: 2,
       useCORS: true,
       allowTaint: false,
       imageTimeout: 15000,
       backgroundColor: "#ffffff",
       logging: false,
-      width: node.offsetWidth,
-      height: node.offsetHeight,
-      windowWidth: node.offsetWidth,
-      windowHeight: node.offsetHeight,
+      scrollX: 0,
+      scrollY: 0,
       onclone: (clonedDoc) => {
         const root = clonedDoc.getElementById("rawa-pdf-root");
         if (root) (root as HTMLElement).style.visibility = "visible";
@@ -351,38 +387,21 @@ export async function downloadPaymentInstructionsPDF(
     });
 
     if (!canvas.width || !canvas.height) throw new Error("html2canvas produced an empty canvas");
+    console.log("[payment-pdf] Canvas rendered");
 
     step = "pdf";
-    console.info("[pdf] step: pdf");
-    const imgData = canvas.toDataURL("image/jpeg", 0.95);
-    const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait", compress: true });
-    const pageW = doc.internal.pageSize.getWidth();
-    const pageH = doc.internal.pageSize.getHeight();
-    const imgW = pageW;
-    const imgH = (canvas.height * imgW) / canvas.width;
-
-    if (imgH <= pageH + 1) {
-      doc.addImage(imgData, "JPEG", 0, 0, imgW, Math.min(imgH, pageH));
-    } else {
-      let remaining = imgH;
-      let position = 0;
-      while (remaining > 0) {
-        doc.addImage(imgData, "JPEG", 0, position, imgW, imgH);
-        remaining -= pageH;
-        if (remaining > 0) {
-          doc.addPage();
-          position -= pageH;
-        }
-      }
-    }
+    const imgData = canvas.toDataURL("image/png");
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
+    doc.addImage(imgData, "PNG", 0, 0, 210, 297, undefined, "FAST");
+    console.log("[payment-pdf] One-page PDF created");
 
     step = "save";
-    console.info("[pdf] step: save");
     doc.save(`${t("s.pdf.filename")}.pdf`);
+    console.log("[payment-pdf] PDF saved successfully");
   } catch (error) {
     // No jsPDF text fallback: it cannot shape Arabic. Surface the failure so the
     // caller shows the existing Arabic error toast.
-    console.error(`[pdf] PDF generation failed at step "${step}":`, error);
+    console.error("[payment-pdf] FAILED:", { step, error });
     throw error instanceof Error ? error : new Error(String(error));
   } finally {
     if (frame?.parentNode) frame.parentNode.removeChild(frame);
