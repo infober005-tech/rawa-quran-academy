@@ -16,6 +16,9 @@ type SettingsLike = {
 type Lang = "ar" | "fr" | "en";
 type T = (key: string, vars?: Record<string, string | number>) => string;
 const PLATFORM_URL = "https://rawa-quran-academy.lovable.app";
+const PDF_WIDTH = 794;
+const PDF_HEIGHT = 1123;
+const IMAGE_TIMEOUT = 15000;
 
 // Transparent 1x1 PNG fallback so html2canvas never aborts on a broken <img>.
 const BLANK_PNG =
@@ -38,20 +41,80 @@ async function imageToDataUrl(url: string): Promise<string> {
   }
 }
 
+async function waitForImage(img: HTMLImageElement, timeout = IMAGE_TIMEOUT): Promise<void> {
+  if (img.complete && img.naturalWidth > 0 && img.naturalHeight > 0) {
+    await img.decode?.().catch(() => undefined);
+    return;
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    const timer = window.setTimeout(() => {
+      cleanup();
+      reject(new Error(`IMAGE_LOAD_TIMEOUT: ${img.alt || "unnamed image"}`));
+    }, timeout);
+    const cleanup = () => {
+      window.clearTimeout(timer);
+      img.removeEventListener("load", onLoad);
+      img.removeEventListener("error", onError);
+    };
+    const onLoad = () => {
+      cleanup();
+      resolve();
+    };
+    const onError = () => {
+      cleanup();
+      reject(new Error(`IMAGE_LOAD_FAILED: ${img.alt || "unnamed image"}`));
+    };
+    img.addEventListener("load", onLoad, { once: true });
+    img.addEventListener("error", onError, { once: true });
+  });
+  await img.decode?.().catch(() => undefined);
+}
+
 async function waitForImages(root: HTMLElement): Promise<void> {
   const imgs = Array.from(root.querySelectorAll("img"));
-  await Promise.all(
-    imgs.map(
-      (img) =>
-        new Promise<void>((resolve) => {
-          if (img.complete && img.naturalWidth > 0) return resolve();
-          img.addEventListener("load", () => resolve(), { once: true });
-          img.addEventListener("error", () => resolve(), { once: true });
-          // hard timeout so a single broken image never blocks the PDF
-          setTimeout(() => resolve(), 4000);
-        }),
-    ),
-  );
+  await Promise.all(imgs.map((img) => waitForImage(img)));
+}
+
+async function createQrPng(qrSource: string): Promise<string> {
+  if (!qrSource || qrSource === "data:,") throw new Error("QR_CODE_EXPORT_FAILED");
+
+  const source = document.createElement("img");
+  source.alt = "QR source";
+  source.src = qrSource;
+  await waitForImage(source);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 240;
+  canvas.height = 240;
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) throw new Error("QR_CODE_EXPORT_FAILED");
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.imageSmoothingEnabled = false;
+  context.drawImage(source, 0, 0, canvas.width, canvas.height);
+
+  const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+  let darkPixels = 0;
+  for (let index = 0; index < pixels.length; index += 4) {
+    if (pixels[index] < 220 || pixels[index + 1] < 220 || pixels[index + 2] < 220) darkPixels += 1;
+  }
+  if (darkPixels < 100) throw new Error("QR_CODE_EXPORT_FAILED");
+
+  const qrDataUrl = canvas.toDataURL("image/png");
+  if (!qrDataUrl || qrDataUrl === "data:,") throw new Error("QR_CODE_EXPORT_FAILED");
+
+  const qrImg = document.createElement("img");
+  qrImg.alt = "QR";
+  qrImg.src = qrDataUrl;
+  qrImg.width = 240;
+  qrImg.height = 240;
+  qrImg.style.display = "block";
+  qrImg.style.width = "240px";
+  qrImg.style.height = "240px";
+  await waitForImage(qrImg);
+  console.log("[payment-pdf] QR converted successfully");
+  return qrDataUrl;
 }
 
 // Wrap numeric / reference / URL content so bidi never mixes it with Arabic.
@@ -76,7 +139,8 @@ function buildInvoiceHTML(settings: SettingsLike, logoSrc: string, t: T, lang: L
   const paddingSide = dir === "rtl" ? "padding-right" : "padding-left";
   return `
   <div id="rawa-pdf-root" dir="${dir}" lang="${lang}" style="
-    width: 794px; min-height: 1123px; background:#ffffff; color:#1a1a1a; position:relative; overflow:hidden;
+    width:794px; height:1123px; background:#ffffff; color:#1a1a1a; position:relative; overflow:hidden;
+    display:flex; flex-direction:column;
     visibility: visible;
     direction: ${dir}; unicode-bidi: plaintext; text-align: ${align}; letter-spacing: normal;
     font-family: 'Cairo','Tajawal','Noto Sans Arabic','Segoe UI',Tahoma,sans-serif;
@@ -90,18 +154,18 @@ function buildInvoiceHTML(settings: SettingsLike, logoSrc: string, t: T, lang: L
       object-fit:contain;" />
 
     <!-- Header -->
-    <div dir="${dir}" style="position:relative; z-index:1; background: linear-gradient(135deg,#5A436F 0%, #7A5A95 60%, #D4AF37 100%); padding: 28px 48px 24px; text-align:center; color:#fff; direction:${dir}; unicode-bidi:plaintext;">
-      <img src="${logoUrl}" alt="Rawa" style="width:88px; height:88px; border-radius:50%; border:3px solid #D4AF37; box-shadow:0 6px 18px rgba(0,0,0,.25); background:#fff; object-fit:cover; margin-bottom:10px;" />
+    <div class="pdf-header" dir="${dir}" style="position:relative; z-index:1; flex:0 0 auto; background:linear-gradient(135deg,#5A436F 0%,#7A5A95 60%,#D4AF37 100%); padding:20px 44px 17px; text-align:center; color:#fff; direction:${dir}; unicode-bidi:plaintext;">
+      <img src="${logoUrl}" alt="Rawa" style="width:72px; height:72px; border-radius:50%; border:3px solid #D4AF37; box-shadow:0 6px 18px rgba(0,0,0,.25); background:#fff; object-fit:cover; margin-bottom:6px;" />
       <div style="font-size: 12px; letter-spacing: 6px; font-weight:700; opacity:.9; direction:ltr; unicode-bidi:isolate;">RAWA</div>
-      <h1 dir="${dir}" style="margin:6px 0 2px; font-size: 26px; font-weight: 900; direction:${dir}; unicode-bidi:plaintext;">${t("s.pdf.platform_title")}</h1>
+      <h1 dir="${dir}" style="margin:3px 0 1px; font-size:24px; font-weight:900; direction:${dir}; unicode-bidi:plaintext;">${t("s.pdf.platform_title")}</h1>
       <div dir="${dir}" style="font-size: 15px; opacity:.92; direction:${dir}; unicode-bidi:plaintext;">${t("s.pdf.header_title")}</div>
-      <div style="height:3px; width:120px; margin:14px auto 0; background:#D4AF37; border-radius:2px;"></div>
+      <div style="height:3px; width:120px; margin:9px auto 0; background:#D4AF37; border-radius:2px;"></div>
     </div>
 
-    <div style="position:relative; z-index:1; padding: 28px 48px 16px; display:flex; gap:24px; align-items:flex-start;">
+    <div class="pdf-payment" style="position:relative; z-index:1; flex:0 0 auto; padding:20px 44px 10px; display:flex; gap:20px; align-items:flex-start;">
       <div dir="${dir}" style="flex:1; min-width:0; direction:${dir}; text-align:${align}; unicode-bidi:plaintext;">
         <h2 style="color:#5A436F; font-size:18px; margin:0 0 10px; ${borderSide}:4px solid #D4AF37; ${paddingSide}:10px;">${t("s.pdf.payment_data")}</h2>
-        <div style="background:#faf7ff; border:1px solid #ece5f7; border-radius:14px; padding:14px 18px; font-size:14px; line-height:1.9;">
+        <div style="background:#faf7ff; border:1px solid #ece5f7; border-radius:14px; padding:10px 16px; font-size:13px; line-height:1.65;">
           <div style="padding:6px 0; border-bottom:1px dashed #ece5f7; color:#7a6a91; font-weight:600;">${t("s.pdf.payment_method_label")} <span style="color:#3a2a55; font-weight:700;">${t("s.pdf.payment_method_value")}</span></div>
           ${buildPaymentRow(t("s.pdf.ccp_number"), settings.ccp_number ?? "—", false, true)}
           ${settings.ccp_key ? buildPaymentRow(t("s.pdf.key"), settings.ccp_key, false, true) : ""}
@@ -111,17 +175,17 @@ function buildInvoiceHTML(settings: SettingsLike, logoSrc: string, t: T, lang: L
           ${buildPaymentRow(t("s.pdf.duration"), t("s.pdf.duration_days", { days: settings.subscription_duration_days ?? 30 }))}
         </div>
       </div>
-      ${qrDataUrl ? `<div style="width:210px; text-align:center;">
-        <div style="display:inline-block; padding:10px; background:#fff; border:2px solid #D4AF37; border-radius:14px;">
-          <img src="${qrDataUrl}" alt="QR" style="width:188px; height:188px; display:block;" />
+      ${qrDataUrl ? `<div class="pdf-qr" style="width:250px; flex:0 0 250px; text-align:center;">
+        <div style="display:inline-block; padding:4px; background:#fff; border:2px solid #D4AF37; border-radius:12px;">
+          <img id="payment-pdf-qr" src="${qrDataUrl}" alt="QR" width="240" height="240" style="width:240px; height:240px; display:block; object-fit:contain;" />
         </div>
         <div dir="${dir}" style="font-size:11px; color:#7a6a91; margin-top:8px; direction:${dir}; unicode-bidi:plaintext;">${t("s.pdf.qr_scan_hint")}</div>
       </div>` : ""}
     </div>
 
-    <div dir="${dir}" style="position:relative; z-index:1; padding: 0 48px 16px; direction:${dir}; text-align:${align}; unicode-bidi:plaintext;">
+    <div class="pdf-steps" dir="${dir}" style="position:relative; z-index:1; flex:0 0 auto; padding:0 44px 10px; direction:${dir}; text-align:${align}; unicode-bidi:plaintext;">
       <h2 style="color:#5A436F; font-size:18px; margin:0 0 10px; ${borderSide}:4px solid #D4AF37; ${paddingSide}:10px;">${t("s.pdf.steps_title")}</h2>
-      <ol style="font-size:14px; line-height:1.9; color:#1a1a1a; ${paddingSide}:24px; margin:0;">
+      <ol style="font-size:13px; line-height:1.65; color:#1a1a1a; ${paddingSide}:24px; margin:0;">
         <li style="unicode-bidi:plaintext;">${t("s.pdf.step1")}</li>
         <li style="unicode-bidi:plaintext;">${t("s.pdf.step2")}</li>
         <li style="unicode-bidi:plaintext;">${t("s.pdf.step3")}</li>
@@ -130,10 +194,10 @@ function buildInvoiceHTML(settings: SettingsLike, logoSrc: string, t: T, lang: L
       </ol>
     </div>
 
-    <div dir="${dir}" style="position:relative; z-index:1; padding: 0 48px 16px; direction:${dir}; text-align:${align}; unicode-bidi:plaintext;">
+    <div class="pdf-notes" dir="${dir}" style="position:relative; z-index:1; flex:0 0 auto; padding:0 44px 10px; direction:${dir}; text-align:${align}; unicode-bidi:plaintext;">
       <div style="background:#fff8e1; border:1px solid #f1d98a; ${borderSide}:4px solid #D4AF37; border-radius:12px; padding:12px 16px;">
         <div style="font-weight:800; color:#5A436F; margin-bottom:4px;">${t("s.pdf.notes_title")}</div>
-        <ul style="font-size:13px; color:#3a2a55; line-height:1.9; margin:0; ${paddingSide}:18px;">
+        <ul style="font-size:12px; color:#3a2a55; line-height:1.6; margin:0; ${paddingSide}:18px;">
           <li style="unicode-bidi:plaintext;">${t("s.pdf.note1")}</li>
           <li style="unicode-bidi:plaintext;">${t("s.pdf.note2")}</li>
           <li style="unicode-bidi:plaintext;">${t("s.pdf.note3")}</li>
@@ -143,12 +207,12 @@ function buildInvoiceHTML(settings: SettingsLike, logoSrc: string, t: T, lang: L
 
 
     <!-- Signature + Stamp -->
-    <div dir="${dir}" style="position:relative; z-index:1; padding: 8px 48px 16px; display:flex; gap:24px; align-items:center; justify-content:space-between; direction:${dir}; text-align:${align}; unicode-bidi:plaintext;">
+    <div class="pdf-signature" dir="${dir}" style="position:relative; z-index:1; flex:0 0 auto; padding:4px 44px 8px; display:flex; gap:20px; align-items:center; justify-content:space-between; direction:${dir}; text-align:${align}; unicode-bidi:plaintext;">
       <div style="flex:1;">
         <div style="color:#7a6a91; font-size:12px; margin-bottom:6px; unicode-bidi:plaintext;">${t("s.pdf.esignature")}</div>
         <div style="font-family:'Cairo','Tajawal',sans-serif; font-weight:700; color:#5A436F; font-size:18px; border-bottom:2px solid #D4AF37; display:inline-block; padding:2px 8px 6px; unicode-bidi:plaintext;">${t("s.pdf.admin_signature")}</div>
       </div>
-      <div style="width:130px; height:130px; position:relative; display:flex; align-items:center; justify-content:center;">
+      <div class="pdf-stamp" style="width:112px; height:112px; position:relative; display:flex; align-items:center; justify-content:center;">
         <div style="position:absolute; inset:0; border-radius:50%; border:4px double #D4AF37; transform:rotate(-12deg);"></div>
         <div style="position:absolute; inset:10px; border-radius:50%; border:2px solid #D4AF37; transform:rotate(-12deg);"></div>
         <div style="text-align:center; transform:rotate(-12deg); color:#8a6a1f; font-weight:900;">
@@ -159,7 +223,7 @@ function buildInvoiceHTML(settings: SettingsLike, logoSrc: string, t: T, lang: L
       </div>
     </div>
 
-    <div dir="${dir}" style="position:relative; z-index:1; margin-top:auto; padding: 14px 48px; border-top:2px solid #D4AF37; text-align:center; color:#7a6a91; font-size:11px; direction:${dir}; unicode-bidi:plaintext;">
+    <div class="pdf-footer" dir="${dir}" style="position:relative; z-index:1; flex:0 0 auto; margin-top:auto; padding:10px 44px; border-top:2px solid #D4AF37; text-align:center; color:#7a6a91; font-size:10px; direction:${dir}; unicode-bidi:plaintext;">
       <div style="font-weight:700; color:#5A436F; unicode-bidi:plaintext;">${t("s.pdf.footer_copyright")}</div>
       <div style="margin-top:2px;">${ltr(`<span style="color:#5A436F;">${PLATFORM_URL}</span>`)}</div>
       <div style="unicode-bidi:plaintext;">${t("s.pdf.all_rights")}</div>
