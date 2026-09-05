@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { sendAssistantMessage, ASSISTANT_STORAGE_KEY } from "@/services/assistant";
+import { detectMessageLanguage, LANGUAGE_FALLBACK_MESSAGES } from "@/lib/detect-language";
 import type { AssistantAttachment, AssistantMessage } from "@/types/assistant";
 import { useI18n } from "@/lib/i18n";
 
