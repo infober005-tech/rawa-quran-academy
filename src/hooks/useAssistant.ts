@@ -66,17 +66,13 @@ export function useAssistant() {
       } catch (e) {
         const msg = e instanceof Error ? e.message : t("asst.err.unknown");
         setError(msg);
+        const detected = detectMessageLanguage(clean, lang);
         setMessages((prev) => [
           ...prev,
           {
             id: uid(),
             role: "assistant",
-            content:
-              msg === "RATE_LIMITED"
-                ? t("asst.err.rate")
-                : msg === "CREDITS_EXHAUSTED"
-                ? t("asst.err.credits")
-                : t("asst.err.generic"),
+            content: LANGUAGE_FALLBACK_MESSAGES[detected],
             createdAt: Date.now(),
           },
         ]);
