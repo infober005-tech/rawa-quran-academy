@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { detectMessageLanguage } from "@/lib/detect-language";
+import { detectMessageLanguage, LANGUAGE_FALLBACK_MESSAGES } from "@/lib/detect-language";
 import { z } from "zod";
 
 const ChatInput = z.object({
