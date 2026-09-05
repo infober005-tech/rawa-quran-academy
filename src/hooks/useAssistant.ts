@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { sendAssistantMessage, ASSISTANT_STORAGE_KEY } from "@/services/assistant";
+import { detectMessageLanguage, LANGUAGE_FALLBACK_MESSAGES } from "@/lib/detect-language";
 import type { AssistantAttachment, AssistantMessage } from "@/types/assistant";
 import { useI18n } from "@/lib/i18n";
 
@@ -66,17 +67,13 @@ export function useAssistant() {
       } catch (e) {
         const msg = e instanceof Error ? e.message : t("asst.err.unknown");
         setError(msg);
+        const detected = detectMessageLanguage(clean, lang);
         setMessages((prev) => [
           ...prev,
           {
             id: uid(),
             role: "assistant",
-            content:
-              msg === "RATE_LIMITED"
-                ? t("asst.err.rate")
-                : msg === "CREDITS_EXHAUSTED"
-                ? t("asst.err.credits")
-                : t("asst.err.generic"),
+            content: LANGUAGE_FALLBACK_MESSAGES[detected],
             createdAt: Date.now(),
           },
         ]);

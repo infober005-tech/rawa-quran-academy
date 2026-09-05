@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { detectMessageLanguage, LANGUAGE_FALLBACK_MESSAGES } from "@/lib/detect-language";
 import { z } from "zod";
 
 const ChatInput = z.object({
@@ -12,6 +13,7 @@ const ChatInput = z.object({
     .min(1)
     .max(30),
   lang: z.enum(["ar", "fr", "en"]).optional(),
+  responseLanguage: z.enum(["ar", "fr", "en"]).optional(),
 });
 
 type PlatformSnapshot = {
@@ -95,8 +97,16 @@ async function fetchPlatformSnapshot(): Promise<PlatformSnapshot> {
 
 const SYSTEM_PROMPT = `أنت "مساعد رواء"، مساعد ذكي رسمي لأكاديمية رواء للقرآن الكريم.
 
+LANGUAGE POLICY:
+Always answer in the same language as the user's latest message.
+Detect the language automatically before generating the answer.
+Supported languages are Arabic, French and English.
+Algerian Darija counts as Arabic.
+For mixed-language messages, use the dominant language.
+Never answer in another language unless the user explicitly asks for translation or requests another language.
+Never mix two or three languages in one answer. Quranic verses, hadith and adhkar stay in their original Arabic even inside a French or English answer.
+
 قواعد صارمة:
-- أجب دائماً بالعربية الفصحى المهذبة ما لم يكاتبك المستخدم بلغة أخرى.
 - استخدم بيانات المنصة المُرفقة (PLATFORM_DATA) كمصدر وحيد للحقائق (الحلقات، المعلمون، الفعاليات، الإحصاءات، الإعلانات).
 - إذا لم تجد الإجابة في البيانات المرفقة أو في الأسئلة الشائعة، قل بصراحة: "لا تتوفر لديّ هذه المعلومة حالياً، يرجى التواصل مع الدعم." ولا تخترع أي معلومة.
 - لا تكشف أسماء طلاب أو تفاصيل حساسة إلا إذا كانت واردة صراحة في البيانات المرفقة.
@@ -117,6 +127,11 @@ export const askAssistant = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("Missing LOVABLE_API_KEY");
+
+    // Language of the answer is driven by the CURRENT user message, never the UI language.
+    const lastUserMessage = [...data.messages].reverse().find((m) => m.role === "user")?.content ?? "";
+    const responseLanguage =
+      data.responseLanguage ?? detectMessageLanguage(lastUserMessage, data.lang ?? "ar");
 
     let snapshot: PlatformSnapshot;
     try {
@@ -145,12 +160,13 @@ export const askAssistant = createServerFn({ method: "POST" })
           { role: "system", content: SYSTEM_PROMPT },
           {
             role: "system",
-            content:
-              data.lang === "fr"
-                ? "Réponds exclusivement en français professionnel et naturel, quelle que soit la langue de la question."
-                : data.lang === "en"
-                  ? "Reply exclusively in professional, natural English regardless of the language of the question."
-                  : "أجب بالعربية الفصحى المهنية دائماً.",
+            content: `response_language: ${responseLanguage}\n${
+              responseLanguage === "fr"
+                ? "The user's latest message is in French. Answer ONLY in professional, natural French. Do not use Arabic or English for the explanation, suggestions, follow-up questions or error notices (Quranic verses, hadith and adhkar stay in Arabic)."
+                : responseLanguage === "en"
+                  ? "The user's latest message is in English. Answer ONLY in professional, natural English. Do not use Arabic or French for the explanation, suggestions, follow-up questions or error notices (Quranic verses, hadith and adhkar stay in Arabic)."
+                  : "رسالة المستخدم الأخيرة بالعربية (أو بالدارجة الجزائرية/العربيزي). أجب بالعربية فقط (يمكنك استخدام الدارجة الجزائرية إن كتب بها)، ولا تستخدم الفرنسية أو الإنجليزية في الشرح أو الاقتراحات أو أسئلة المتابعة."
+            }`,
           },
           { role: "system", content: platformContext },
           ...data.messages,
@@ -164,7 +180,8 @@ export const askAssistant = createServerFn({ method: "POST" })
     const json = await res.json();
     const content: string = json?.choices?.[0]?.message?.content ?? "";
     return {
-      reply: content.trim() || "عذراً، لم أستطع توليد إجابة الآن. حاول مرة أخرى.",
+      reply: content.trim() || LANGUAGE_FALLBACK_MESSAGES[responseLanguage],
+      responseLanguage,
       hasAnnouncement: snapshot.announcements.length > 0,
       latestAnnouncement: snapshot.announcements[0] ?? null,
     };
