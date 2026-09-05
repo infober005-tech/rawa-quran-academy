@@ -154,12 +154,13 @@ export const askAssistant = createServerFn({ method: "POST" })
           { role: "system", content: SYSTEM_PROMPT },
           {
             role: "system",
-            content:
-              data.lang === "fr"
-                ? "Réponds exclusivement en français professionnel et naturel, quelle que soit la langue de la question."
-                : data.lang === "en"
-                  ? "Reply exclusively in professional, natural English regardless of the language of the question."
-                  : "أجب بالعربية الفصحى المهنية دائماً.",
+            content: `response_language: ${responseLanguage}\n${
+              responseLanguage === "fr"
+                ? "The user's latest message is in French. Answer ONLY in professional, natural French. Do not use Arabic or English for the explanation, suggestions, follow-up questions or error notices (Quranic verses, hadith and adhkar stay in Arabic)."
+                : responseLanguage === "en"
+                  ? "The user's latest message is in English. Answer ONLY in professional, natural English. Do not use Arabic or French for the explanation, suggestions, follow-up questions or error notices (Quranic verses, hadith and adhkar stay in Arabic)."
+                  : "رسالة المستخدم الأخيرة بالعربية (أو بالدارجة الجزائرية/العربيزي). أجب بالعربية فقط (يمكنك استخدام الدارجة الجزائرية إن كتب بها)، ولا تستخدم الفرنسية أو الإنجليزية في الشرح أو الاقتراحات أو أسئلة المتابعة."
+            }`,
           },
           { role: "system", content: platformContext },
           ...data.messages,
