@@ -12,6 +12,7 @@ const ChatInput = z.object({
     .min(1)
     .max(30),
   lang: z.enum(["ar", "fr", "en"]).optional(),
+  responseLanguage: z.enum(["ar", "fr", "en"]).optional(),
 });
 
 type PlatformSnapshot = {
