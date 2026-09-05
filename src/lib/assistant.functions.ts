@@ -127,6 +127,11 @@ export const askAssistant = createServerFn({ method: "POST" })
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("Missing LOVABLE_API_KEY");
 
+    // Language of the answer is driven by the CURRENT user message, never the UI language.
+    const lastUserMessage = [...data.messages].reverse().find((m) => m.role === "user")?.content ?? "";
+    const responseLanguage =
+      data.responseLanguage ?? detectMessageLanguage(lastUserMessage, data.lang ?? "ar");
+
     let snapshot: PlatformSnapshot;
     try {
       snapshot = await fetchPlatformSnapshot();
