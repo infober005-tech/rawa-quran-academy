@@ -180,7 +180,8 @@ export const askAssistant = createServerFn({ method: "POST" })
     const json = await res.json();
     const content: string = json?.choices?.[0]?.message?.content ?? "";
     return {
-      reply: content.trim() || "عذراً، لم أستطع توليد إجابة الآن. حاول مرة أخرى.",
+      reply: content.trim() || LANGUAGE_FALLBACK_MESSAGES[responseLanguage],
+      responseLanguage,
       hasAnnouncement: snapshot.announcements.length > 0,
       latestAnnouncement: snapshot.announcements[0] ?? null,
     };
