@@ -396,3 +396,66 @@ button, a, [role="button"] { touch-action: manipulation; }
     background-position: left 14px center;
   }
 }
+
+/* ── Premium registration wizard (visual only) ──────────────────── */
+@utility auth-glass {
+  background-image: linear-gradient(140deg, rgb(255 255 255 / 0.82), rgb(250 247 253 / 0.62));
+  border: 1px solid rgb(111 74 168 / 0.14);
+  box-shadow: 0 24px 60px -34px rgb(36 26 47 / 0.3), inset 0 1px 0 rgb(255 255 255 / 0.7);
+  backdrop-filter: blur(18px) saturate(135%);
+}
+@utility auth-glass-dark {
+  background-image: linear-gradient(150deg, rgb(52 33 84 / 0.92), rgb(31 19 52 / 0.94));
+  border: 1px solid rgb(212 175 55 / 0.24);
+  box-shadow: 0 30px 70px -36px rgb(20 12 36 / 0.7), inset 0 1px 0 rgb(255 255 255 / 0.08);
+  backdrop-filter: blur(14px);
+}
+@utility auth-gold-rim {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgb(212 175 55 / 0.55), transparent 45%, rgb(212 175 55 / 0.28));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    pointer-events: none;
+  }
+}
+@utility auth-tile {
+  border-radius: 22px;
+  border: 1px solid rgb(111 74 168 / 0.16);
+  background-image: linear-gradient(150deg, rgb(255 255 255 / 0.9), rgb(248 245 252 / 0.7));
+  box-shadow: 0 14px 34px -24px rgb(36 26 47 / 0.35);
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 240ms ease, border-color 200ms ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 22px 44px -24px rgb(36 26 47 / 0.4);
+    border-color: rgb(111 74 168 / 0.32);
+  }
+  &:focus-visible {
+    outline: 2px solid #6f4aa8;
+    outline-offset: 3px;
+  }
+}
+@utility auth-tile-active {
+  border-color: rgb(212 175 55 / 0.75);
+  box-shadow: 0 20px 44px -22px rgb(111 74 168 / 0.55), inset 0 0 0 1px rgb(212 175 55 / 0.45);
+  transform: translateY(-2px);
+}
+@utility auth-step-panel {
+  animation: rawa-step-in 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes rawa-step-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.995); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-step-panel { animation: none; }
+  .auth-tile:hover { transform: none; }
+}
