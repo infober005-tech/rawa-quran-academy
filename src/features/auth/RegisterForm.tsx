@@ -37,14 +37,23 @@ type FormState = {
 const inputCls = "auth-field";
 
 function FloatingField({
-  id, label, error, ok, hint, optional, children,
-}: { id: string; label: string; error?: string; ok?: boolean; hint?: string; optional?: boolean; children: React.ReactNode }) {
+  id, label, error, ok, hint, optionalLabel, icon: Icon, required, children,
+}: {
+  id: string; label: string; error?: string; ok?: boolean; hint?: string;
+  optionalLabel?: string; icon?: React.ComponentType<{ className?: string }>; required?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div className="min-w-0">
       <div className="mb-2 flex min-w-0 items-center gap-2">
-        <label htmlFor={id} className="auth-label truncate">{label}</label>
-        {optional && <span className="auth-optional shrink-0">{/* optional badge */}</span>}
+        {Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-[#8d6bb3]" aria-hidden />}
+        <label htmlFor={id} className="auth-label truncate">
+          {label}
+          {required && <span className="ms-1 text-[#d4af37]" aria-hidden>*</span>}
+        </label>
+        {optionalLabel && <span className="auth-optional ms-auto shrink-0">{optionalLabel}</span>}
       </div>
+
       <div className="relative min-w-0">
         {children}
         {ok && !error && (
