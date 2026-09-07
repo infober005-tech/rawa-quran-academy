@@ -194,50 +194,76 @@ const TOTAL_STEPS = 5;
 
 function StepIndicator({ step }: { step: number }) {
   const { t } = useI18n();
+  const pct = Math.round(((step + 1) / TOTAL_STEPS) * 100);
   return (
-    <div className="mb-6">
-      <div className="flex items-center gap-1.5 sm:gap-2" role="list">
+    <div className="mb-7">
+      <div className="mb-4">
+        <h1 className="text-[21px] font-bold leading-snug text-[#241b2f] sm:text-[24px]" style={{ fontFamily: "var(--font-display-ar)" }}>
+          {t("reg.wiz.header_title")}
+        </h1>
+        <p className="auth-hint mt-1 text-[12.5px]">{t("reg.wiz.header_sub")}</p>
+      </div>
+
+      <div className="mb-2.5 flex items-center justify-between gap-2">
+        <span className="text-[11.5px] font-bold text-[#6a4c93]">
+          {t("reg.wiz.step_of", { n: step + 1, total: TOTAL_STEPS })}
+        </span>
+        <span className="text-[11.5px] font-semibold text-[#a8862b]" dir="ltr">{pct}%</span>
+      </div>
+      <div
+        className="auth-progress-track"
+        role="progressbar"
+        aria-valuenow={pct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={t("reg.wiz.step_of", { n: step + 1, total: TOTAL_STEPS })}
+      >
+        <div className="auth-progress-bar" style={{ width: `${pct}%` }} />
+      </div>
+
+      <ul className="mt-3.5 flex min-w-0 flex-wrap gap-1.5" role="list">
         {STEP_KEYS.map((k, i) => {
           const done = i < step;
           const active = i === step;
+          if (!active && !done) {
+            return (
+              <li key={k} className="hidden sm:block">
+                <span className="auth-step-chip">
+                  <span className="text-[10.5px] opacity-70" dir="ltr">{i + 1}</span>
+                  <span className="truncate">{t(k)}</span>
+                </span>
+              </li>
+            );
+          }
           return (
-            <div key={k} role="listitem" className="flex-1 min-w-0">
-              <div
-                className={cn(
-                  "h-1.5 rounded-full transition-all duration-500",
-                  done ? "bg-[linear-gradient(90deg,#d4af37,#e6c765)]" : active ? "bg-[linear-gradient(90deg,#6f4aa8,#8a67b8)]" : "bg-[#e9e3f0]"
-                )}
-              />
-              <div
-                className={cn(
-                  "mt-2 hidden truncate text-[11px] font-medium sm:block",
-                  done ? "text-[#a8862b]" : active ? "text-[#6f4aa8]" : "text-[#a49bad]"
-                )}
-              >
-                {t(k)}
-              </div>
-            </div>
+            <li key={k} className={cn(!active && "hidden sm:block")}>
+              <span className={cn("auth-step-chip", active ? "auth-step-chip-active" : "auth-step-chip-done")}>
+                {done ? <Check className="h-3 w-3 shrink-0" aria-hidden /> : <span className="text-[10.5px]" dir="ltr">{i + 1}</span>}
+                <span className="truncate">{t(k)}</span>
+              </span>
+            </li>
           );
         })}
-      </div>
-      <div className="mt-2.5 flex items-center justify-between gap-2">
-        <span className="text-[11.5px] font-semibold text-[#6f4aa8]">
-          {t("reg.wiz.step_of", { n: step + 1, total: TOTAL_STEPS })}
-        </span>
-        <span className="truncate text-[11.5px] text-[#776d82] sm:hidden">{t(STEP_KEYS[step])}</span>
-      </div>
+      </ul>
     </div>
   );
 }
 
 function StepHeading({ title, sub }: { title: string; sub: string }) {
   return (
-    <div className="mb-5">
-      <h2 className="text-[19px] font-bold leading-snug text-[#241a2f] sm:text-[21px]">{title}</h2>
-      <p className="mt-1 text-[13px] leading-relaxed text-[#776d82]">{sub}</p>
+    <div className="mb-5 flex min-w-0 items-start gap-3">
+      <span
+        className="mt-1 h-9 w-1 shrink-0 rounded-full bg-[linear-gradient(180deg,#6a4c93,#8d6bb3_60%,#d4af37)]"
+        aria-hidden
+      />
+      <div className="min-w-0">
+        <h2 className="text-[18px] font-bold leading-snug text-[#241b2f] sm:text-[20px]">{title}</h2>
+        <p className="mt-1 text-[12.5px] leading-relaxed text-[#766b80]">{sub}</p>
+      </div>
     </div>
   );
 }
+
 
 const LANG_OPTIONS: Array<{ code: Lang; native: string; latin: string }> = [
   { code: "ar", native: "العربية", latin: "Arabic" },
