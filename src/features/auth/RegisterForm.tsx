@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Eye, EyeOff, Check, X, ChevronDown, Search, Calendar, Loader2, ArrowLeft, ArrowRight, Mail, Sparkles } from "lucide-react";
+import { Eye, EyeOff, Check, X, ChevronDown, Search, Calendar, Loader2, ArrowLeft, ArrowRight, Mail, Sparkles, AlertCircle, User, MapPin, Building2, BookOpen, Phone, Globe2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n, type Lang } from "@/lib/i18n";
 import { toast } from "sonner";
