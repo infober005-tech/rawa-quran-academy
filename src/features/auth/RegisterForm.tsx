@@ -37,24 +37,35 @@ type FormState = {
 const inputCls = "auth-field";
 
 function FloatingField({
-  id, label, error, ok, children,
-}: { id: string; label: string; error?: string; ok?: boolean; children: React.ReactNode }) {
+  id, label, error, ok, hint, optional, children,
+}: { id: string; label: string; error?: string; ok?: boolean; hint?: string; optional?: boolean; children: React.ReactNode }) {
   return (
     <div className="min-w-0">
-      <label htmlFor={id} className="auth-label mb-2 block truncate">{label}</label>
+      <div className="mb-2 flex min-w-0 items-center gap-2">
+        <label htmlFor={id} className="auth-label truncate">{label}</label>
+        {optional && <span className="auth-optional shrink-0">{/* optional badge */}</span>}
+      </div>
       <div className="relative min-w-0">
         {children}
         {ok && !error && (
-          <Check className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-[#2e9b68]" aria-hidden />
+          <Check className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3.5 h-4 w-4 text-[#2e8b57]" aria-hidden />
         )}
         {error && (
-          <X className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-[#d84c5b]" aria-hidden />
+          <AlertCircle className="pointer-events-none absolute top-1/2 -translate-y-1/2 end-3.5 h-4 w-4 text-[#d92d20]" aria-hidden />
         )}
       </div>
-      {error && <div className="mt-1.5 auth-error-text" role="alert">{error}</div>}
+      {error ? (
+        <div id={`${id}-err`} className="mt-1.5 auth-error-text" role="alert">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden />
+          <span className="min-w-0">{error}</span>
+        </div>
+      ) : hint ? (
+        <p id={`${id}-hint`} className="auth-hint mt-1.5">{hint}</p>
+      ) : null}
     </div>
   );
 }
+
 
 
 function passwordScore(p: string) {
