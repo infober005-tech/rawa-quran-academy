@@ -145,5 +145,10 @@ const dict: Record<string, string> = {
   "reg.wiz.panel_quote": "وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا",
   "reg.wiz.panel_msg": "Un parcours de mémorisation rigoureux, encadré et suivi au quotidien.",
   "reg.wiz.selected": "Sélectionné",
+  "reg.wiz.header_title": "Créer votre compte",
+  "reg.wiz.header_sub": "Complétez vos informations pour poursuivre votre parcours coranique.",
+  "reg.optional": "Facultatif",
+  "reg.help.full_name": "Saisissez votre nom complet tel qu’il figure sur vos documents officiels.",
+  "reg.help.city": "La ville ou la commune où vous résidez.",
 };
 export default dict;
